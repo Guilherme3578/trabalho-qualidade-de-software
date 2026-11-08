@@ -1,0 +1,56 @@
+# Integração contínua: roda em todo pull request e em pushes na main.
+# Etapas: build → testes unitários → integração/API/concorrência/BDD/E2E (Testcontainers + WireMock)
+#         → cobertura JaCoCo (com limite mínimo) → análise estática no SonarCloud.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  build-e-testes:
+    name: Build, testes e cobertura
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # histórico completo: necessário para o SonarCloud calcular "código novo"
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Chrome para os testes end-to-end
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Build + todos os testes + verificação de cobertura
+        run: ./mvnw -B verify
+
+      - name: Publicar relatórios de teste
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorios-de-teste
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+            target/cucumber/
+            target/site/jacoco/
+
+      - name: Análise SonarCloud
+        if: env.SONAR_TOKEN != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./mvnw -B sonar:sonar -Dsonar.token=$SONAR_TOKEN

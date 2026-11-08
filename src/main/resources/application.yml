@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: alocacao-salas
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://localhost:27017/alocacao?directConnection=true}
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/alocacao?directConnection=true}
+      auto-index-creation: true
+  jackson:
+    default-property-inclusion: always
+
+server:
+  port: ${PORT:8080}
+  error:
+    # Tratamento seguro de erros: nunca expor detalhes internos
+    include-stacktrace: never
+    include-message: never
+    include-binding-errors: never
+    include-exception: false
+
+app:
+  jwt:
+    # OBRIGATÓRIO em produção: defina a variável de ambiente JWT_SEGREDO (mín. 32 caracteres)
+    segredo: ${JWT_SEGREDO:}
+    expiracao: 2h
+  notificacao:
+    habilitada: ${NOTIFICACAO_HABILITADA:false}
+    url: ${NOTIFICACAO_URL:http://localhost:8089/notificacoes}
+    timeout: 2s
+  login:
+    max-tentativas: 5
+    janela-bloqueio: 15m
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  pattern:
+    level: "%5p [%X{correlationId:-}]"

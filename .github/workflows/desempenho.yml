@@ -1,0 +1,49 @@
+# Teste de carga com JMeter contra a aplicação real (MongoDB em container + perfil dev).
+name: Desempenho (JMeter)
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  jmeter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Subir MongoDB (replica set) e WireMock
+        run: docker compose up -d --wait mongo wiremock
+
+      - name: Empacotar e iniciar a aplicação
+        env:
+          JWT_SEGREDO: segredo-de-ci-com-mais-de-32-caracteres-0123
+        run: |
+          ./mvnw -B -q package -DskipTests
+          nohup java -jar target/alocacao-salas-*.jar --spring.profiles.active=dev > app.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:8080/actuator/health && break
+            sleep 2
+          done
+
+      - name: Executar plano JMeter
+        run: ./mvnw -B verify -Pdesempenho
+
+      - name: Publicar relatório JMeter
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-jmeter
+          path: |
+            target/jmeter/reports/
+            target/jmeter/results/
+            app.log

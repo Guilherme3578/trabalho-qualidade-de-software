@@ -1,0 +1,12 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/notificacoes",
+    "headers": { "Content-Type": { "equalTo": "application/json" } }
+  },
+  "response": {
+    "status": 202,
+    "jsonBody": { "situacao": "ACEITA", "canal": "simulado" },
+    "headers": { "Content-Type": "application/json" }
+  }
+}

@@ -1,0 +1,4 @@
+# Perfil de desenvolvimento local: ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+app:
+  jwt:
+    segredo: ${JWT_SEGREDO:segredo-apenas-para-desenvolvimento-local-123456}

@@ -1,0 +1,118 @@
+package br.senac.alocacao.config;
+
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.web.SecurityFilterChain;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * Segurança da API:
+ * <ul>
+ *   <li>Autenticação stateless com JWT assinado (HS256).</li>
+ *   <li>Autorização por perfil em dois níveis: rotas (aqui) e métodos (@PreAuthorize nos controllers).</li>
+ *   <li>Cabeçalhos de segurança (CSP, X-Frame-Options, X-Content-Type-Options, etc.).</li>
+ * </ul>
+ */
+@Configuration
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private static final int TAMANHO_MINIMO_SEGREDO = 32;
+    private static final String ADMIN = "ADMIN";
+    private static final String RESPONSAVEL = "RESPONSAVEL";
+    private static final String COORDENADOR = "COORDENADOR";
+    private static final String PROFESSOR = "PROFESSOR";
+
+    @Bean
+    public SecurityFilterChain filtros(HttpSecurity http, RespostasSeguranca respostas) throws Exception {
+        http
+                // API stateless com token no cabeçalho: não há cookie de sessão, portanto CSRF não se aplica.
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/favicon.ico").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/actuator/health", "/error").permitAll()
+                        // 1º nível de autorização (antes de qualquer validação de entrada).
+                        // O 2º nível é o @PreAuthorize de cada endpoint (defesa em profundidade).
+                        .requestMatchers("/api/usuarios/**").hasRole(ADMIN)
+                        .requestMatchers(HttpMethod.GET, "/api/salas/**", "/api/professores/**",
+                                "/api/materiais/**", "/api/bloqueios/**").authenticated()
+                        .requestMatchers("/api/salas/**", "/api/professores/**", "/api/materiais/**",
+                                "/api/bloqueios/**").hasRole(ADMIN)
+                        .requestMatchers("/api/auditoria/**").hasAnyRole(ADMIN, RESPONSAVEL)
+                        .requestMatchers("/api/relatorios/**").hasAnyRole(COORDENADOR, RESPONSAVEL, ADMIN)
+                        .requestMatchers(HttpMethod.POST, "/api/reservas/*/aprovar", "/api/reservas/*/rejeitar",
+                                "/api/reservas/*/nao-compareceu", "/api/reservas/*/retiradas",
+                                "/api/reservas/*/devolucoes").hasRole(RESPONSAVEL)
+                        .requestMatchers(HttpMethod.POST, "/api/reservas", "/api/reservas/*/cancelar")
+                        .hasAnyRole(PROFESSOR, COORDENADOR)
+                        .requestMatchers(HttpMethod.PUT, "/api/reservas/*").hasAnyRole(PROFESSOR, COORDENADOR)
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(o -> o
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(conversorPerfis()))
+                        .authenticationEntryPoint(respostas.naoAutenticado())
+                        .accessDeniedHandler(respostas.acessoNegado()))
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint(respostas.naoAutenticado())
+                        .accessDeniedHandler(respostas.acessoNegado()))
+                .headers(h -> h
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
+                                        + "script-src 'self'; frame-ancestors 'none'; form-action 'self'"))
+                        .frameOptions(f -> f.deny()));
+        return http.build();
+    }
+
+    /** Converte a claim "perfil" do token em autoridade ROLE_PERFIL. */
+    private JwtAuthenticationConverter conversorPerfis() {
+        JwtGrantedAuthoritiesConverter perfis = new JwtGrantedAuthoritiesConverter();
+        perfis.setAuthoritiesClaimName("perfil");
+        perfis.setAuthorityPrefix("ROLE_");
+        JwtAuthenticationConverter conversor = new JwtAuthenticationConverter();
+        conversor.setJwtGrantedAuthoritiesConverter(perfis);
+        return conversor;
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder(AppProperties props) {
+        return NimbusJwtDecoder.withSecretKey(chave(props)).macAlgorithm(MacAlgorithm.HS256).build();
+    }
+
+    @Bean
+    public JwtEncoder jwtEncoder(AppProperties props) {
+        return new NimbusJwtEncoder(new ImmutableSecret<>(chave(props)));
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    private SecretKey chave(AppProperties props) {
+        String segredo = props.jwt().segredo();
+        if (segredo == null || segredo.length() < TAMANHO_MINIMO_SEGREDO) {
+            throw new IllegalStateException(
+                    "Defina app.jwt.segredo (variável JWT_SEGREDO) com pelo menos 32 caracteres.");
+        }
+        return new SecretKeySpec(segredo.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+    }
+}

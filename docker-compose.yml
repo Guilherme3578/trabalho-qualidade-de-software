@@ -1,0 +1,45 @@
+# Ambiente local completo:  docker compose up -d
+#   - mongo:     MongoDB 8 como replica set de um nó (necessário para transações)
+#   - wiremock:  simula a API externa de notificações (http://localhost:8089/__admin/requests)
+#   - app:       a aplicação (perfil dev, com dados de demonstração)
+services:
+  mongo:
+    image: mongo:8.0
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-dados:/data/db
+    healthcheck:
+      # Inicializa o replica set na primeira execução e depois apenas verifica a saúde.
+      test: >
+        mongosh --quiet --eval "try { rs.status().ok } catch (e) {
+        rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'localhost:27017'}]}).ok }"
+      interval: 5s
+      timeout: 10s
+      retries: 20
+
+  wiremock:
+    image: wiremock/wiremock:3.13.1
+    ports:
+      - "8089:8080"
+    volumes:
+      - ./docker/wiremock:/home/wiremock
+
+  app:
+    build: .
+    profiles: ["app"]
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      MONGODB_URI: mongodb://mongo:27017/alocacao?directConnection=true
+      JWT_SEGREDO: ${JWT_SEGREDO:-troque-este-segredo-em-producao-0123456789}
+      NOTIFICACAO_HABILITADA: "true"
+      NOTIFICACAO_URL: http://wiremock:8080/notificacoes
+    ports:
+      - "8080:8080"
+
+volumes:
+  mongo-dados:
