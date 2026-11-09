@@ -319,6 +319,8 @@
                         </executions>
                         <configuration>
                             <testFilesDirectory>${project.basedir}/src/test/jmeter</testFilesDirectory>
+                            <skipTests>false</skipTests>
+                            <selectedConfiguration>configuracao</selectedConfiguration>
                             <generateReports>true</generateReports>
                             <errorRateThresholdInPercent>1</errorRateThresholdInPercent>
                             <propertiesUser>
