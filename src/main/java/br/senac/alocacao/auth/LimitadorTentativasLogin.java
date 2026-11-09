@@ -19,6 +19,8 @@ public class LimitadorTentativasLogin {
     private record Janela(int falhas, Instant inicio) {
     }
 
+    static final int LIMITE_PARA_LIMPEZA = 1000;
+
     private final Map<String, Janela> tentativas = new ConcurrentHashMap<>();
     private final int maximo;
     private final Duration duracao;
@@ -44,6 +46,9 @@ public class LimitadorTentativasLogin {
     }
 
     public void registrarFalha(String email) {
+        if (tentativas.size() >= LIMITE_PARA_LIMPEZA) {
+            tentativas.values().removeIf(this::expirada);
+        }
         tentativas.compute(chave(email), (k, j) -> j == null || expirada(j)
                 ? new Janela(1, relogio.get())
                 : new Janela(j.falhas() + 1, j.inicio()));
