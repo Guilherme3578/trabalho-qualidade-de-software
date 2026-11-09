@@ -17,7 +17,8 @@ código.
 9. [Etapa 6 — Componentes reutilizáveis](#9-etapa-6--componentes-reutilizáveis)
 10. [Etapa 7 — Tela de login](#10-etapa-7--tela-de-login)
 11. [Etapa 8 — Painel inicial](#11-etapa-8--painel-inicial)
-12. [Glossário](#glossário)
+12. [Etapa 9 — Formulário de reserva](#12-etapa-9--formulário-de-reserva)
+13. [Glossário](#glossário)
 
 ---
 
@@ -510,6 +511,68 @@ e `fimDoDia` montam esse formato a partir de um `Date` do JavaScript usando o ho
 
 Enquanto os dados não chegam (`carregando()`), os números e a agenda mostram blocos `.skeleton` com brilho
 animado, no mesmo tamanho do conteúdo final, para a tela não "pular" quando os dados aparecem.
+
+## 12. Etapa 9 — Formulário de reserva
+
+Pasta `src/app/pages/reserva-form`. O **mesmo componente** atende duas rotas:
+
+| Rota | Modo |
+|---|---|
+| `/reservas/nova` | Criar (`POST /api/reservas`) |
+| `/reservas/:id/editar` | Alterar (`PUT /api/reservas/{id}`), com os dados já preenchidos |
+
+As duas usam `perfilGuard` com `data: { perfis: ['PROFESSOR', 'COORDENADOR'] }`, que são os perfis que a API
+deixa reservar.
+
+### Parâmetro da rota como `input()`
+
+Com `withComponentInputBinding()` no `app.config.ts`, o `:id` da URL chega direto num `input`:
+
+```ts
+readonly id = input<string>();
+```
+
+Se existe `id`, a tela está em modo de edição: busca a reserva e preenche o formulário.
+
+### Fluxo em quatro etapas
+
+1. **Quando:** data, início e término. Antes de consultar a API, o `computed` `erroHorario` confere as mesmas
+   regras do back-end (`PoliticaHorario`): funcionamento das 07:00 às 23:00, de 30 minutos a 6 horas, mesmo dia e
+   não no passado. Assim, o usuário vê o problema na hora, sem esperar a resposta do servidor.
+2. **Sala:** o botão "Ver o que está livre" chama, em paralelo (`forkJoin`), salas, professores e materiais
+   **passando o intervalo**. A API devolve só o que está livre e, para materiais, a quantidade disponível.
+3. **Aula:** professor, disciplina (com sugestões das competências do professor num `<datalist>`), alunos e
+   observação. Para o perfil PROFESSOR, o professor é ele mesmo e o campo fica travado.
+4. **Materiais:** um contador `− 0 +` por material, limitado à quantidade disponível.
+
+### Resumo e prévia da aprovação
+
+O painel lateral é todo feito de `computed`, então se atualiza a cada mudança no formulário. Ele também prevê se a
+reserva vai precisar de aprovação, com as mesmas regras do `AvaliadorAprovacao` do back-end: sala restrita,
+material restrito ou disciplina fora das competências do professor.
+
+> A prévia é só informativa. **Quem decide é a API**: a mensagem de sucesso usa o `status` devolvido
+> (`APROVADA` ou `SOLICITADA`).
+
+### Ler o formulário como signal
+
+Formulários reativos avisam mudanças por `valueChanges` (um `Observable`). Para usar os valores em `computed`, a
+tela copia o valor para um signal a cada mudança:
+
+```ts
+private readonly valores = signal(this.formulario.getRawValue());
+this.formulario.valueChanges.subscribe(() => this.valores.set(this.formulario.getRawValue()));
+```
+
+### Edição e concorrência
+
+- A reserva é enviada com a `versao` que foi carregada. Se outra pessoa alterou a reserva nesse meio-tempo, a API
+  responde **409 VERSAO_DESATUALIZADA** e a mensagem pede para recarregar.
+- Ao editar, a sala e o professor da própria reserva aparecem como "ocupados" pela API. Por isso, quando o novo
+  horário se sobrepõe ao original, a tela os coloca de volta na lista e soma ao disponível as quantidades de
+  material que a própria reserva já usa.
+- Se o usuário mudar o horário e a sala escolhida deixar de estar livre, a escolha é limpa
+  (`limparEscolhasIndisponiveis`).
 
 ---
 

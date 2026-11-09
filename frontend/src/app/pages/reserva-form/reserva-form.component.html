@@ -1,0 +1,248 @@
+<app-cabecalho-pagina
+  [titulo]="original() ? 'Alterar reserva' : 'Nova reserva'"
+  [subtitulo]="original() ? 'Ao mudar horário ou recursos, a disponibilidade é conferida de novo.' : 'Escolha o horário e veja na hora o que está livre.'"
+  [icone]="original() ? 'pencil' : 'calendar-plus'"
+>
+  <a routerLink="/reservas" class="btn btn-fantasma">Cancelar</a>
+</app-cabecalho-pagina>
+
+<form class="grade" [formGroup]="formulario" (ngSubmit)="salvar()" novalidate>
+  <div class="pilha">
+    <section class="cartao etapa animar" style="--i: 1">
+      <header class="titulo-etapa">
+        <span class="numero">1</span>
+        <div>
+          <h2>Quando</h2>
+          <p class="texto-fraco">Funcionamento das 07:00 às 23:00, de 30 minutos a 6 horas.</p>
+        </div>
+      </header>
+      <div class="linha-campos">
+        <label class="campo">
+          <span>Data</span>
+          <input type="date" formControlName="data" [min]="hoje" />
+        </label>
+        <label class="campo">
+          <span>Início</span>
+          <input type="time" formControlName="inicio" min="07:00" max="23:00" step="900" />
+        </label>
+        <label class="campo">
+          <span>Término</span>
+          <input type="time" formControlName="fim" min="07:00" max="23:00" step="900" />
+        </label>
+      </div>
+      <div class="entre rodape-etapa">
+        @if (erroHorario(); as erro) {
+          <span class="aviso-inline"><lucide-icon name="triangle-alert" /> {{ erro }}</span>
+        } @else {
+          <span class="texto-suave"><lucide-icon name="clock" /> {{ duracao() }} h de duração</span>
+        }
+        <button type="button" class="btn btn-primario" [disabled]="!!erroHorario() || buscando()" (click)="consultar()">
+          @if (buscando()) {
+            <lucide-icon name="loader-circle" class="girando" /> Consultando...
+          } @else {
+            <lucide-icon name="search" /> Ver o que está livre
+          }
+        </button>
+      </div>
+    </section>
+
+    <section class="cartao etapa animar" style="--i: 2" [class.bloqueada]="!horarioConsultado()">
+      <header class="titulo-etapa">
+        <span class="numero">2</span>
+        <div>
+          <h2>Sala</h2>
+          <p class="texto-fraco">Somente salas livres no horário escolhido.</p>
+        </div>
+      </header>
+      @if (!horarioConsultado()) {
+        <p class="texto-suave">Consulte o horário para ver as salas disponíveis.</p>
+      } @else if (salas().length === 0) {
+        <app-estado-vazio titulo="Nenhuma sala livre" texto="Tente outro horário ou outro dia." icone="door-open" />
+      } @else {
+        <div class="salas">
+          @for (sala of salas(); track sala.id) {
+            <button
+              type="button"
+              class="sala"
+              [class.escolhida]="sala.id === formulario.controls.salaId.value"
+              [class.pequena]="sala.capacidade < formulario.controls.quantidadeAlunos.value"
+              (click)="escolherSala(sala)"
+            >
+              <span class="entre">
+                <strong>{{ sala.codigo }}</strong>
+                @if (sala.restrita) {
+                  <span class="badge badge-aviso"><lucide-icon name="shield-check" /> Restrita</span>
+                }
+              </span>
+              <span class="nome">{{ sala.nome }}</span>
+              <span class="meta">
+                <span><lucide-icon name="users" /> {{ sala.capacidade }}</span>
+                <span><lucide-icon name="map-pin" /> {{ sala.localizacao }}</span>
+              </span>
+              <span class="chip">{{ tiposSala[sala.tipo] }}</span>
+              <span class="marcador"><lucide-icon name="check" /></span>
+            </button>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="cartao etapa animar" style="--i: 3" [class.bloqueada]="!horarioConsultado()">
+      <header class="titulo-etapa">
+        <span class="numero">3</span>
+        <div>
+          <h2>Aula</h2>
+          <p class="texto-fraco">Quem vai dar a aula e para quantos alunos.</p>
+        </div>
+      </header>
+      <div class="formulario">
+        <div class="linha-campos">
+          @if (ehProfessor) {
+            <label class="campo">
+              <span>Professor</span>
+              <input type="text" [value]="professorEscolhido()?.nome ?? 'Você'" disabled />
+            </label>
+          } @else {
+            <label class="campo">
+              <span>Professor</span>
+              <select formControlName="professorId">
+                <option value="" disabled>Selecione um professor livre</option>
+                @for (p of professores(); track p.id) {
+                  <option [value]="p.id">{{ p.nome }} · {{ p.departamento }}</option>
+                }
+              </select>
+              @if (formulario.controls.professorId.touched && formulario.controls.professorId.invalid) {
+                <small>Escolha o professor.</small>
+              }
+            </label>
+          }
+          <label class="campo">
+            <span>Disciplina</span>
+            <input type="text" formControlName="disciplina" placeholder="Ex.: Qualidade de Software" list="competencias" />
+            <datalist id="competencias">
+              @for (c of professorEscolhido()?.competencias ?? []; track c) {
+                <option [value]="c"></option>
+              }
+            </datalist>
+            @if (formulario.controls.disciplina.touched && formulario.controls.disciplina.invalid) {
+              <small>Informe a disciplina.</small>
+            }
+          </label>
+          <label class="campo">
+            <span>Alunos</span>
+            <input type="number" formControlName="quantidadeAlunos" min="1" />
+            @if (salaEscolhida(); as sala) {
+              @if (formulario.controls.quantidadeAlunos.value > sala.capacidade) {
+                <small>A sala {{ sala.codigo }} comporta {{ sala.capacidade }} pessoas.</small>
+              }
+            }
+          </label>
+        </div>
+        <label class="campo">
+          <span>Observação (opcional)</span>
+          <textarea formControlName="observacao" placeholder="Algum detalhe para o responsável?"></textarea>
+        </label>
+      </div>
+    </section>
+
+    <section class="cartao etapa animar" style="--i: 4" [class.bloqueada]="!horarioConsultado()">
+      <header class="titulo-etapa">
+        <span class="numero">4</span>
+        <div>
+          <h2>Materiais <small class="texto-fraco">(opcional)</small></h2>
+          <p class="texto-fraco">Quantidade disponível no horário escolhido.</p>
+        </div>
+      </header>
+      @if (horarioConsultado()) {
+        <ul class="materiais">
+          @for (m of materiais(); track m.id) {
+            <li [class.selecionado]="quantidade(m) > 0">
+              <span class="icone-material"><lucide-icon name="package" /></span>
+              <span class="dados-material">
+                <strong>
+                  {{ m.nome }}
+                  @if (m.restrito) {
+                    <span class="badge badge-aviso">Restrito</span>
+                  }
+                </strong>
+                <small class="texto-fraco">{{ m.categoria }} · {{ m.quantidadeDisponivel }} disponível(is)</small>
+              </span>
+              <span class="contador">
+                <button type="button" aria-label="Diminuir" (click)="alterarQuantidade(m, -1)" [disabled]="!quantidade(m)">−</button>
+                <output>{{ quantidade(m) }}</output>
+                <button
+                  type="button"
+                  aria-label="Aumentar"
+                  (click)="alterarQuantidade(m, 1)"
+                  [disabled]="quantidade(m) >= (m.quantidadeDisponivel ?? 0)"
+                >+</button>
+              </span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="texto-suave">Consulte o horário para ver os materiais disponíveis.</p>
+      }
+    </section>
+  </div>
+
+  <aside class="resumo cartao animar" style="--i: 5">
+    <h2>Resumo</h2>
+    <dl>
+      <div>
+        <dt><lucide-icon name="calendar-days" /> Data</dt>
+        <dd>{{ formulario.controls.data.value ? (formulario.controls.data.value.split('-').reverse().join('/')) : '—' }}</dd>
+      </div>
+      <div>
+        <dt><lucide-icon name="clock" /> Horário</dt>
+        <dd>{{ formulario.controls.inicio.value }} – {{ formulario.controls.fim.value }}</dd>
+      </div>
+      <div>
+        <dt><lucide-icon name="door-open" /> Sala</dt>
+        <dd>{{ salaEscolhida()?.codigo ?? '—' }}</dd>
+      </div>
+      <div>
+        <dt><lucide-icon name="graduation-cap" /> Professor</dt>
+        <dd>{{ professorEscolhido()?.nome ?? (ehProfessor ? 'Você' : '—') }}</dd>
+      </div>
+      <div>
+        <dt><lucide-icon name="users" /> Alunos</dt>
+        <dd>{{ formulario.controls.quantidadeAlunos.value }}</dd>
+      </div>
+      <div>
+        <dt><lucide-icon name="package" /> Materiais</dt>
+        <dd>
+          @for (i of itensEscolhidos(); track i.material.id) {
+            <span class="item-resumo">{{ i.quantidade }}× {{ i.material.nome }}</span>
+          } @empty {
+            —
+          }
+        </dd>
+      </div>
+    </dl>
+
+    @if (avisosAprovacao().length) {
+      <div class="aprovacao">
+        <strong><lucide-icon name="hourglass" /> Vai precisar de aprovação</strong>
+        <ul>
+          @for (a of avisosAprovacao(); track a) {
+            <li>{{ a }}</li>
+          }
+        </ul>
+      </div>
+    } @else if (salaEscolhida()) {
+      <div class="aprovacao automatica">
+        <strong><lucide-icon name="circle-check" /> Aprovação automática</strong>
+        <p>Nenhum recurso restrito foi escolhido.</p>
+      </div>
+    }
+
+    <button type="submit" class="btn btn-primario confirmar" [disabled]="salvando() || !horarioConsultado()">
+      @if (salvando()) {
+        <lucide-icon name="loader-circle" class="girando" /> Salvando...
+      } @else {
+        <lucide-icon name="check" /> {{ original() ? 'Salvar alterações' : 'Confirmar reserva' }}
+      }
+    </button>
+  </aside>
+</form>
