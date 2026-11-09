@@ -49,7 +49,8 @@ Usuários de demonstração (senha `Senha123`): `admin@senac.br`, `responsavel@s
 |---|---|
 | `npm start` | Servidor de desenvolvimento com recarga automática |
 | `npm run build` | Gera a versão de produção em `dist/` |
-| `npm test` | Roda os testes unitários (Vitest) |
+| `npm test` | Roda os testes unitários (Vitest) e fica observando mudanças |
+| `npm run test:ci` | Roda os testes uma única vez (usado no GitHub Actions) |
 
 > Se o `npm install` falhar com `Cannot read properties of null (reading 'edgesOut')`, o npm da máquina é antigo
 > (9.x). Use `npx npm@11.6.2 install`.
@@ -886,6 +887,12 @@ quando o usuário entra nela:
 O `import()` dinâmico diz ao compilador para separar aquele arquivo. Um professor, por exemplo, nunca baixa o
 código das telas de administração. O `LayoutComponent` continua carregado direto, porque aparece em todas as
 telas internas.
+
+### Integração contínua
+
+O workflow `.github/workflows/ci.yml` tem um job `frontend` que, em todo pull request, roda `npm ci`,
+`npm run test:ci` e `npm run build` dentro da pasta `frontend`. Se um teste falhar ou o build estourar o
+budget, o PR fica vermelho.
 
 ---
 
