@@ -23,7 +23,7 @@ public class ContainersTeste {
             return externo;
         }
         if (container == null) {
-            MongoDBContainer novo = new MongoDBContainer(DockerImageName.parse("mongo:8.0")).withReplicaSet();
+            MongoDBContainer novo = new MongoDBContainer(DockerImageName.parse("mongo:9.0")).withReplicaSet();
             novo.start();
             container = novo;
         }
