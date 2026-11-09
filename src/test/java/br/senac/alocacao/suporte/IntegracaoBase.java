@@ -52,11 +52,9 @@ public abstract class IntegracaoBase {
     @DynamicPropertySource
     static void propriedades(DynamicPropertyRegistry registro) {
         registro.add("app.notificacao.url", () -> WIREMOCK.baseUrl() + "/notificacoes");
-        String mongoExterno = System.getenv("MONGODB_URI_TESTE");
-        if (mongoExterno != null && !mongoExterno.isBlank()) {
-            registro.add("spring.mongodb.uri", () -> mongoExterno);
-            registro.add("spring.data.mongodb.uri", () -> mongoExterno);
-        }
+        String uriMongo = ContainersTeste.uriMongo();
+        registro.add("spring.mongodb.uri", () -> uriMongo);
+        registro.add("spring.data.mongodb.uri", () -> uriMongo);
     }
 
     @LocalServerPort
