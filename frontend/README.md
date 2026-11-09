@@ -19,7 +19,8 @@ código.
 11. [Etapa 8 — Painel inicial](#11-etapa-8--painel-inicial)
 12. [Etapa 9 — Formulário de reserva](#12-etapa-9--formulário-de-reserva)
 13. [Etapa 10 — Lista e detalhe de reservas](#13-etapa-10--lista-e-detalhe-de-reservas)
-14. [Glossário](#glossário)
+14. [Etapa 11 — Disponibilidade e aprovações](#14-etapa-11--disponibilidade-e-aprovações)
+15. [Glossário](#glossário)
 
 ---
 
@@ -641,6 +642,50 @@ private executar(chamada: Observable<Reserva>, textoSucesso: string): void
 Toda ação faz a mesma coisa: trava os botões (`processando`), chama a API, troca a reserva exibida pela que
 voltou, fecha o diálogo, mostra o aviso e recarrega o histórico. Escrever isso uma vez evita repetir o mesmo
 `subscribe` em oito lugares.
+
+## 14. Etapa 11 — Disponibilidade e aprovações
+
+### Disponibilidade (`pages/disponibilidade`, rota `/disponibilidade`)
+
+Disponível para todos os perfis, com duas partes.
+
+**1. Mapa de ocupação do dia.** Cada linha é uma sala, e cada coluna é uma hora, das 7h às 23h. As reservas que
+ocupam a agenda (aguardando, aprovada, em uso) viram blocos coloridos. O cálculo da posição é uma regra de três:
+
+```ts
+esquerda = (horaDeInício - 7) / 16 * 100     // em %
+largura  = duraçãoEmHoras / 16 * 100         // em %
+```
+
+```html
+<a class="bloco" [style.left.%]="b.esquerda" [style.width.%]="b.largura">
+```
+
+`[style.left.%]` aplica o valor já com a unidade `%`. Se o dia exibido for hoje, uma linha ciano marca a hora
+atual. As setas ‹ › trocam de dia, e cada bloco é um link para o detalhe da reserva.
+
+**2. Encontrar recursos livres.** Com horário e filtros (tipo de sala, capacidade mínima, competência do
+professor), a tela chama a API em paralelo e mostra três colunas: salas livres, professores livres e materiais
+com a quantidade disponível em barra.
+
+> Todos os filtros são feitos **pela API** (`?tipo=...&capacidadeMinima=...&competencia=...`). O front só monta
+> os parâmetros e exibe o resultado.
+
+### Aprovações (`pages/aprovacoes`, rota `/aprovacoes`)
+
+Só para o perfil **RESPONSAVEL** (`perfilGuard`). Lista as reservas com status `SOLICITADA` em cartões que
+mostram por que cada uma precisa de aprovação (`motivosAprovacao`, calculados pelo back-end).
+
+- **Aprovar** é direto, com um clique.
+- **Rejeitar** abre um diálogo e exige motivo, porque o solicitante precisa saber o que ajustar.
+- Depois da ação, o cartão sai da lista **sem recarregar tudo**:
+
+```ts
+this.pendentes.update(lista => lista.filter(r => r.id !== reserva.id));
+```
+
+- `processando` guarda o **id** do pedido em andamento, e não um simples `true`/`false`. Assim, só os botões
+  daquele cartão ficam travados.
 
 ---
 

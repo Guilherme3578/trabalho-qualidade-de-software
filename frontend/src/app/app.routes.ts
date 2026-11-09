@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { LayoutComponent } from './components/layout/layout.component';
 import { authGuard } from './guards/auth.guard';
 import { visitanteGuard } from './guards/visitante.guard';
+import { AprovacoesComponent } from './pages/aprovacoes/aprovacoes.component';
+import { DisponibilidadeComponent } from './pages/disponibilidade/disponibilidade.component';
 import { InicioComponent } from './pages/inicio/inicio.component';
 import { LoginComponent } from './pages/login/login.component';
 import { ReservaDetalheComponent } from './pages/reserva-detalhe/reserva-detalhe.component';
@@ -18,7 +20,15 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'inicio', pathMatch: 'full' },
       { path: 'inicio', component: InicioComponent, title: 'Início · AlocaSENAC' },
+      { path: 'disponibilidade', component: DisponibilidadeComponent, title: 'Disponibilidade · AlocaSENAC' },
       { path: 'reservas', component: ReservasComponent, title: 'Reservas · AlocaSENAC' },
+      {
+        path: 'aprovacoes',
+        component: AprovacoesComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['RESPONSAVEL'] },
+        title: 'Aprovações · AlocaSENAC'
+      },
       {
         path: 'reservas/nova',
         component: ReservaFormComponent,

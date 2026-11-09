@@ -1,0 +1,147 @@
+<app-cabecalho-pagina titulo="Disponibilidade" subtitulo="Veja a ocupação do dia e encontre recursos livres em qualquer horário." icone="search">
+  @if (podeReservar) {
+    <a routerLink="/reservas/nova" class="btn btn-primario"><lucide-icon name="plus" /> Nova reserva</a>
+  }
+</app-cabecalho-pagina>
+
+<section class="cartao animar" style="--i: 1">
+  <header class="entre topo-mapa">
+    <div>
+      <h2>Mapa de ocupação</h2>
+      <p class="texto-fraco">{{ dia() + 'T12:00' | date: "EEEE, d 'de' MMMM" }}</p>
+    </div>
+    <div class="navegar-dia">
+      <button type="button" class="btn btn-icone" aria-label="Dia anterior" (click)="mudarDia(-1)">‹</button>
+      <input type="date" [ngModel]="dia()" (ngModelChange)="definirDia($event)" />
+      <button type="button" class="btn btn-icone" aria-label="Próximo dia" (click)="mudarDia(1)">›</button>
+    </div>
+  </header>
+
+  <div class="mapa" [class.carregando]="carregandoMapa()">
+    <div class="linha cabecalho-horas">
+      <span class="rotulo-sala"></span>
+      <div class="faixa">
+        @for (h of horasDoDia; track h) {
+          <span class="hora">{{ h }}h</span>
+        }
+      </div>
+    </div>
+    @for (linha of linhas(); track linha.sala.id; let i = $index) {
+      <div class="linha animar" [style.--i]="i">
+        <span class="rotulo-sala">
+          <strong>{{ linha.sala.codigo }}</strong>
+          <small>{{ linha.sala.capacidade }} lugares</small>
+        </span>
+        <div class="faixa trilho">
+          @for (h of horasDoDia; track h) {
+            <span class="divisao"></span>
+          }
+          @if (agoraPercentual() !== null) {
+            <span class="agora" [style.left.%]="agoraPercentual()"></span>
+          }
+          @for (b of linha.blocos; track b.reserva.id) {
+            <a
+              class="bloco"
+              [class]="'status-' + b.reserva.status"
+              [style.left.%]="b.esquerda"
+              [style.width.%]="b.largura"
+              [routerLink]="['/reservas', b.reserva.id]"
+              [title]="b.reserva.disciplina + ' · ' + (b.reserva.inicio | date: 'HH:mm') + '–' + (b.reserva.fim | date: 'HH:mm') + ' · ' + rotulosStatus[b.reserva.status]"
+            >
+              <strong>{{ b.reserva.disciplina }}</strong>
+              <small>{{ b.reserva.inicio | date: 'HH:mm' }}–{{ b.reserva.fim | date: 'HH:mm' }} · {{ b.reserva.professorNome }}</small>
+            </a>
+          }
+        </div>
+      </div>
+    }
+  </div>
+  <div class="legenda">
+    <span><i class="status-APROVADA"></i> Aprovada</span>
+    <span><i class="status-SOLICITADA"></i> Aguardando aprovação</span>
+    <span><i class="status-EM_USO"></i> Em uso</span>
+  </div>
+</section>
+
+<section class="cartao animar busca" style="--i: 2">
+  <h2>Encontrar recursos livres</h2>
+  <div class="filtros">
+    <label class="campo">
+      <span>Início</span>
+      <input type="time" [(ngModel)]="inicio" step="900" />
+    </label>
+    <label class="campo">
+      <span>Término</span>
+      <input type="time" [(ngModel)]="fim" step="900" />
+    </label>
+    <label class="campo">
+      <span>Tipo de sala</span>
+      <select [(ngModel)]="tipo">
+        <option value="">Todos</option>
+        @for (t of tiposSala; track t[0]) {
+          <option [value]="t[0]">{{ t[1] }}</option>
+        }
+      </select>
+    </label>
+    <label class="campo">
+      <span>Capacidade mínima</span>
+      <input type="number" min="1" placeholder="Ex.: 30" [(ngModel)]="capacidadeMinima" />
+    </label>
+    <label class="campo">
+      <span>Competência do professor</span>
+      <input type="text" placeholder="Ex.: Banco de Dados" [(ngModel)]="competencia" />
+    </label>
+    <button type="button" class="btn btn-primario" [disabled]="buscando()" (click)="buscar()">
+      @if (buscando()) {
+        <lucide-icon name="loader-circle" class="girando" />
+      } @else {
+        <lucide-icon name="search" />
+      }
+      Buscar
+    </button>
+  </div>
+
+  @if (consultado()) {
+    <div class="resultados">
+      <div class="coluna">
+        <h3><lucide-icon name="door-open" /> Salas livres <span class="chip">{{ salasLivres().length }}</span></h3>
+        @for (s of salasLivres(); track s.id) {
+          <div class="item">
+            <strong>{{ s.codigo }}</strong>
+            <small class="texto-fraco">{{ rotulosTipo[s.tipo] }} · {{ s.capacidade }} lugares · {{ s.localizacao }}</small>
+            @if (s.restrita) {
+              <span class="badge badge-aviso">Restrita</span>
+            }
+          </div>
+        } @empty {
+          <app-estado-vazio titulo="Nenhuma sala livre" icone="door-open" />
+        }
+      </div>
+      <div class="coluna">
+        <h3><lucide-icon name="graduation-cap" /> Professores livres <span class="chip">{{ professoresLivres().length }}</span></h3>
+        @for (p of professoresLivres(); track p.id) {
+          <div class="item">
+            <strong>{{ p.nome }}</strong>
+            <small class="texto-fraco">{{ p.competencias.join(', ') }}</small>
+          </div>
+        } @empty {
+          <app-estado-vazio titulo="Nenhum professor livre" icone="graduation-cap" />
+        }
+      </div>
+      <div class="coluna">
+        <h3><lucide-icon name="package" /> Materiais</h3>
+        @for (m of materiais(); track m.id) {
+          <div class="item">
+            <div class="entre">
+              <strong>{{ m.nome }}</strong>
+              <span class="chip">{{ m.quantidadeDisponivel }}/{{ m.quantidadeTotal }}</span>
+            </div>
+            <div class="barra">
+              <span [style.width.%]="((m.quantidadeDisponivel ?? 0) / m.quantidadeTotal) * 100"></span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</section>
