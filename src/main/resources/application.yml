@@ -9,6 +9,8 @@ spring:
       auto-index-creation: true
   jackson:
     default-property-inclusion: always
+    deserialization:
+      fail-on-null-for-primitives: false
 
 server:
   port: ${PORT:8080}
