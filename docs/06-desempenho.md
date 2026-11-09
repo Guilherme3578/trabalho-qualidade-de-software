@@ -1,6 +1,6 @@
 # 6. Desempenho (JMeter)
 
-> 📝 **Rascunho para revisão.** Preencher a seção 6.4 com os números da execução real.
+> 📝 **Rascunho para revisão.** Seção 6.4 preenchida com a execução de 08/11/2026.
 
 ## 6.1 Objetivo (RNF01)
 
@@ -32,16 +32,23 @@ Parâmetros ajustáveis: `-Jusuarios=50 -Jloops=40 -Jhost=... -Jport=...`
 ## 6.4 Resultados
 
 > Executar: `docker compose up -d mongo wiremock`, iniciar a aplicação com o perfil `dev` e rodar
-> `./mvnw verify -Pdesempenho`. Copiar os números de `target/jmeter/reports/.../index.html`.
+> `./mvnw verify -Pdesempenho`. O relatório HTML fica em `target/jmeter/reports/carga-reservas/index.html`.
+
+Execução de 08/11/2026: 20 usuários × 25 iterações, **2.004 amostras, 0 erros (0,00%)**, vazão total de 177 req/s.
 
 | Requisição | Amostras | Média (ms) | p95 (ms) | p99 (ms) | Erros (%) | Vazão (req/s) |
 |---|---|---|---|---|---|---|
-| 01 Pesquisar salas disponíveis | | | | | | |
-| 02 Agenda do dia | | | | | | |
-| 03 Reserva conflitante (409) | | | | | | |
-| 04 Relatório de utilização | | | | | | |
+| 01 Pesquisar salas disponíveis | 500 | 16 | 26 | 36 | 0,00 | 48,7 |
+| 02 Agenda do dia | 500 | 6 | 9 | 13 | 0,00 | 48,9 |
+| 03 Reserva conflitante (409) | 500 | 14 | 22 | 29 | 0,00 | 48,9 |
+| 04 Relatório de utilização | 500 | 8 | 13 | 19 | 0,00 | 49,1 |
+| **Total** (inclui 4 requisições de preparação) | 2.004 | 11 | 21 | 31 | 0,00 | 177,4 |
 
-**Ambiente da medição:** (CPU, memória, SO, versão do MongoDB)
+Todas as metas da seção 6.3 foram atingidas: erro < 1%, nenhuma requisição acima de 1000 ms
+(máximo de 347 ms, no login com BCrypt) e nenhuma das 500 tentativas conflitantes foi aceita.
+
+**Ambiente da medição:** Intel Core i5-1335U (12 threads), 6 GB de RAM, Ubuntu 26.04.1 LTS,
+Java 21, MongoDB 8.0.32 em replica set local, aplicação e JMeter na mesma máquina.
 
 ## 6.5 Otimizações aplicadas
 
