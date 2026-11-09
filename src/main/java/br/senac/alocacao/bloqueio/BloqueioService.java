@@ -3,17 +3,22 @@ package br.senac.alocacao.bloqueio;
 import br.senac.alocacao.auditoria.AcaoAuditoria;
 import br.senac.alocacao.auditoria.AuditoriaService;
 import br.senac.alocacao.comum.NegocioException;
+import br.senac.alocacao.material.Material;
 import br.senac.alocacao.material.MaterialRepository;
+import br.senac.alocacao.professor.Professor;
 import br.senac.alocacao.professor.ProfessorRepository;
 import br.senac.alocacao.reserva.DisponibilidadeService;
+import br.senac.alocacao.reserva.ProtecaoConcorrencia;
 import br.senac.alocacao.reserva.Reserva;
 import br.senac.alocacao.reserva.regras.Intervalo;
+import br.senac.alocacao.sala.Sala;
 import br.senac.alocacao.sala.SalaRepository;
 import br.senac.alocacao.usuario.Usuario;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,12 +37,14 @@ public class BloqueioService {
     private final DisponibilidadeService disponibilidade;
     private final AuditoriaService auditoria;
     private final MongoTemplate mongo;
+    private final ProtecaoConcorrencia protecao;
     private final Clock clock;
 
     @SuppressWarnings("java:S107")
     public BloqueioService(BloqueioRepository bloqueios, SalaRepository salas, MaterialRepository materiais,
                            ProfessorRepository professores, DisponibilidadeService disponibilidade,
-                           AuditoriaService auditoria, MongoTemplate mongo, Clock clock) {
+                           AuditoriaService auditoria, MongoTemplate mongo, ProtecaoConcorrencia protecao,
+                           Clock clock) {
         this.bloqueios = bloqueios;
         this.salas = salas;
         this.materiais = materiais;
@@ -45,6 +52,7 @@ public class BloqueioService {
         this.disponibilidade = disponibilidade;
         this.auditoria = auditoria;
         this.mongo = mongo;
+        this.protecao = protecao;
         this.clock = clock;
     }
 
@@ -61,10 +69,14 @@ public class BloqueioService {
                 .toList();
     }
 
-    @Transactional
     public BloqueioResponse criar(BloqueioRequest req, Usuario ator) {
         Intervalo intervalo = new Intervalo(req.inicio(), req.fim());
+        return protecao.executar(() -> registrar(req, intervalo, ator));
+    }
+
+    private BloqueioResponse registrar(BloqueioRequest req, Intervalo intervalo, Usuario ator) {
         garantirRecursoExiste(req.tipoRecurso(), req.recursoId());
+        tocarAgenda(req.tipoRecurso(), req.recursoId());
 
         Bloqueio b = bloqueios.save(new Bloqueio(req.tipoRecurso(), req.recursoId(), req.inicio(), req.fim(),
                 req.motivo(), ator.getId(), LocalDateTime.now(clock)));
@@ -87,6 +99,15 @@ public class BloqueioService {
         auditoria.registrar(ENTIDADE, id, AcaoAuditoria.EXCLUSAO, ator, null, null,
                 b.getTipoRecurso() + " " + b.getRecursoId() + ": " + b.getMotivo());
         bloqueios.delete(b);
+    }
+
+    private void tocarAgenda(TipoRecurso tipo, String id) {
+        Class<?> entidade = switch (tipo) {
+            case SALA -> Sala.class;
+            case PROFESSOR -> Professor.class;
+            case MATERIAL -> Material.class;
+        };
+        mongo.updateFirst(Query.query(Criteria.where("id").is(id)), new Update().inc("versaoAgenda", 1), entidade);
     }
 
     private void garantirRecursoExiste(TipoRecurso tipo, String id) {
