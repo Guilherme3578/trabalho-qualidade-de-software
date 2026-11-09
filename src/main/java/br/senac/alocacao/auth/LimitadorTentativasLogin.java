@@ -53,6 +53,10 @@ public class LimitadorTentativasLogin {
         tentativas.remove(chave(email));
     }
 
+    int emailsMonitorados() {
+        return tentativas.size();
+    }
+
     private boolean expirada(Janela j) {
         return relogio.get().isAfter(j.inicio().plus(duracao));
     }

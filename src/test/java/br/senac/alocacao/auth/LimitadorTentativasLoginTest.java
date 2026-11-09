@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -28,6 +29,18 @@ class LimitadorTentativasLoginTest {
         assertThatThrownBy(() -> limitador.verificar("A@X.com "))
                 .isInstanceOf(NegocioException.class)
                 .extracting("codigo").isEqualTo(CodigoErro.MUITAS_TENTATIVAS);
+    }
+
+    @Test
+    @DisplayName("[RNF02] Tentativas expiradas são descartadas para a memória não crescer sem limite")
+    void descartaTentativasExpiradas() {
+        for (int i = 0; i < 2000; i++) {
+            limitador.registrarFalha("atacante" + i + "@x.com");
+        }
+        agora.set(agora.get().plus(Duration.ofMinutes(16)));
+        limitador.registrarFalha("novo@x.com");
+
+        assertThat(limitador.emailsMonitorados()).isEqualTo(1);
     }
 
     @Test
