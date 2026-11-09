@@ -42,7 +42,7 @@
               @if (e.entidade === 'Reserva' && e.entidadeId && e.acao !== 'EXCLUSAO') {
                 <a [routerLink]="['/reservas', e.entidadeId]">Reserva <lucide-icon name="chevron-right" /></a>
               } @else {
-                {{ entidades[e.entidade] ?? e.entidade }}
+                {{ rotuloEntidade(e.entidade) }}
               }
             </td>
             <td class="mudanca">

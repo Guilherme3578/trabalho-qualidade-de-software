@@ -66,6 +66,10 @@ export class AuditoriaComponent implements OnInit {
     });
   }
 
+  protected rotuloEntidade(nome: string): string {
+    return this.entidades[nome] ?? nome;
+  }
+
   protected cor(acao: AcaoAuditoria): string {
     return CORES[acao] ?? 'badge-neutro';
   }
