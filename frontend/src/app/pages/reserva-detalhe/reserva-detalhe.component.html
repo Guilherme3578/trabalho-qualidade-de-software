@@ -1,0 +1,173 @@
+@if (reserva(); as r) {
+  <app-cabecalho-pagina [titulo]="r.disciplina" [subtitulo]="'Solicitada por ' + r.solicitanteNome" icone="calendar-days">
+    <a routerLink="/reservas" class="btn btn-fantasma">Voltar</a>
+    @if (pode().editar) {
+      <a [routerLink]="['/reservas', r.id, 'editar']" class="btn"><lucide-icon name="pencil" /> Alterar</a>
+    }
+  </app-cabecalho-pagina>
+
+  <div class="grade">
+    <div class="pilha">
+      <section class="cartao destaque animar" style="--i: 1">
+        <div class="entre">
+          <app-status-badge [status]="r.status" />
+          <span class="texto-fraco">Versão {{ r.versao }}</span>
+        </div>
+        <div class="horario">
+          <div class="calendario">
+            <small>{{ r.inicio | date: 'MMM' }}</small>
+            <strong>{{ r.inicio | date: 'dd' }}</strong>
+            <small>{{ r.inicio | date: 'EEE' }}</small>
+          </div>
+          <div>
+            <p class="horas">{{ r.inicio | date: 'HH:mm' }} <span class="texto-fraco">→</span> {{ r.fim | date: 'HH:mm' }}</p>
+            <p class="texto-suave">{{ r.inicio | date: "EEEE, d 'de' MMMM 'de' y" }} · {{ duracao() }} h</p>
+          </div>
+        </div>
+        <div class="dados">
+          <div><lucide-icon name="door-open" /><span><small>Sala</small>{{ r.salaCodigo }}</span></div>
+          <div><lucide-icon name="graduation-cap" /><span><small>Professor</small>{{ r.professorNome }}</span></div>
+          <div><lucide-icon name="users" /><span><small>Alunos</small>{{ r.quantidadeAlunos }}</span></div>
+        </div>
+        @if (r.observacao) {
+          <p class="observacao"><lucide-icon name="info" /> {{ r.observacao }}</p>
+        }
+        @if (r.motivosAprovacao.length && r.status === 'SOLICITADA') {
+          <div class="motivos">
+            <strong><lucide-icon name="hourglass" /> Aguardando aprovação porque:</strong>
+            <ul>
+              @for (m of r.motivosAprovacao; track m) {
+                <li>{{ m }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </section>
+
+      <section class="cartao animar" style="--i: 2">
+        <h2>Materiais</h2>
+        @if (situacaoMateriais().length === 0) {
+          <p class="texto-suave">Nenhum material reservado.</p>
+        } @else {
+          <ul class="materiais">
+            @for (s of situacaoMateriais(); track s.item.materialId) {
+              <li>
+                <div class="entre">
+                  <span class="nome-material"><lucide-icon name="package" /> {{ s.item.materialNome }}</span>
+                  <span class="numeros">
+                    <span class="chip">Reservado {{ s.item.quantidade }}</span>
+                    <span class="chip">Retirado {{ s.retirado }}</span>
+                    <span class="chip">Devolvido {{ s.devolvido }}</span>
+                  </span>
+                </div>
+                <div class="barra">
+                  <span class="retirado" [style.width.%]="(s.retirado / s.item.quantidade) * 100"></span>
+                  <span class="devolvido" [style.width.%]="(s.devolvido / s.item.quantidade) * 100"></span>
+                </div>
+                @if (pode().movimentar) {
+                  <div class="movimentar">
+                    <input type="number" min="1" [max]="s.item.quantidade" placeholder="Qtd." [(ngModel)]="movimentacao[s.item.materialId]" />
+                    <button type="button" class="btn btn-sm" [disabled]="processando() || s.retirado >= s.item.quantidade" (click)="movimentar(s, 'RETIRADA')">
+                      <lucide-icon name="package-open" /> Retirada
+                    </button>
+                    <button type="button" class="btn btn-sm" [disabled]="processando() || s.devolvido >= s.retirado" (click)="movimentar(s, 'DEVOLUCAO')">
+                      <lucide-icon name="package-check" /> Devolução
+                    </button>
+                  </div>
+                }
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+
+    <div class="pilha">
+      <section class="cartao animar acoes-cartao" style="--i: 3">
+        <h2>Ações</h2>
+        <div class="lista-acoes">
+          @if (pode().aprovar) {
+            <button type="button" class="btn btn-sucesso" (click)="abrirDialogo('aprovar')"><lucide-icon name="check" /> Aprovar</button>
+            <button type="button" class="btn btn-perigo" (click)="abrirDialogo('rejeitar')"><lucide-icon name="x" /> Rejeitar</button>
+          }
+          @if (pode().iniciar) {
+            <button type="button" class="btn btn-primario" [disabled]="processando()" (click)="iniciar()"><lucide-icon name="play" /> Iniciar uso</button>
+          }
+          @if (pode().concluir) {
+            <button type="button" class="btn btn-sucesso" [disabled]="processando()" (click)="concluir()"><lucide-icon name="square" /> Concluir</button>
+          }
+          @if (pode().naoCompareceu) {
+            <button type="button" class="btn" [disabled]="processando()" (click)="naoCompareceu()"><lucide-icon name="ban" /> Não compareceu</button>
+          }
+          @if (pode().cancelar) {
+            <button type="button" class="btn btn-perigo" (click)="abrirDialogo('cancelar')"><lucide-icon name="x" /> Cancelar reserva</button>
+          }
+          @if (pode().excluir) {
+            <button type="button" class="btn btn-fantasma" (click)="confirmarExclusao.set(true)"><lucide-icon name="trash-2" /> Apagar</button>
+          }
+        </div>
+        @if (!pode().aprovar && !pode().iniciar && !pode().concluir && !pode().naoCompareceu && !pode().cancelar && !pode().excluir) {
+          <p class="texto-suave">Não há ações disponíveis para você nesta reserva.</p>
+        }
+      </section>
+
+      <section class="cartao animar" style="--i: 4">
+        <h2>Histórico</h2>
+        <ol class="historico">
+          @for (e of historico(); track e.id) {
+            <li>
+              <span class="ponto"></span>
+              <div>
+                <strong>
+                  {{ acoesAuditoria[e.acao] }}
+                  @if (e.estadoNovo && e.acao === 'TRANSICAO_ESTADO') {
+                    → {{ rotuloEstado(e.estadoNovo) }}
+                  }
+                </strong>
+                <small class="texto-fraco">{{ e.dataHora | date: 'dd/MM/yyyy HH:mm' }} · {{ e.usuarioNome ?? 'Sistema' }}</small>
+                @if (e.detalhes && e.acao !== 'CRIACAO') {
+                  <p class="texto-suave">{{ e.detalhes }}</p>
+                }
+              </div>
+            </li>
+          } @empty {
+            <li class="texto-suave">Sem eventos registrados.</li>
+          }
+        </ol>
+      </section>
+    </div>
+  </div>
+
+  @if (configDialogo(); as d) {
+    <app-dialogo [titulo]="d.titulo" (fechar)="dialogo.set(null)">
+      <div class="formulario">
+        <p class="texto-suave">{{ d.texto }}</p>
+        <label class="campo">
+          <span>{{ d.rotulo }}</span>
+          <textarea [(ngModel)]="texto" [required]="d.obrigatorio"></textarea>
+        </label>
+        <div class="acoes fim">
+          <button type="button" class="btn btn-fantasma" (click)="dialogo.set(null)">Voltar</button>
+          <button type="button" class="btn" [class]="d.classe" [disabled]="processando()" (click)="confirmarDialogo()">{{ d.botao }}</button>
+        </div>
+      </div>
+    </app-dialogo>
+  }
+
+  @if (confirmarExclusao()) {
+    <app-dialogo titulo="Apagar reserva" (fechar)="confirmarExclusao.set(false)">
+      <div class="formulario">
+        <p class="texto-suave">A reserva será removida definitivamente. A exclusão fica registrada na auditoria.</p>
+        <div class="acoes fim">
+          <button type="button" class="btn btn-fantasma" (click)="confirmarExclusao.set(false)">Voltar</button>
+          <button type="button" class="btn btn-perigo" [disabled]="processando()" (click)="excluir()"><lucide-icon name="trash-2" /> Apagar</button>
+        </div>
+      </div>
+    </app-dialogo>
+  }
+} @else {
+  <div class="pilha">
+    <div class="skeleton" style="height: 80px"></div>
+    <div class="skeleton" style="height: 260px"></div>
+  </div>
+}

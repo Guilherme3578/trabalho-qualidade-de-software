@@ -1,0 +1,96 @@
+.filtros {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1.25rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.com-icone {
+  position: relative;
+}
+
+.com-icone lucide-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.8rem;
+  color: var(--texto-fraco);
+  transform: translateY(-50%);
+}
+
+.com-icone input {
+  padding-left: 2.4rem;
+}
+
+.somente-minhas {
+  height: 42px;
+}
+
+.linha-skeleton {
+  height: 56px;
+}
+
+.clicavel {
+  cursor: pointer;
+}
+
+.clicavel:focus-visible {
+  outline: 2px solid var(--secundaria);
+  outline-offset: -2px;
+}
+
+.data {
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.data small {
+  color: var(--texto-fraco);
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+td strong {
+  display: block;
+}
+
+.materiais {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.seta {
+  width: 40px;
+  color: var(--texto-fraco);
+}
+
+.seta lucide-icon {
+  transition: transform var(--transicao), color var(--transicao);
+}
+
+tr:hover .seta lucide-icon {
+  color: var(--primaria-clara);
+  transform: translateX(4px);
+}
+
+.total {
+  margin-top: 0.75rem;
+  text-align: right;
+}
+
+@media (max-width: 1000px) {
+  .filtros {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .busca {
+    grid-column: 1 / -1;
+  }
+}

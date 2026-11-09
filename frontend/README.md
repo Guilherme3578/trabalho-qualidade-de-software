@@ -18,7 +18,8 @@ código.
 10. [Etapa 7 — Tela de login](#10-etapa-7--tela-de-login)
 11. [Etapa 8 — Painel inicial](#11-etapa-8--painel-inicial)
 12. [Etapa 9 — Formulário de reserva](#12-etapa-9--formulário-de-reserva)
-13. [Glossário](#glossário)
+13. [Etapa 10 — Lista e detalhe de reservas](#13-etapa-10--lista-e-detalhe-de-reservas)
+14. [Glossário](#glossário)
 
 ---
 
@@ -574,6 +575,73 @@ this.formulario.valueChanges.subscribe(() => this.valores.set(this.formulario.ge
 - Se o usuário mudar o horário e a sala escolhida deixar de estar livre, a escolha é limpa
   (`limparEscolhasIndisponiveis`).
 
+## 13. Etapa 10 — Lista e detalhe de reservas
+
+### Lista (`pages/reservas`, rota `/reservas`)
+
+- **Filtros que vão para a API:** período (`De`/`Até`), status e "Só as minhas". Cada mudança chama
+  `GET /api/reservas` de novo.
+- **Busca local:** o campo "Buscar" filtra a lista **já carregada** num `computed`, sem nova requisição, porque
+  é instantâneo e não precisa do servidor.
+- A linha inteira é clicável e também abre com **Enter** (`tabindex="0"` + `(keydown.enter)`), para quem usa
+  teclado.
+
+Aqui foram usados **formulários de template** (`FormsModule` + `[(ngModel)]`), mais simples que os reativos,
+porque são só filtros, sem validação:
+
+```html
+<select [(ngModel)]="status" (change)="carregar()">
+```
+
+`[(ngModel)]` é a **ligação de mão dupla**: o campo mostra o valor da variável e, quando o usuário muda o campo, a
+variável muda junto.
+
+### Detalhe (`pages/reserva-detalhe`, rota `/reservas/:id`)
+
+Mostra tudo sobre a reserva: data e horário, sala, professor, alunos, observação, motivos de aprovação,
+materiais e o **histórico** (`GET /api/reservas/{id}/historico`) em linha do tempo.
+
+#### Ações conforme perfil e status
+
+Um único `computed` chamado `pode` decide quais botões aparecem. Ele segue a máquina de estados do back-end
+(`StatusReserva`):
+
+| Ação | Quem | Em qual status | Rota da API |
+|---|---|---|---|
+| Alterar | Dono (professor/coordenador) | SOLICITADA, APROVADA | `PUT /reservas/{id}` |
+| Cancelar | Dono | SOLICITADA, APROVADA | `POST /reservas/{id}/cancelar` |
+| Aprovar / Rejeitar | Responsável | SOLICITADA | `POST /reservas/{id}/aprovar` · `/rejeitar` |
+| Iniciar uso | Dono ou responsável | APROVADA | `POST /reservas/{id}/iniciar` |
+| Concluir | Dono ou responsável | EM_USO | `POST /reservas/{id}/concluir` |
+| Não compareceu | Responsável | APROVADA | `POST /reservas/{id}/nao-compareceu` |
+| Retirada / Devolução | Responsável | EM_USO | `POST /reservas/{id}/retiradas` · `/devolucoes` |
+| Apagar | Dono ou administrador | Não iniciada | `DELETE /reservas/{id}` |
+
+> Esconder o botão é só experiência de uso. Se alguém chamar a rota mesmo assim, a API devolve 403 ou 409 com a
+> mensagem, e o `MensagemService` a exibe.
+
+#### Um diálogo para três ações
+
+Cancelar, aprovar e rejeitar pedem um texto. Em vez de três diálogos, há uma tabela de configuração
+(`DIALOGOS`) e um só `<app-dialogo>`, que muda título, rótulo, cor do botão e se o texto é obrigatório (a
+rejeição exige motivo).
+
+#### Materiais
+
+Para cada material, a tela soma as movimentações (`RETIRADA` e `DEVOLUCAO`) e desenha uma barra de progresso:
+degradê para o retirado e verde para o devolvido. O responsável registra retiradas e devoluções direto ali. Os
+botões ficam desabilitados quando não faz sentido, por exemplo devolver mais do que foi retirado.
+
+#### Uma função para todas as ações
+
+```ts
+private executar(chamada: Observable<Reserva>, textoSucesso: string): void
+```
+
+Toda ação faz a mesma coisa: trava os botões (`processando`), chama a API, troca a reserva exibida pela que
+voltou, fecha o diálogo, mostra o aviso e recarrega o histórico. Escrever isso uma vez evita repetir o mesmo
+`subscribe` em oito lugares.
+
 ---
 
 ## Glossário
@@ -594,4 +662,5 @@ this.formulario.valueChanges.subscribe(() => this.valores.set(this.formulario.ge
 | **CORS** | Regra do navegador que bloqueia chamadas entre origens diferentes |
 | **Pipe** | Transformação de valor na exibição, como `date`, que formata datas |
 | **forkJoin** | Operador do RxJS que espera várias requisições em paralelo terminarem |
+| **ngModel** | Ligação de mão dupla entre um campo e uma variável (formulários de template) |
 | **Formulário reativo** | Formulário definido no TypeScript (`FormGroup`), ligado ao HTML com `formControlName` |

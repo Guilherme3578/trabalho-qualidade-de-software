@@ -4,7 +4,9 @@ import { authGuard } from './guards/auth.guard';
 import { visitanteGuard } from './guards/visitante.guard';
 import { InicioComponent } from './pages/inicio/inicio.component';
 import { LoginComponent } from './pages/login/login.component';
+import { ReservaDetalheComponent } from './pages/reserva-detalhe/reserva-detalhe.component';
 import { ReservaFormComponent } from './pages/reserva-form/reserva-form.component';
+import { ReservasComponent } from './pages/reservas/reservas.component';
 import { perfilGuard } from './guards/perfil.guard';
 
 export const routes: Routes = [
@@ -16,6 +18,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'inicio', pathMatch: 'full' },
       { path: 'inicio', component: InicioComponent, title: 'Início · AlocaSENAC' },
+      { path: 'reservas', component: ReservasComponent, title: 'Reservas · AlocaSENAC' },
       {
         path: 'reservas/nova',
         component: ReservaFormComponent,
@@ -29,7 +32,8 @@ export const routes: Routes = [
         canActivate: [perfilGuard],
         data: { perfis: ['PROFESSOR', 'COORDENADOR'] },
         title: 'Alterar reserva · AlocaSENAC'
-      }
+      },
+      { path: 'reservas/:id', component: ReservaDetalheComponent, title: 'Reserva · AlocaSENAC' }
     ]
   },
   { path: '**', redirectTo: '' }
