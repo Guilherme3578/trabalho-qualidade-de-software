@@ -21,7 +21,6 @@ import static org.hamcrest.Matchers.hasSize;
 
 @DisplayName("[RF02][RF03] API caixa-preta: cadastros e pesquisa")
 class CadastroPesquisaApiIT extends IntegracaoBase {
-
     Usuario admin;
     Usuario coord;
 
@@ -45,6 +44,17 @@ class CadastroPesquisaApiIT extends IntegracaoBase {
                 .post("/api/materiais").then().statusCode(201);
 
         como(coord).get("/api/salas/" + salaId).then().statusCode(200).body("codigo", equalTo("B201"));
+    }
+
+    @Test
+    @DisplayName("[RF02] Campos booleanos opcionais omitidos assumem false em vez de erro de formato")
+    void booleanosOpcionaisOmitidos() {
+        como(admin).body(JsonTeste.json(JsonTeste.mapa("codigo", "C301", "nome", "Sala C301",
+                        "tipo", "SALA_AULA", "capacidade", 25, "localizacao", "Bloco C")))
+                .post("/api/salas").then().statusCode(201).body("restrita", equalTo(false));
+        como(admin).body(JsonTeste.json(JsonTeste.mapa("nome", "Projetor", "categoria", "Audiovisual",
+                        "quantidadeTotal", 3)))
+                .post("/api/materiais").then().statusCode(201).body("restrito", equalTo(false));
     }
 
     @Test
