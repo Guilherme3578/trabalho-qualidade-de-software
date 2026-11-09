@@ -23,8 +23,12 @@ public class ContainersTeste {
             return externo;
         }
         if (container == null) {
-            container = new MongoDBContainer(DockerImageName.parse("mongo:8.0"));
-            container.start();
+            MongoDBContainer novo = new MongoDBContainer(DockerImageName.parse("mongo:8.0")).withReplicaSet();
+            novo.start();
+            container = novo;
+        }
+        if (!container.isRunning()) {
+            throw new IllegalStateException("O container do MongoDB parou. Logs:\n" + container.getLogs());
         }
         return container.getReplicaSetUrl(BANCO);
     }
