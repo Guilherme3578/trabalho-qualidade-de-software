@@ -13,7 +13,8 @@ código.
 5. [Etapa 2 — Models](#5-etapa-2--models)
 6. [Etapa 3 — Services](#6-etapa-3--services)
 7. [Etapa 4 — Interceptor e guards](#7-etapa-4--interceptor-e-guards)
-8. [Glossário](#glossário)
+8. [Etapa 5 — Tema visual](#8-etapa-5--tema-visual)
+9. [Glossário](#glossário)
 
 ---
 
@@ -255,6 +256,62 @@ O `perfilGuard` lê os perfis permitidos do `data` da rota:
 | `provideHttpClient(withInterceptors([...]))` | Cliente HTTP com o interceptor |
 | `{ provide: LOCALE_ID, useValue: 'pt-BR' }` + `registerLocaleData` | Datas e números no formato brasileiro (`08/11/2026`, `1.234,5`) |
 | `LucideAngularModule.pick({...})` | Registra só os ícones usados, para não carregar a biblioteca inteira |
+
+## 8. Etapa 5 — Tema visual
+
+Arquivo `src/styles.css`. Os estilos **globais** valem para o app inteiro. Os de cada componente
+(`nome.component.css`) valem só para ele, porque o Angular isola o CSS de cada componente automaticamente.
+
+### Variáveis CSS (design tokens)
+
+Todas as cores, raios e sombras ficam em variáveis no `:root`. Para mudar a cor principal do sistema, basta
+alterar um lugar:
+
+```css
+:root {
+  --fundo: #07080d;
+  --primaria: #8b5cf6;
+  --degrade: linear-gradient(135deg, #8b5cf6 0%, #6366f1 45%, #22d3ee 100%);
+}
+.btn-primario { background: var(--degrade); }
+```
+
+| Grupo | Variáveis | Uso |
+|---|---|---|
+| Fundo e superfícies | `--fundo`, `--superficie`, `--borda` | Camadas do tema escuro, do mais escuro ao mais claro |
+| Texto | `--texto`, `--texto-suave`, `--texto-fraco` | Títulos, textos comuns e legendas |
+| Destaque | `--primaria`, `--secundaria`, `--degrade`, `--brilho` | Botão principal, links, brilho no hover |
+| Estados | `--sucesso`, `--aviso`, `--perigo`, `--info` | Selos de status e mensagens |
+
+### Classes reutilizáveis
+
+| Classe | Onde usar |
+|---|---|
+| `.btn` + `.btn-primario` / `.btn-fantasma` / `.btn-perigo` / `.btn-sucesso` | Botões; `.btn-sm` (menor) e `.btn-icone` (só ícone) |
+| `.cartao` / `.cartao-interativo` | Painel com efeito de vidro; o interativo sobe e brilha no hover |
+| `.formulario`, `.linha-campos`, `.campo` | Formulários; `.linha-campos` coloca campos lado a lado e quebra linha no celular |
+| `.tabela-container` + `table` | Tabelas com rolagem horizontal em telas pequenas |
+| `.badge` + `.badge-sucesso` etc. | Selos coloridos; a cor de fundo é derivada do texto com `color-mix()` |
+| `.animar` | Entrada suave; com `style="--i: 2"` cada item entra um pouco depois do anterior |
+| `.skeleton` | Bloco cinza animado que aparece enquanto os dados carregam |
+
+### Efeitos e animações
+
+- **Fundo "aurora":** três `radial-gradient` sobrepostos com `background-attachment: fixed`.
+- **Vidro fosco:** `backdrop-filter: blur(16px)` com fundo semitransparente nos cartões.
+- **Hover:** botões sobem 1px (`translateY(-1px)`); o principal desliza o degradê (`background-position`) e ganha
+  brilho (`box-shadow`). Cartões interativos sobem 3px com borda violeta.
+- **Entrada escalonada:** `animation-delay: calc(var(--i, 0) * 60ms)` faz os cartões aparecerem um após o
+  outro.
+- **Troca de página:** `withViewTransitions()` no roteador usa a View Transitions API do navegador.
+- **Acessibilidade:** `:focus-visible` mostra contorno ciano ao navegar pelo teclado, e
+  `prefers-reduced-motion` desliga as animações para quem configurou isso no sistema.
+
+### Fonte
+
+A fonte Inter vem do pacote `@fontsource-variable/inter`, registrado em `angular.json` → `styles`. Ela é servida
+pelo próprio app, e não pelo Google Fonts, porque a política de segurança (CSP) do back-end só permite recursos
+da mesma origem.
 
 ---
 
