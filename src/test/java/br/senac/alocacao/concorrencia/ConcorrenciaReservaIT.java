@@ -1,5 +1,9 @@
 package br.senac.alocacao.concorrencia;
 
+import br.senac.alocacao.bloqueio.BloqueioRequest;
+import br.senac.alocacao.bloqueio.BloqueioResponse;
+import br.senac.alocacao.bloqueio.BloqueioService;
+import br.senac.alocacao.bloqueio.TipoRecurso;
 import br.senac.alocacao.comum.CodigoErro;
 import br.senac.alocacao.comum.NegocioException;
 import br.senac.alocacao.material.Material;
@@ -37,6 +41,7 @@ class ConcorrenciaReservaIT extends IntegracaoBase {
     private static final int THREADS = 20;
 
     @Autowired ReservaService servico;
+    @Autowired BloqueioService bloqueios;
 
     private Map<String, Integer> disparar(List<Callable<Object>> tarefas) throws Exception {
         ExecutorService pool = Executors.newFixedThreadPool(tarefas.size());
@@ -82,6 +87,32 @@ class ConcorrenciaReservaIT extends IntegracaoBase {
         assertThat(r).containsEntry("ACEITA", 1);
         assertThat(r.getOrDefault(CodigoErro.CONFLITO_SALA.name(), 0)).isEqualTo(THREADS - 1);
         assertThat(mongo.findAll(Reserva.class)).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("[RF08][RN04] Bloqueio e reserva simultâneos: a reserva é recusada ou aparece como afetada")
+    void bloqueioSimultaneoAReserva() throws Exception {
+        Usuario coord = usuario(Perfil.COORDENADOR);
+        Usuario admin = usuario(Perfil.ADMIN);
+        for (int rodada = 0; rodada < 20; rodada++) {
+            Sala sala = sala("M" + rodada, 50, false);
+            Professor p = professor("Professor M" + rodada, "Disciplina");
+            List<BloqueioResponse> bloqueio = new java.util.concurrent.CopyOnWriteArrayList<>();
+            Map<String, Integer> r = disparar(List.of(
+                    () -> servico.criar(new ReservaRequest(sala.getId(), p.getId(), "Disciplina",
+                            em("2030-03-11T09:00"), em("2030-03-11T11:00"), 10, null, null, null), coord),
+                    () -> bloqueio.add(bloqueios.criar(new BloqueioRequest(TipoRecurso.SALA, sala.getId(),
+                            em("2030-03-11T08:00"), em("2030-03-11T12:00"), "Manutenção"), admin))));
+
+            assertThat(bloqueio).as("rodada %d: o bloqueio deve ser criado", rodada).hasSize(1);
+            if (r.getOrDefault("ACEITA", 0) == 2) {
+                assertThat(bloqueio.get(0).reservasAfetadas())
+                        .as("rodada %d: reserva aceita junto com o bloqueio deve constar como afetada", rodada)
+                        .hasSize(1);
+            } else {
+                assertThat(r).containsEntry(CodigoErro.RECURSO_EM_MANUTENCAO.name(), 1);
+            }
+        }
     }
 
     @Test
