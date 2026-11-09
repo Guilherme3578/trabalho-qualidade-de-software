@@ -16,7 +16,6 @@ import java.util.List;
 
 @Service
 public class UsuarioService {
-
     private static final String ENTIDADE = "Usuario";
 
     private final UsuarioRepository usuarios;

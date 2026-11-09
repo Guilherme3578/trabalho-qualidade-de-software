@@ -36,22 +36,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-/**
- * Casos de uso de reserva. Regras centrais:
- * <ul>
- *   <li>RN01/RN10 — validação de horário ({@link PoliticaHorario}).</li>
- *   <li>RN02 — sem sobreposição de sala, professor ou material ({@link DisponibilidadeService}).</li>
- *   <li>RN03 — solicitações simultâneas geram uma única reserva ({@link ProtecaoConcorrencia}).</li>
- *   <li>RN04 — recursos em manutenção não podem ser reservados.</li>
- *   <li>RN05 — ciclo de vida controlado por {@link StatusReserva}.</li>
- *   <li>RN06 — somente RESPONSAVEL aprova (controller) recursos restritos ({@link AvaliadorAprovacao}).</li>
- *   <li>RN07 — reservas iniciadas não podem ser apagadas.</li>
- *   <li>RN08 — toda mudança de estado passa por {@link #mudarStatus}, que sempre audita.</li>
- * </ul>
- */
 @Service
 public class ReservaService {
-
     static final String ENTIDADE = "Reserva";
     private static final Duration ANTECEDENCIA_INICIO = Duration.ofMinutes(30);
     private static final Duration TOLERANCIA_NAO_COMPARECIMENTO = Duration.ofMinutes(15);
@@ -69,7 +55,7 @@ public class ReservaService {
     private final MongoTemplate mongo;
     private final Clock clock;
 
-    @SuppressWarnings("java:S107") // dependências explícitas facilitam testes e leitura
+    @SuppressWarnings("java:S107")
     public ReservaService(ReservaRepository reservas, SalaRepository salas, ProfessorRepository professores,
                           MaterialRepository materiais, DisponibilidadeService disponibilidade,
                           PoliticaHorario politicaHorario, ProtecaoConcorrencia protecao,
@@ -88,10 +74,6 @@ public class ReservaService {
         this.mongo = mongo;
         this.clock = clock;
     }
-
-    // =====================================================================================
-    // Criação e alteração (com proteção contra concorrência)
-    // =====================================================================================
 
     public ReservaResponse criar(ReservaRequest req, Usuario ator) {
         autorizarProfessor(ator, req.professorId());
@@ -142,7 +124,6 @@ public class ReservaService {
         });
     }
 
-    /** Executa com proteção de concorrência e contabiliza conflitos evitados para o relatório (RF12). */
     private ReservaResponse comRegistroDeConflito(Usuario ator, Intervalo intervalo,
                                                   Supplier<ReservaResponse> operacao) {
         try {
@@ -180,14 +161,12 @@ public class ReservaService {
             itens.add(new ItemReserva(m.getId(), m.getNome(), item.quantidade()));
         }
 
-        // 1) Verificação de conflitos (leituras no snapshot da transação)
         disponibilidade.garantirSala(sala, intervalo, ignorarId);
         disponibilidade.garantirProfessor(professor, intervalo, ignorarId);
         for (int i = 0; i < listaMateriais.size(); i++) {
             disponibilidade.garantirMaterial(listaMateriais.get(i), itens.get(i).quantidade(), intervalo, ignorarId);
         }
 
-        // 2) "Toque" nos recursos: força WriteConflict entre transações simultâneas (ver ProtecaoConcorrencia)
         tocarAgenda(Sala.class, sala.getId());
         tocarAgenda(Professor.class, professor.getId());
         listaMateriais.stream().map(Material::getId).sorted(Comparator.naturalOrder())
@@ -200,7 +179,6 @@ public class ReservaService {
         mongo.updateFirst(Query.query(Criteria.where("id").is(id)), new Update().inc("versaoAgenda", 1), tipo);
     }
 
-    /** Sem motivos → aprovação automática pelo SISTEMA; com motivos → aguarda um RESPONSAVEL. */
     private void aplicarPoliticaDeAprovacao(Reserva reserva, Agenda agenda, Usuario ator) {
         List<String> motivos = AvaliadorAprovacao.motivos(agenda.sala, agenda.materiais, agenda.professor,
                 reserva.getDisciplina());
@@ -216,10 +194,6 @@ public class ReservaService {
             eventos.publishEvent(evento(reserva, null, StatusReserva.SOLICITADA, String.join("; ", motivos)));
         }
     }
-
-    // =====================================================================================
-    // Transições de estado
-    // =====================================================================================
 
     @Transactional
     public ReservaResponse cancelar(String id, String motivo, Usuario ator) {
@@ -280,7 +254,6 @@ public class ReservaService {
         return ReservaResponse.de(reservas.save(r));
     }
 
-    /** RN07 — reservas iniciadas (EM_USO, CONCLUIDA, NAO_COMPARECEU) não podem ser apagadas. */
     @Transactional
     public void excluir(String id, Usuario ator) {
         Reserva r = buscar(id);
@@ -295,10 +268,6 @@ public class ReservaService {
         reservas.delete(r);
     }
 
-    /**
-     * ÚNICO ponto de mudança de estado (RN05 + RN08): valida a transição, grava a auditoria na
-     * mesma transação e publica o evento que gera a notificação após o commit.
-     */
     private void mudarStatus(Reserva r, StatusReserva destino, Usuario ator, String motivo) {
         StatusReserva anterior = r.getStatus();
         r.transicionar(destino, agora());
@@ -312,10 +281,6 @@ public class ReservaService {
         return new ReservaStatusAlteradoEvent(r.getId(), r.getSolicitanteId(), r.getDisciplina(), r.getSalaCodigo(),
                 r.getInicio(), anterior, novo, motivo);
     }
-
-    // =====================================================================================
-    // Materiais: retirada e devolução (RF09)
-    // =====================================================================================
 
     @Transactional
     public ReservaResponse registrarRetirada(String id, MovimentacaoRequest req, Usuario responsavel) {
@@ -361,10 +326,6 @@ public class ReservaService {
         return ReservaResponse.de(reservas.save(r));
     }
 
-    // =====================================================================================
-    // Consultas
-    // =====================================================================================
-
     public ReservaResponse obter(String id) {
         return ReservaResponse.de(buscar(id));
     }
@@ -394,11 +355,6 @@ public class ReservaService {
                 .stream().map(ReservaResponse::de).toList();
     }
 
-    // =====================================================================================
-    // Autorização de negócio
-    // =====================================================================================
-
-    /** Professor só reserva para si; coordenador pode reservar para qualquer docente. */
     private static void autorizarProfessor(Usuario ator, String professorId) {
         if (ator.getPerfil() == Perfil.PROFESSOR && !Objects.equals(ator.getProfessorId(), professorId)) {
             throw NegocioException.acessoNegado("Professores só podem criar reservas para a própria agenda.");

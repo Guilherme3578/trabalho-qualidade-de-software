@@ -14,7 +14,6 @@ import java.util.List;
 @RequestMapping("/api/auditoria")
 @Tag(name = "Auditoria", description = "Histórico auditável de mudanças (somente leitura)")
 public class AuditoriaController {
-
     private final AuditoriaService auditoria;
 
     public AuditoriaController(AuditoriaService auditoria) {

@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.notNullValue;
 
 @DisplayName("[RF14] Documentação pública da API")
 class DocumentacaoApiIT extends IntegracaoBase {
-
     @Test
     @DisplayName("[RF14] Especificação OpenAPI publicada com os principais fluxos e o esquema de segurança")
     void openApi() {

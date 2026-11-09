@@ -22,18 +22,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Segurança da API:
- * <ul>
- *   <li>Autenticação stateless com JWT assinado (HS256).</li>
- *   <li>Autorização por perfil em dois níveis: rotas (aqui) e métodos (@PreAuthorize nos controllers).</li>
- *   <li>Cabeçalhos de segurança (CSP, X-Frame-Options, X-Content-Type-Options, etc.).</li>
- * </ul>
- */
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
-
     private static final int TAMANHO_MINIMO_SEGREDO = 32;
     private static final String ADMIN = "ADMIN";
     private static final String RESPONSAVEL = "RESPONSAVEL";
@@ -43,7 +34,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filtros(HttpSecurity http, RespostasSeguranca respostas) throws Exception {
         http
-                // API stateless com token no cabeçalho: não há cookie de sessão, portanto CSRF não se aplica.
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -51,8 +41,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()
-                        // 1º nível de autorização (antes de qualquer validação de entrada).
-                        // O 2º nível é o @PreAuthorize de cada endpoint (defesa em profundidade).
                         .requestMatchers("/api/usuarios/**").hasRole(ADMIN)
                         .requestMatchers(HttpMethod.GET, "/api/salas/**", "/api/professores/**",
                                 "/api/materiais/**", "/api/bloqueios/**").authenticated()
@@ -82,7 +70,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /** Converte a claim "perfil" do token em autoridade ROLE_PERFIL. */
     private JwtAuthenticationConverter conversorPerfis() {
         JwtGrantedAuthoritiesConverter perfis = new JwtGrantedAuthoritiesConverter();
         perfis.setAuthoritiesClaimName("perfil");

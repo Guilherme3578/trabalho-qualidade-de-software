@@ -6,14 +6,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-/**
- * Período em que um recurso está indisponível (manutenção de sala/material ou afastamento de professor).
- * Nenhuma reserva pode sobrepor um bloqueio do mesmo recurso (RN04).
- */
 @Document("bloqueios")
 @CompoundIndex(name = "bloqueio_recurso_periodo", def = "{'tipoRecurso': 1, 'recursoId': 1, 'inicio': 1}")
 public class Bloqueio {
-
     @Id
     private String id;
 

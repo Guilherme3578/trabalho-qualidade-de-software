@@ -21,12 +21,8 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Passos (glue) dos cenários BDD. Todos os passos interagem com o sistema apenas via API HTTP.
- */
 @CucumberContextConfiguration
 public class RetiradaDevolucaoSteps extends IntegracaoBase {
-
     private final Map<String, Material> materiaisPorNome = new HashMap<>();
     private Usuario solicitante;
     private Usuario responsavel;

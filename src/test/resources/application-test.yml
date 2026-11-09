@@ -3,7 +3,6 @@ app:
     segredo: segredo-de-teste-com-mais-de-32-caracteres-0123456789
   notificacao:
     habilitada: true
-    # url definida dinamicamente com a porta do WireMock (IntegracaoBase)
     timeout: 1s
 
 logging:

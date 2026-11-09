@@ -17,7 +17,6 @@ import java.util.List;
 @PreAuthorize("hasAnyRole('COORDENADOR','RESPONSAVEL','ADMIN')")
 @Tag(name = "Relatórios", description = "Utilização por recurso, carga horária e conflitos evitados")
 public class RelatorioController {
-
     private final RelatorioService servico;
 
     public RelatorioController(RelatorioService servico) {

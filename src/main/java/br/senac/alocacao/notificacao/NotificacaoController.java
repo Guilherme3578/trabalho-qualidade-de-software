@@ -14,7 +14,6 @@ import java.util.List;
 @RequestMapping("/api/notificacoes")
 @Tag(name = "Notificações", description = "Notificações do usuário autenticado")
 public class NotificacaoController {
-
     private final NotificacaoService servico;
     private final UsuarioAtual usuarioAtual;
 

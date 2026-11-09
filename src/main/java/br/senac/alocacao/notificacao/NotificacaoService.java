@@ -16,14 +16,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-/**
- * Gera notificações quando uma reserva muda de estado (RF11).
- * Executa APÓS o commit: se a reserva for desfeita, ninguém é notificado; se a API externa
- * falhar, a reserva já está salva e a falha fica registrada na notificação.
- */
 @Service
 public class NotificacaoService {
-
     private static final DateTimeFormatter FORMATO = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private final NotificacaoRepository repositorio;

@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("[RNF02] Proteção contra força bruta no login")
 class LimitadorTentativasLoginTest {
-
     private final AtomicReference<Instant> agora = new AtomicReference<>(Instant.parse("2030-01-01T10:00:00Z"));
     private final LimitadorTentativasLogin limitador =
             new LimitadorTentativasLogin(3, Duration.ofMinutes(15), agora::get);

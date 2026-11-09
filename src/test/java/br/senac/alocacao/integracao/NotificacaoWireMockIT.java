@@ -28,13 +28,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Integração com a API externa de notificação, simulada com WireMock (RF11).
- * Verifica o contrato enviado e a resiliência a falhas e lentidão do serviço externo.
- */
 @DisplayName("[RF11] Integração com API externa de notificação (WireMock)")
 class NotificacaoWireMockIT extends IntegracaoBase {
-
     @Autowired ReservaService servico;
     @Autowired NotificacaoRepository notificacoes;
 
@@ -117,7 +112,6 @@ class NotificacaoWireMockIT extends IntegracaoBase {
         try {
             criarRestrita();
         } catch (RuntimeException esperado) {
-            // conflito de sala
         }
         WIREMOCK.verify(0, postRequestedFor(urlEqualTo("/notificacoes")));
     }

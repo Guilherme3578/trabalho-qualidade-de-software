@@ -1,9 +1,5 @@
 package br.senac.alocacao.comum;
 
-/**
- * Códigos estáveis de erro devolvidos pela API. O cliente (interface web, testes)
- * se baseia no código, nunca no texto da mensagem.
- */
 public enum CodigoErro {
     VALIDACAO,
     REQUISICAO_INVALIDA,

@@ -33,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Integração: regras de reserva com MongoDB real")
 class ReservaServiceIT extends IntegracaoBase {
-
     @Autowired ReservaService servico;
     @Autowired BloqueioService bloqueios;
     @Autowired AuditoriaService auditoria;
@@ -67,8 +66,6 @@ class ReservaServiceIT extends IntegracaoBase {
     private ReservaResponse criar(Sala s, Professor p, String disc, String ini, String fim) {
         return servico.criar(req(s, p, disc, ini, fim, List.of()), coordenador);
     }
-
-    // ---------------------------------------------------------------- sobreposição
 
     @Test
     @DisplayName("[RF05][RN02] Mesma sala em horário sobreposto é recusada com CONFLITO_SALA")
@@ -128,8 +125,6 @@ class ReservaServiceIT extends IntegracaoBase {
                 .extracting("codigo").isEqualTo(CodigoErro.CAPACIDADE_EXCEDIDA);
     }
 
-    // ---------------------------------------------------------------- manutenção
-
     @Test
     @DisplayName("[RF08][RN04] Sala em manutenção não pode ser reservada")
     void salaEmManutencao() {
@@ -159,8 +154,6 @@ class ReservaServiceIT extends IntegracaoBase {
                 em("2030-03-11T18:00"), "Pintura"), admin);
         assertThat(resp.reservasAfetadas()).containsExactly(r.id());
     }
-
-    // ---------------------------------------------------------------- aprovação e estados
 
     @Test
     @DisplayName("[RF07] Recurso comum e docente habilitado: aprovação automática")
@@ -262,8 +255,6 @@ class ReservaServiceIT extends IntegracaoBase {
                 .isEqualTo(StatusReserva.NAO_COMPARECEU);
     }
 
-    // ---------------------------------------------------------------- alteração
-
     @Test
     @DisplayName("[RF04] Alteração revalida conflitos ignorando a própria reserva")
     void alteracao() {
@@ -293,8 +284,6 @@ class ReservaServiceIT extends IntegracaoBase {
                 em("2030-03-11T09:00"), em("2030-03-11T11:00"), 20, null, null, r.versao());
         assertThat(servico.alterar(r.id(), nova, coordenador).status()).isEqualTo(StatusReserva.SOLICITADA);
     }
-
-    // ---------------------------------------------------------------- materiais e relatório
 
     @Test
     @DisplayName("[RF09] Retirada acima do reservado e conclusão com pendência são recusadas")

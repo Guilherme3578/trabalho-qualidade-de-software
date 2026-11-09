@@ -6,27 +6,18 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-/** Utilitários para filtros de pesquisa. */
 public final class Filtros {
-
     private Filtros() {
     }
 
-    /**
-     * Expressão regular "contém", sem diferenciar maiúsculas.
-     * O texto do usuário é escapado com Pattern.quote: caracteres como .* ou $where
-     * são tratados literalmente (evita injeção de regex/NoSQL e consultas lentas).
-     */
     public static Pattern contem(String texto) {
         return Pattern.compile(Pattern.quote(texto.trim()), Pattern.CASE_INSENSITIVE);
     }
 
-    /** Igualdade sem diferenciar maiúsculas, também com escape. */
     public static Pattern igual(String texto) {
         return Pattern.compile("^" + Pattern.quote(texto.trim()) + "$", Pattern.CASE_INSENSITIVE);
     }
 
-    /** Filtro de disponibilidade: exige início e término juntos. */
     public static Optional<Intervalo> intervaloOpcional(LocalDateTime inicio, LocalDateTime fim) {
         if (inicio == null && fim == null) {
             return Optional.empty();

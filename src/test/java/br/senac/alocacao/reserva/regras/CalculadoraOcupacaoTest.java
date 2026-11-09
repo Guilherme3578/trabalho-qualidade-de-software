@@ -15,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("[RN02] Pico de uso simultâneo de materiais")
 class CalculadoraOcupacaoTest {
-
     private static LocalDateTime h(String hhmm) {
         return LocalDateTime.parse("2030-03-11T" + hhmm);
     }

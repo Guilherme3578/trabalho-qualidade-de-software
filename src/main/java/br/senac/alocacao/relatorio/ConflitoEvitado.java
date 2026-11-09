@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-/** Tentativa de reserva recusada por conflito ou manutenção — base do relatório "conflitos evitados". */
 @Document("conflitos_evitados")
 public record ConflitoEvitado(
         @Id String id,

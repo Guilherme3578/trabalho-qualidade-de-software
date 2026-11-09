@@ -26,8 +26,6 @@ NIVEIS = {
     "/e2e/": "End-to-end", "/bdd/": "BDD", ".feature": "BDD",
 }
 
-
-# Requisitos verificados por ferramenta (não por um caso de teste JUnit/Cucumber).
 POR_FERRAMENTA = {
     "RNF01": ("JMeter", "src/test/jmeter/carga-reservas.jmx",
               "20 usuários simultâneos; build falha com erro > 1%; Duration Assertion de 1000 ms"),
@@ -35,13 +33,11 @@ POR_FERRAMENTA = {
     "RNF06": ("SonarCloud", ".github/workflows/ci.yml", "análise estática e Quality Gate em cada pull request"),
 }
 
-
 def nivel(caminho: str) -> str:
     for chave, valor in NIVEIS.items():
         if chave in caminho:
             return valor
     return "Outro"
-
 
 def ler_requisitos():
     reqs = {}
@@ -50,7 +46,6 @@ def ler_requisitos():
         if m:
             reqs[m.group(1)] = m.group(2).strip()
     return reqs
-
 
 def ler_testes():
     """Devolve {id_requisito: [(nivel, classe, descricao)]}."""
@@ -68,9 +63,7 @@ def ler_testes():
         for cen in re.findall(r"^\s*(?:Cenário|Esquema do Cenário):\s*(.+)$", texto, re.M):
             for rid in tags:
                 mapa[rid].append(("BDD", arq.name, cen.strip()))
-    # remove duplicatas preservando ordem
     return {k: list(dict.fromkeys(v)) for k, v in mapa.items()}
-
 
 def ler_resultados():
     total = falhas = 0
@@ -80,7 +73,6 @@ def ler_resultados():
             total += int(raiz.get("tests", 0))
             falhas += int(raiz.get("failures", 0)) + int(raiz.get("errors", 0))
     return total, falhas
-
 
 def main():
     reqs = ler_requisitos()
@@ -123,7 +115,6 @@ def main():
     if sem_cobertura:
         print("Requisitos sem teste automatizado:", ", ".join(sem_cobertura))
     return 0
-
 
 if __name__ == "__main__":
     sys.exit(main())

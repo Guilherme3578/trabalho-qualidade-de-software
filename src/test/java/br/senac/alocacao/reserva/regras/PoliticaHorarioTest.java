@@ -16,8 +16,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Política de horário das reservas")
 class PoliticaHorarioTest {
-
-    /** "Agora" fixo: 10/03/2030 12:00 — testes determinísticos, independentes do relógio da máquina. */
     private static final ZoneId ZONA = ZoneId.of("America/Sao_Paulo");
     private final Clock relogio = Clock.fixed(LocalDateTime.parse("2030-03-10T12:00").atZone(ZONA).toInstant(), ZONA);
     private final PoliticaHorario politica = new PoliticaHorario(relogio);
@@ -25,11 +23,11 @@ class PoliticaHorarioTest {
     @ParameterizedTest(name = "[RN10] {0} até {1} → aceito")
     @DisplayName("[RN10] Horários válidos são aceitos")
     @CsvSource({
-            "2030-03-11T07:00, 2030-03-11T08:00",  // abertura exata
-            "2030-03-11T22:00, 2030-03-11T23:00",  // fechamento exato
-            "2030-03-11T08:00, 2030-03-11T08:30",  // duração mínima
-            "2030-03-11T08:00, 2030-03-11T14:00",  // duração máxima
-            "2030-03-10T12:30, 2030-03-10T14:00"   // hoje, mais tarde
+            "2030-03-11T07:00, 2030-03-11T08:00",
+            "2030-03-11T22:00, 2030-03-11T23:00",
+            "2030-03-11T08:00, 2030-03-11T08:30",
+            "2030-03-11T08:00, 2030-03-11T14:00",
+            "2030-03-10T12:30, 2030-03-10T14:00"
     })
     void validos(String inicio, String fim) {
         assertThatCode(() -> politica.validar(LocalDateTime.parse(inicio), LocalDateTime.parse(fim)))

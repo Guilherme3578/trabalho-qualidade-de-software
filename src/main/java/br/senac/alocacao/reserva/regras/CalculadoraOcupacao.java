@@ -5,17 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Calcula quantas unidades de um material estão em uso simultaneamente dentro de uma janela.
- *
- * Não basta somar todas as reservas que tocam a janela: duas reservas podem tocar a janela
- * sem se sobreporem entre si (ex.: 08–09 e 09–10 dentro da janela 08–10). O correto é o
- * PICO de uso, obtido por varredura de eventos ("sweep line"):
- * cada início soma a quantidade e cada fim subtrai; o maior valor acumulado é o pico.
- * Fins são processados antes de inícios no mesmo instante (intervalos semiabertos).
- */
 public final class CalculadoraOcupacao {
-
     private CalculadoraOcupacao() {
     }
 

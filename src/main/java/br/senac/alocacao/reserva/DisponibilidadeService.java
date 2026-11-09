@@ -19,15 +19,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Detecção de sobreposição de horários (RF05 / RN02) e bloqueios por manutenção (RF08 / RN04).
- *
- * Métodos "garantir..." lançam exceção com mensagem compreensível e os dados do conflito;
- * métodos "...Livre/Disponivel" respondem sim/não para as telas de pesquisa.
- */
 @Service
 public class DisponibilidadeService {
-
     private final MongoTemplate mongo;
     private final BloqueioRepository bloqueios;
 
@@ -36,12 +29,6 @@ public class DisponibilidadeService {
         this.bloqueios = bloqueios;
     }
 
-    // ---------------------------------------------------------------- consultas
-
-    /**
-     * Reservas que ocupam a agenda e se sobrepõem ao intervalo.
-     * Sobreposição de [a,b) com [c,d): a &lt; d E c &lt; b.
-     */
     public List<Reserva> reservasSobrepostas(String campo, String valor, Intervalo intervalo, String ignorarId) {
         Criteria c = Criteria.where(campo).is(valor)
                 .and("status").in(StatusReserva.OCUPAM_AGENDA)
@@ -70,7 +57,6 @@ public class DisponibilidadeService {
                 && reservasSobrepostas("professorId", professor.getId(), intervalo, null).isEmpty();
     }
 
-    /** Unidades do material livres durante TODO o intervalo (0 se inativo ou em manutenção). */
     public int quantidadeDisponivel(Material material, Intervalo intervalo, String ignorarReservaId) {
         if (!material.isAtivo() || !bloqueiosSobrepostos(TipoRecurso.MATERIAL, material.getId(), intervalo).isEmpty()) {
             return 0;
@@ -82,8 +68,6 @@ public class DisponibilidadeService {
                 .toList();
         return Math.max(0, material.getQuantidadeTotal() - CalculadoraOcupacao.picoDeUso(usos, intervalo));
     }
-
-    // ---------------------------------------------------------------- garantias
 
     public void garantirSala(Sala sala, Intervalo intervalo, String ignorarId) {
         if (!sala.isAtiva()) {

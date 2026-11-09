@@ -21,14 +21,9 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-/**
- * Dados de demonstração carregados apenas no perfil "dev" e somente se o banco estiver vazio.
- * Senha de todos os usuários de demonstração: Senha123
- */
 @Component
 @Profile("dev")
 public class DadosIniciais implements CommandLineRunner {
-
     private static final Logger log = LoggerFactory.getLogger(DadosIniciais.class);
     static final String SENHA_DEMO = "Senha123";
 

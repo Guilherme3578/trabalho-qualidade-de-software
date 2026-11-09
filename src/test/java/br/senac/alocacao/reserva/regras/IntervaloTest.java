@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Intervalo de tempo")
 class IntervaloTest {
-
     private static final String DIA = "2030-03-11T";
 
     private static Intervalo i(String ini, String fim) {
@@ -24,16 +23,15 @@ class IntervaloTest {
     @ParameterizedTest(name = "[RN02] {0}-{1} x {2}-{3} → sobrepõe={4}")
     @DisplayName("[RN02] Detecção de sobreposição entre intervalos")
     @CsvSource({
-            // A          B           sobrepõe?   cenário
-            "08:00,10:00, 09:00,11:00, true",   // sobreposição parcial no fim
-            "09:00,11:00, 08:00,10:00, true",   // sobreposição parcial no início
-            "08:00,12:00, 09:00,10:00, true",   // B contido em A
-            "09:00,10:00, 08:00,12:00, true",   // A contido em B
-            "08:00,10:00, 08:00,10:00, true",   // idênticos
-            "08:00,10:00, 10:00,12:00, false",  // adjacentes: termina quando o outro começa
-            "10:00,12:00, 08:00,10:00, false",  // adjacentes (ordem inversa)
-            "08:00,09:00, 11:00,12:00, false",  // totalmente separados
-            "08:00,10:00, 09:59,10:30, true"    // um minuto de sobreposição já conflita
+            "08:00,10:00, 09:00,11:00, true",
+            "09:00,11:00, 08:00,10:00, true",
+            "08:00,12:00, 09:00,10:00, true",
+            "09:00,10:00, 08:00,12:00, true",
+            "08:00,10:00, 08:00,10:00, true",
+            "08:00,10:00, 10:00,12:00, false",
+            "10:00,12:00, 08:00,10:00, false",
+            "08:00,09:00, 11:00,12:00, false",
+            "08:00,10:00, 09:59,10:30, true"
     })
     void sobreposicao(String ai, String af, String bi, String bf, boolean esperado) {
         Intervalo a = i(ai, af);

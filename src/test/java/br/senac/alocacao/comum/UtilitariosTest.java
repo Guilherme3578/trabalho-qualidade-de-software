@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Utilitários de filtro e JSON")
 class UtilitariosTest {
-
     @ParameterizedTest(name = "[RNF03] entrada maliciosa \"{0}\" é tratada literalmente")
     @ValueSource(strings = {".*", "^$", "a|b", "(.*)+$", "{\"$gt\": \"\"}", "'; db.dropDatabase(); '"})
     @DisplayName("[RNF03] Filtros escapam expressões regulares (evita injeção NoSQL/ReDoS)")

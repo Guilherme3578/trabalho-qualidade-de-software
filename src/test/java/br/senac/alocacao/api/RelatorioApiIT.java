@@ -15,7 +15,6 @@ import static org.hamcrest.Matchers.hasSize;
 
 @DisplayName("[RF12] API caixa-preta: relatórios")
 class RelatorioApiIT extends IntegracaoBase {
-
     @Test
     @DisplayName("[RF12] Utilização, carga horária e conflitos evitados refletem as reservas")
     void relatorios() {
@@ -35,7 +34,7 @@ class RelatorioApiIT extends IntegracaoBase {
         como(coord).get("/api/relatorios/utilizacao" + periodo).then().statusCode(200)
                 .body("salas[0].reservas", equalTo(2))
                 .body("salas[0].horasReservadas", equalTo(6.0f))
-                .body("salas[0].taxaOcupacaoPercentual", equalTo(37.5f)); // 6h de 16h
+                .body("salas[0].taxaOcupacaoPercentual", equalTo(37.5f));
 
         como(coord).get("/api/relatorios/carga-horaria" + periodo).then().statusCode(200)
                 .body("professorNome", equalTo(List.of("Ana", "Bruno")))
@@ -57,7 +56,6 @@ class RelatorioApiIT extends IntegracaoBase {
         como(coord).body(reservaJson(sala("A102", 40, false), ana, "Q", "10:00", "11:00", 10, List.of()))
                 .post("/api/reservas").then().statusCode(409);
 
-        // O registro usa o relógio da aplicação (2030-03-11)
         como(coord).get("/api/relatorios/conflitos-evitados?inicio=2030-03-11&fim=2030-03-11").then()
                 .body("total", equalTo(2))
                 .body("porTipo.CONFLITO_SALA", equalTo(1))

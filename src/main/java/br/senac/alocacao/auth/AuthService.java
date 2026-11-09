@@ -24,11 +24,6 @@ import java.util.UUID;
 
 @Service
 public class AuthService {
-
-    /**
-     * Hash usado quando o e-mail não existe: o BCrypt é executado mesmo assim, para que o
-     * tempo de resposta não revele se o e-mail está cadastrado (evita enumeração de usuários).
-     */
     private final String hashFicticio;
 
     private final UsuarioRepository usuarios;
@@ -60,7 +55,6 @@ public class AuthService {
             limitador.registrarFalha(email);
             auditoria.registrar("Usuario", encontrado.map(Usuario::getId).orElse(null), AcaoAuditoria.LOGIN_FALHA,
                     null, null, null, email);
-            // Mensagem única para e-mail inexistente, senha errada ou usuário inativo.
             throw new NegocioException(HttpStatus.UNAUTHORIZED, CodigoErro.CREDENCIAIS_INVALIDAS,
                     "E-mail ou senha inválidos.");
         }

@@ -18,7 +18,6 @@ import static org.hamcrest.Matchers.nullValue;
 
 @DisplayName("[RF01] API caixa-preta: autenticação")
 class AutenticacaoApiIT extends IntegracaoBase {
-
     private io.restassured.response.ValidatableResponse login(String email, String senha) {
         return given().contentType(ContentType.JSON)
                 .body(JsonTeste.json(Map.of("email", email, "senha", senha)))

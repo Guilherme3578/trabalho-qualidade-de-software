@@ -18,16 +18,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Reserva de sala + professor (+ materiais opcionais) em um intervalo de tempo.
- * Materiais e movimentações ficam embutidos no documento.
- */
 @Document("reservas")
 @CompoundIndex(name = "reserva_sala_periodo", def = "{'salaId': 1, 'status': 1, 'inicio': 1}")
 @CompoundIndex(name = "reserva_professor_periodo", def = "{'professorId': 1, 'status': 1, 'inicio': 1}")
 @CompoundIndex(name = "reserva_material_periodo", def = "{'itens.materialId': 1, 'status': 1, 'inicio': 1}")
 public class Reserva {
-
     @Id
     private String id;
 
@@ -45,12 +40,10 @@ public class Reserva {
 
     private StatusReserva status = StatusReserva.SOLICITADA;
 
-    /** Motivos pelos quais a reserva exige aprovação (vazio = aprovação automática). */
     private List<String> motivosAprovacao = new ArrayList<>();
 
     private String observacao;
 
-    /** Controle de concorrência otimista: impede que duas alterações simultâneas se sobrescrevam. */
     @Version
     private Long versao;
 
@@ -84,7 +77,6 @@ public class Reserva {
         this.itens = new ArrayList<>(itens);
     }
 
-    /** Único ponto de mudança de estado. Rejeita transições não previstas na máquina de estados. */
     public void transicionar(StatusReserva destino, LocalDateTime agora) {
         if (!status.podeTransicionarPara(destino)) {
             throw new NegocioException(HttpStatus.CONFLICT, CodigoErro.TRANSICAO_INVALIDA,
@@ -109,7 +101,6 @@ public class Reserva {
                 .sum();
     }
 
-    /** Verdadeiro se algum material retirado ainda não foi totalmente devolvido. */
     public boolean possuiMateriaisPendentes() {
         return itens.stream().anyMatch(i -> totalMovimentado(i.materialId(), TipoMovimentacao.RETIRADA)
                 > totalMovimentado(i.materialId(), TipoMovimentacao.DEVOLUCAO));
@@ -120,7 +111,6 @@ public class Reserva {
         atualizadoEm = movimentacao.registradoEm();
     }
 
-    /** Resumo legível usado no histórico de auditoria (estado antes/depois de alterações). */
     public String resumo() {
         String mats = itens.stream()
                 .map(i -> i.materialNome() + " x" + i.quantidade())

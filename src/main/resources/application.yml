@@ -13,7 +13,6 @@ spring:
 server:
   port: ${PORT:8080}
   error:
-    # Tratamento seguro de erros: nunca expor detalhes internos
     include-stacktrace: never
     include-message: never
     include-binding-errors: never
@@ -21,7 +20,6 @@ server:
 
 app:
   jwt:
-    # OBRIGATÓRIO em produção: defina a variável de ambiente JWT_SEGREDO (mín. 32 caracteres)
     segredo: ${JWT_SEGREDO:}
     expiracao: 2h
   notificacao:

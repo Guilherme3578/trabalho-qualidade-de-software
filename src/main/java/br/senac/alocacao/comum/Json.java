@@ -3,13 +3,7 @@ package br.senac.alocacao.comum;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Serialização JSON mínima para payloads simples (respostas de erro do filtro de
- * segurança e chamadas à API externa de notificação), evitando acoplamento a uma
- * versão específica do Jackson.
- */
 public final class Json {
-
     private Json() {
     }
 

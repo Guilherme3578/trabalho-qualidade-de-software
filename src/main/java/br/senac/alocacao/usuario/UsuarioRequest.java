@@ -18,10 +18,8 @@ public record UsuarioRequest(
         String senha,
         @NotNull(message = "Informe o perfil (PROFESSOR, COORDENADOR, RESPONSAVEL ou ADMIN).") Perfil perfil,
         String professorId) {
-
     @Override
     public String toString() {
-        // Nunca expor a senha em logs.
         return "UsuarioRequest[nome=" + nome + ", email=" + email + ", perfil=" + perfil + "]";
     }
 }

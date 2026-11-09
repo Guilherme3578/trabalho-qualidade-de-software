@@ -12,13 +12,8 @@ import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.Set;
 
-/**
- * Registra tentativas recusadas. É chamado FORA da transação da reserva (que já foi desfeita),
- * por isso o registro persiste mesmo com a reserva rejeitada.
- */
 @Service
 public class ConflitoEvitadoService {
-
     static final Set<CodigoErro> CODIGOS = EnumSet.of(CodigoErro.CONFLITO_SALA, CodigoErro.CONFLITO_PROFESSOR,
             CodigoErro.CONFLITO_MATERIAL, CodigoErro.RECURSO_EM_MANUTENCAO);
 

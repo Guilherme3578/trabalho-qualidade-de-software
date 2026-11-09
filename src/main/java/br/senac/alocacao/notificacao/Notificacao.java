@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 
 @Document("notificacoes")
 public class Notificacao {
-
     @Id
     private String id;
 

@@ -15,14 +15,8 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Funcionalidade desenvolvida com TDD (ver docs/07-tdd-bdd.md):
- * "Validação da alocação docente e de recursos restritos".
- * Cada @Nested corresponde a um ciclo vermelho → verde → refatorar.
- */
 @DisplayName("[RF07] Avaliação da necessidade de aprovação")
 class AvaliadorAprovacaoTest {
-
     private final Sala salaComum = new Sala("A101", "Sala A101", TipoSala.SALA_AULA, 40, "Bloco A", false);
     private final Sala salaRestrita = new Sala("LAB-RED", "Lab Redes", TipoSala.LABORATORIO, 20, "Bloco B", true);
     private final Material projetor = new Material("Projetor", "Audiovisual", null, 5, "Almox", false);

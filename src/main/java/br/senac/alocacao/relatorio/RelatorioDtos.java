@@ -4,9 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-/** Estruturas devolvidas pelos relatórios (RF12). */
 public final class RelatorioDtos {
-
     private RelatorioDtos() {
     }
 

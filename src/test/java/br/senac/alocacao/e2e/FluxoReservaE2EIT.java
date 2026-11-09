@@ -23,14 +23,9 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Teste end-to-end: navegador real (Chrome headless) → interface web → API → MongoDB.
- * Executar sem E2E: ./mvnw verify -Psem-e2e
- */
 @Tag("e2e")
 @DisplayName("[RF13] End-to-end: fluxo de reserva pela interface web")
 class FluxoReservaE2EIT extends IntegracaoBase {
-
     private WebDriver navegador;
     private WebDriverWait espera;
     private Usuario professorUsuario;
@@ -66,7 +61,6 @@ class FluxoReservaE2EIT extends IntegracaoBase {
         navegador.findElement(By.cssSelector("[data-aba='nova']")).click();
         espera.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#r-sala option")));
         navegador.findElement(By.id("r-disciplina")).sendKeys("Qualidade de Software");
-        // Campos de data/hora preenchidos via script: o formato digitado varia com o idioma do navegador.
         JavascriptExecutor js = (JavascriptExecutor) navegador;
         js.executeScript("document.getElementById('r-data').value='2030-03-11';"
                 + "document.getElementById('r-inicio').value='09:00';"

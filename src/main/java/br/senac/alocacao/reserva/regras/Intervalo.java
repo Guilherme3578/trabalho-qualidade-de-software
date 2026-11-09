@@ -6,14 +6,7 @@ import br.senac.alocacao.comum.NegocioException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-/**
- * Intervalo de tempo semiaberto [inicio, fim).
- * Por ser semiaberto, uma reserva que termina às 10:00 NÃO conflita com outra que começa às 10:00.
- *
- * Regra RN01: o término deve ser posterior ao início (garantido na construção).
- */
 public record Intervalo(LocalDateTime inicio, LocalDateTime fim) {
-
     public Intervalo {
         if (inicio == null || fim == null) {
             throw NegocioException.regra(CodigoErro.HORARIO_INVALIDO, "Informe o início e o término.");
@@ -24,7 +17,6 @@ public record Intervalo(LocalDateTime inicio, LocalDateTime fim) {
         }
     }
 
-    /** Dois intervalos se sobrepõem quando cada um começa antes do outro terminar. */
     public boolean sobrepoe(Intervalo outro) {
         return inicio.isBefore(outro.fim) && outro.inicio.isBefore(fim);
     }

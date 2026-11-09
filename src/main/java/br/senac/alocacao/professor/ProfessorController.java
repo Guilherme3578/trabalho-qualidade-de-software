@@ -25,7 +25,6 @@ import java.util.List;
 @RequestMapping("/api/professores")
 @Tag(name = "Professores", description = "Cadastro e pesquisa de professores e competências")
 public class ProfessorController {
-
     private final ProfessorService servico;
     private final UsuarioAtual usuarioAtual;
 

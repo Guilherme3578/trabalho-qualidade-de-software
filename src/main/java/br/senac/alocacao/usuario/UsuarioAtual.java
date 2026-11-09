@@ -8,10 +8,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
-/** Obtém o usuário autenticado a partir do token JWT da requisição. */
 @Component
 public class UsuarioAtual {
-
     private final UsuarioRepository usuarios;
 
     public UsuarioAtual(UsuarioRepository usuarios) {

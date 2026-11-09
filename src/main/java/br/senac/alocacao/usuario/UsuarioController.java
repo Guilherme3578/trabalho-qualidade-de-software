@@ -21,7 +21,6 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "Usuários", description = "Gestão de usuários e perfis (somente ADMIN)")
 public class UsuarioController {
-
     private final UsuarioService servico;
     private final UsuarioAtual usuarioAtual;
 

@@ -20,7 +20,6 @@ import java.util.Optional;
 
 @Service
 public class ProfessorService {
-
     private static final String ENTIDADE = "Professor";
 
     private final ProfessorRepository professores;
@@ -36,7 +35,6 @@ public class ProfessorService {
         this.auditoria = auditoria;
     }
 
-    /** Pesquisa por competência, departamento, nome e disponibilidade (RF03). */
     public List<ProfessorResponse> pesquisar(String competencia, String departamento, String nome,
                                              LocalDateTime inicio, LocalDateTime fim) {
         Optional<Intervalo> intervalo = Filtros.intervaloOpcional(inicio, fim);

@@ -21,10 +21,8 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** Bloqueios de recursos por manutenção/afastamento (RF08). Gerenciados pelo ADMIN. */
 @Service
 public class BloqueioService {
-
     private static final String ENTIDADE = "Bloqueio";
 
     private final BloqueioRepository bloqueios;

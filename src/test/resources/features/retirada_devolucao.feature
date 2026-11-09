@@ -1,6 +1,4 @@
 # language: pt
-# Funcionalidade desenvolvida com BDD (ver docs/07-tdd-bdd.md).
-# Os cenários abaixo foram escritos ANTES da implementação e serviram como critério de aceite.
 
 @RF09
 Funcionalidade: Retirada e devolução de materiais

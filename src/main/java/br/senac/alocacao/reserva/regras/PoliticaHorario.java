@@ -9,18 +9,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-/**
- * Regras de janela de horário para reservas:
- * <ul>
- *   <li>RN01 — término posterior ao início (via {@link Intervalo}).</li>
- *   <li>RN10 — não é possível reservar no passado.</li>
- *   <li>RN10 — a reserva deve começar e terminar no mesmo dia, dentro do funcionamento (07:00–23:00).</li>
- *   <li>RN10 — duração entre 30 minutos e 6 horas.</li>
- * </ul>
- */
 @Component
 public class PoliticaHorario {
-
     public static final LocalTime ABERTURA = LocalTime.of(7, 0);
     public static final LocalTime FECHAMENTO = LocalTime.of(23, 0);
     public static final Duration DURACAO_MINIMA = Duration.ofMinutes(30);

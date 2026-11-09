@@ -23,15 +23,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
-/**
- * Requisitos não funcionais de segurança verificados de fora (caixa-preta):
- * autorização, validação de entrada e tratamento seguro de erros.
- */
 @DisplayName("[RNF02][RNF03][RNF04] API caixa-preta: segurança")
 class SegurancaApiIT extends IntegracaoBase {
-
-    // ---------------------------------------------------------------- autenticação/autorização
-
     @ParameterizedTest(name = "[RNF02] {0} {1} sem token → 401")
     @CsvSource({"GET,/api/salas", "GET,/api/reservas", "POST,/api/reservas", "GET,/api/relatorios/utilizacao",
             "GET,/api/auditoria", "GET,/api/usuarios"})
@@ -54,7 +47,6 @@ class SegurancaApiIT extends IntegracaoBase {
     @Test
     @DisplayName("[RNF02] Token forjado com outra chave e perfil ADMIN é rejeitado")
     void tokenForjado() {
-        // header {"alg":"HS256"} . payload {"sub":"x","perfil":"ADMIN","uid":"1"} . assinatura inválida
         String forjado = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4IiwicGVyZmlsIjoiQURNSU4iLCJ1aWQiOiIxIn0."
                 + "c2lnbmF0dXJhLWZhbHNh";
         given().auth().oauth2(forjado).get("/api/usuarios").then().statusCode(401);
@@ -103,8 +95,6 @@ class SegurancaApiIT extends IntegracaoBase {
                 .post("/api/reservas").then().statusCode(201).extract().path("id");
         como(usuario(Perfil.COORDENADOR)).post("/api/reservas/" + id + "/cancelar").then().statusCode(403);
     }
-
-    // ---------------------------------------------------------------- validação de entrada
 
     @Test
     @DisplayName("[RNF03][RF13] Campos inválidos devolvem 400 com a lista de mensagens em português")
@@ -162,8 +152,6 @@ class SegurancaApiIT extends IntegracaoBase {
                 .body("status", equalTo("SOLICITADA"))
                 .body("id", not(equalTo("abc")));
     }
-
-    // ---------------------------------------------------------------- tratamento seguro de erros
 
     @Test
     @DisplayName("[RNF04] Erros incluem correlationId e não expõem stack trace")

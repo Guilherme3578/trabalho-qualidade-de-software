@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("salas")
 public class Sala {
-
     @Id
     private String id;
 
@@ -22,12 +21,10 @@ public class Sala {
 
     private String localizacao;
 
-    /** Sala restrita exige aprovação de um RESPONSAVEL para cada reserva. */
     private boolean restrita;
 
     private boolean ativa = true;
 
-    /** Contador de agenda: força conflito de escrita entre reservas simultâneas desta sala. */
     private long versaoAgenda;
 
     protected Sala() {

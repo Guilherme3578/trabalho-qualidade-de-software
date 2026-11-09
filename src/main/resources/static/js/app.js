@@ -1,20 +1,12 @@
 'use strict';
 
-/* ======================================================================
- * Interface web da Alocação de Salas (JavaScript puro, sem frameworks).
- * Toda a regra de negócio fica no back-end; aqui apenas exibimos dados e
- * mostramos as mensagens de erro da API de forma compreensível.
- * ====================================================================== */
-
 const $ = (seletor, raiz = document) => raiz.querySelector(seletor);
 
 const estado = {
     token: sessionStorage.getItem('token'),
     usuario: JSON.parse(sessionStorage.getItem('usuario') || 'null'),
-    edicao: null // reserva sendo alterada {id, versao}
+    edicao: null
 };
-
-// ---------------------------------------------------------------- utilitários
 
 function esc(valor) {
     return String(valor ?? '').replace(/[&<>"']/g, c => ({
@@ -75,7 +67,6 @@ function sucesso(texto) {
     mostrarMensagem('sucesso', esc(texto));
 }
 
-/** Converte a resposta Problem Details da API em mensagem legível. */
 function erro(problema) {
     let html = esc(problema?.detail || 'Ocorreu um erro.');
     if (Array.isArray(problema?.campos) && problema.campos.length) {
@@ -103,8 +94,6 @@ async function executar(acao, textoSucesso, depois) {
     }
 }
 
-// ---------------------------------------------------------------- sessão
-
 async function entrar(evento) {
     evento.preventDefault();
     await executar(() => api('POST', '/api/auth/login', {
@@ -128,8 +117,6 @@ function sair() {
     $('#usuario-logado').hidden = true;
     $('#tela-login').hidden = false;
 }
-
-// ---------------------------------------------------------------- navegação
 
 const ABAS = [
     { id: 'disponibilidade', nome: 'Disponibilidade', render: telaDisponibilidade },
@@ -165,8 +152,6 @@ function abrir(id) {
     $('#conteudo').innerHTML = '';
     aba.render($('#conteudo'));
 }
-
-// ---------------------------------------------------------------- telas
 
 function telaDisponibilidade(raiz) {
     raiz.innerHTML = `
@@ -523,8 +508,6 @@ async function telaNotificacoes(raiz) {
         `<li>${dataHora(n.criadoEm)} — ${esc(n.mensagem)} <small>(${esc(n.status)})</small></li>`).join('')}</ul>`
         : '<p class="dica">Nenhuma notificação.</p>'}</div>`;
 }
-
-// ---------------------------------------------------------------- início
 
 $('#form-login').addEventListener('submit', entrar);
 $('#sair').addEventListener('click', sair);

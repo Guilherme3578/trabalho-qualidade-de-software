@@ -23,18 +23,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Tratamento seguro e centralizado de erros.
- * <ul>
- *   <li>Toda resposta de erro segue o formato RFC 9457 (Problem Details) com um código estável.</li>
- *   <li>Mensagens são em português e compreensíveis para o usuário.</li>
- *   <li>Nunca expõe stack trace, SQL, nomes de classes ou detalhes de infraestrutura.</li>
- *   <li>Erros inesperados são registrados no log com o correlationId, que também é devolvido ao cliente.</li>
- * </ul>
- */
 @RestControllerAdvice
 public class ApiExceptionHandler {
-
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
     @ExceptionHandler(NegocioException.class)
@@ -100,7 +90,6 @@ public class ApiExceptionHandler {
                 "O registro foi alterado por outra pessoa. Recarregue os dados e tente novamente.");
     }
 
-    /** Violação de índice único (ex.: e-mail ou código de sala repetido). Não expõe detalhes do banco. */
     @ExceptionHandler(DuplicateKeyException.class)
     public ProblemDetail duplicado(DuplicateKeyException ex) {
         log.warn("Chave duplicada: {}", ex.getMostSpecificCause().getMessage());

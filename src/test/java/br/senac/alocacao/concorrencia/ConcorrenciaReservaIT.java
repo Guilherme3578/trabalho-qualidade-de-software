@@ -32,19 +32,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Evidência automatizada da proteção contra dupla reserva (RF06 / RN03).
- * N threads são liberadas AO MESMO TEMPO (CountDownLatch) para reservar o mesmo recurso no mesmo horário.
- * Critério de aceite: exatamente UMA reserva aceita; todas as demais recusadas por conflito.
- */
 @DisplayName("[RF06][RN03] Concorrência: solicitações simultâneas")
 class ConcorrenciaReservaIT extends IntegracaoBase {
-
     private static final int THREADS = 20;
 
     @Autowired ReservaService servico;
 
-    /** Executa as tarefas liberando todas no mesmo instante. Devolve contagem de resultados por código. */
     private Map<String, Integer> disparar(List<Callable<Object>> tarefas) throws Exception {
         ExecutorService pool = Executors.newFixedThreadPool(tarefas.size());
         CountDownLatch largada = new CountDownLatch(1);

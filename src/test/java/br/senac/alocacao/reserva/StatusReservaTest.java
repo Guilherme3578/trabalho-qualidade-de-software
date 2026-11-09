@@ -29,8 +29,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("[RN05] Máquina de estados da reserva")
 class StatusReservaTest {
-
-    /** Tabela completa das transições permitidas. Qualquer par fora dela deve ser recusado. */
     private static final Set<String> PERMITIDAS = Set.of(
             "SOLICITADA>APROVADA", "SOLICITADA>REJEITADA", "SOLICITADA>CANCELADA",
             "APROVADA>EM_USO", "APROVADA>CANCELADA", "APROVADA>NAO_COMPARECEU", "APROVADA>SOLICITADA",

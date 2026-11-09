@@ -4,13 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-/**
- * Material ou equipamento. Possui um estoque (quantidadeTotal) compartilhado entre
- * reservas simultâneas: a soma reservada em qualquer instante não pode ultrapassá-lo.
- */
 @Document("materiais")
 public class Material {
-
     @Id
     private String id;
 
@@ -30,7 +25,6 @@ public class Material {
 
     private boolean ativo = true;
 
-    /** Contador de agenda: força conflito de escrita entre reservas simultâneas deste material. */
     private long versaoAgenda;
 
     protected Material() {

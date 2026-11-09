@@ -27,7 +27,6 @@ import java.util.List;
 @RequestMapping("/api/reservas")
 @Tag(name = "Reservas", description = "Criação, alteração, cancelamento, aprovação e uso de reservas")
 public class ReservaController {
-
     private static final String SOLICITANTES = "hasAnyRole('PROFESSOR','COORDENADOR')";
     private static final String RESPONSAVEL = "hasRole('RESPONSAVEL')";
 

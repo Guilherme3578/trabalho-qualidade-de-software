@@ -8,19 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Decide se uma reserva precisa de aprovação de um RESPONSAVEL (RF07 / RN06).
- *
- * Exigem aprovação:
- * <ol>
- *   <li>sala restrita;</li>
- *   <li>qualquer material restrito;</li>
- *   <li>professor sem a competência da disciplina informada (validação da alocação docente).</li>
- * </ol>
- * Se a lista de motivos for vazia, a reserva é aprovada automaticamente pelo sistema.
- */
 public final class AvaliadorAprovacao {
-
     private AvaliadorAprovacao() {
     }
 

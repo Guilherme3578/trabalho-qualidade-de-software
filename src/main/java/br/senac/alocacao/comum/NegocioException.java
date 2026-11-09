@@ -6,12 +6,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Exceção de regra de negócio. Carrega o status HTTP, um código estável e uma
- * mensagem compreensível para o usuário final (em português).
- */
 public class NegocioException extends RuntimeException {
-
     private final HttpStatus status;
     private final CodigoErro codigo;
     private final transient Map<String, Object> detalhes;

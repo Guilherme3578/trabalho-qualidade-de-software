@@ -26,7 +26,6 @@ import java.util.List;
 @RequestMapping("/api/salas")
 @Tag(name = "Salas", description = "Cadastro e pesquisa de salas")
 public class SalaController {
-
     private final SalaService servico;
     private final UsuarioAtual usuarioAtual;
 

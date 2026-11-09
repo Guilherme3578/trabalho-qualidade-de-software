@@ -20,7 +20,6 @@ import java.util.Optional;
 
 @Service
 public class SalaService {
-
     private static final String ENTIDADE = "Sala";
 
     private final SalaRepository salas;
@@ -36,7 +35,6 @@ public class SalaService {
         this.auditoria = auditoria;
     }
 
-    /** Pesquisa por tipo, capacidade mínima, localização e, opcionalmente, disponibilidade no intervalo (RF03). */
     public List<SalaResponse> pesquisar(TipoSala tipo, Integer capacidadeMinima, String localizacao,
                                         LocalDateTime inicio, LocalDateTime fim, boolean incluirInativas) {
         Optional<Intervalo> intervalo = Filtros.intervaloOpcional(inicio, fim);

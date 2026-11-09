@@ -22,7 +22,6 @@ import static org.hamcrest.Matchers.hasSize;
 
 @DisplayName("[RF04][RF05] API caixa-preta: reservas")
 class ReservaApiIT extends IntegracaoBase {
-
     Usuario coord;
     Usuario responsavel;
     Sala a101;

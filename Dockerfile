@@ -1,4 +1,3 @@
-# Build em duas etapas: compila com Maven e executa só com o JRE (imagem menor, sem ferramentas de build).
 FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 COPY .mvn .mvn

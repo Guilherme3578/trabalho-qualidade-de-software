@@ -49,7 +49,6 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Gera um dia futuro aleatório para que cada execução da collection use horários livres",
                   "if (!pm.collectionVariables.get(\"dia\") || pm.info.iteration === 0) {",
                   "  const d = new Date(); d.setDate(d.getDate() + 30 + Math.floor(Math.random() * 300));",
                   "  const p = n => String(n).padStart(2, '0');",
@@ -2379,7 +2378,6 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Reserva começando daqui a ~10 minutos (permite \"iniciar uso\"). Execute entre 07:00 e 21:30.",
                   "const p = n => String(n).padStart(2, '0');",
                   "const f = d => `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;",
                   "const ini = new Date(Date.now() + 10 * 60000); ini.setSeconds(0, 0);",

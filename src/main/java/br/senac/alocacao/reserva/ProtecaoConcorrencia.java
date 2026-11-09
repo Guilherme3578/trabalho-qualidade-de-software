@@ -12,24 +12,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 
-/**
- * Proteção contra dupla reserva em solicitações simultâneas (RF06 / RN03).
- *
- * <h2>Como funciona</h2>
- * <ol>
- *   <li>Cada tentativa roda em uma transação multi-documento do MongoDB (isolamento por snapshot).</li>
- *   <li>Depois de verificar que não há conflito, a transação "toca" o documento de cada recurso
- *       envolvido (incrementa {@code versaoAgenda} da sala, do professor e dos materiais).</li>
- *   <li>Se duas transações verificaram a agenda ao mesmo tempo, ambas tentarão tocar o mesmo
- *       documento: o MongoDB aborta uma delas com <b>WriteConflict</b> (erro transitório).</li>
- *   <li>A transação abortada é repetida; na nova tentativa ela enxerga a reserva já confirmada
- *       e é recusada com CONFLITO_SALA/PROFESSOR/MATERIAL.</li>
- * </ol>
- * Resultado: de N solicitações simultâneas para o mesmo horário, exatamente uma é aceita.
- */
 @Component
 public class ProtecaoConcorrencia {
-
     private static final Logger log = LoggerFactory.getLogger(ProtecaoConcorrencia.class);
     static final int MAX_TENTATIVAS = 15;
     private static final int CODIGO_WRITE_CONFLICT = 112;
@@ -59,7 +43,6 @@ public class ProtecaoConcorrencia {
         }
     }
 
-    /** Verdadeiro para erros que o MongoDB marca como seguros para repetir a transação inteira. */
     static boolean transitorio(Throwable e) {
         for (Throwable t = e; t != null; t = t.getCause()) {
             if (t instanceof MongoException me

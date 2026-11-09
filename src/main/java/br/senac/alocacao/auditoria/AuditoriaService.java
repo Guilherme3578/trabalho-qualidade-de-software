@@ -12,14 +12,8 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Grava o histórico auditável. Quando chamado dentro de uma transação de negócio,
- * o evento é gravado na MESMA transação: se a operação falhar, a auditoria também é desfeita,
- * e se a operação for confirmada, a auditoria obrigatoriamente existe.
- */
 @Service
 public class AuditoriaService {
-
     public static final String SISTEMA = "SISTEMA";
     private static final int LIMITE_CONSULTA = 500;
 
@@ -42,7 +36,6 @@ public class AuditoriaService {
     }
 
     public List<EventoAuditoria> historico(String entidade, String entidadeId) {
-        // Desempate pelo _id (ObjectId cresce na ordem de inserção) quando o horário é igual.
         Query q = Query.query(Criteria.where("entidade").is(entidade).and("entidadeId").is(entidadeId))
                 .with(Sort.by(Sort.Direction.ASC, "dataHora", "id"));
         return mongo.find(q, EventoAuditoria.class);

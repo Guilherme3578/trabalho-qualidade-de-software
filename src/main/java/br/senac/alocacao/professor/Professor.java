@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 @Document("professores")
 public class Professor {
-
     @Id
     private String id;
 
@@ -22,16 +21,11 @@ public class Professor {
 
     private String departamento;
 
-    /** Competências (disciplinas/áreas) que o docente está habilitado a lecionar. */
     @Indexed
     private Set<String> competencias = new TreeSet<>();
 
     private boolean ativo = true;
 
-    /**
-     * Contador incrementado a cada reserva que envolve este professor, dentro da transação.
-     * Serve para forçar conflito de escrita entre transações simultâneas (ver ReservaService).
-     */
     private long versaoAgenda;
 
     protected Professor() {
@@ -49,7 +43,6 @@ public class Professor {
                 : competencias.stream().map(String::trim).collect(Collectors.toCollection(TreeSet::new));
     }
 
-    /** Comparação sem diferenciar maiúsculas/minúsculas e espaços nas pontas. */
     public boolean possuiCompetencia(String disciplina) {
         if (disciplina == null) {
             return false;

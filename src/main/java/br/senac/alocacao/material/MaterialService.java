@@ -20,7 +20,6 @@ import java.util.Optional;
 
 @Service
 public class MaterialService {
-
     private static final String ENTIDADE = "Material";
 
     private final MaterialRepository materiais;
@@ -36,10 +35,6 @@ public class MaterialService {
         this.auditoria = auditoria;
     }
 
-    /**
-     * Pesquisa por categoria, localização, nome e disponibilidade. Com intervalo, devolve a
-     * quantidade livre e filtra os que têm ao menos "quantidadeMinima" unidades livres.
-     */
     public List<MaterialResponse> pesquisar(String categoria, String localizacao, String nome,
                                             LocalDateTime inicio, LocalDateTime fim, Integer quantidadeMinima) {
         Optional<Intervalo> intervalo = Filtros.intervaloOpcional(inicio, fim);

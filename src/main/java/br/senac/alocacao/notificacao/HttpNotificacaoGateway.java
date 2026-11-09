@@ -14,13 +14,8 @@ import java.net.http.HttpResponse;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Envia notificações via HTTP POST (JSON) para a API externa configurada em app.notificacao.url.
- * Falhas e timeouts são tratados: o resultado é FALHA, mas nenhuma exceção vaza para o fluxo de reserva.
- */
 @Component
 public class HttpNotificacaoGateway implements NotificacaoGateway {
-
     private static final Logger log = LoggerFactory.getLogger(HttpNotificacaoGateway.class);
 
     private final AppProperties.Notificacao config;

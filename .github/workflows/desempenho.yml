@@ -1,4 +1,3 @@
-# Teste de carga com JMeter contra a aplicação real (MongoDB em container + perfil dev).
 name: Desempenho (JMeter)
 
 on:

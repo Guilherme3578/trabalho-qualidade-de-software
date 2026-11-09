@@ -9,7 +9,6 @@ import java.util.Locale;
 
 @Document("usuarios")
 public class Usuario {
-
     @Id
     private String id;
 
@@ -18,12 +17,10 @@ public class Usuario {
     @Indexed(unique = true)
     private String email;
 
-    /** Apenas o hash BCrypt é armazenado; a senha em texto nunca é persistida nem devolvida. */
     private String senhaHash;
 
     private Perfil perfil;
 
-    /** Vínculo com o cadastro docente (obrigatório para o perfil PROFESSOR). */
     private String professorId;
 
     private boolean ativo = true;

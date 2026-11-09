@@ -25,7 +25,6 @@ import java.util.List;
 @RequestMapping("/api/materiais")
 @Tag(name = "Materiais", description = "Cadastro e pesquisa de materiais e equipamentos")
 public class MaterialController {
-
     private final MaterialService servico;
     private final UsuarioAtual usuarioAtual;
 

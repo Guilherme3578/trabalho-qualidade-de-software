@@ -20,7 +20,6 @@ import static org.mockito.Mockito.when;
 
 @DisplayName("[RF06] Repetição de transações em conflito de escrita")
 class ProtecaoConcorrenciaTest {
-
     private final TransactionTemplate tx = mock(TransactionTemplate.class);
     private final ProtecaoConcorrencia protecao = new ProtecaoConcorrencia(tx);
 

@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Teste de carga (RNF01) — Alocação de Salas
-  Pré-requisito: aplicação rodando com perfil dev (dados de demonstração).
-  Execução:  ./mvnw verify -Pdesempenho            (via jmeter-maven-plugin)
-         ou  jmeter -n -t src/test/jmeter/carga-reservas.jmx -Jusuarios=20 -Jloops=25 -l resultados.jtl -e -o relatorio/
-  Critérios de aceite: taxa de erro < 1% (verificada pelo plugin) e cada requisição em até 1000 ms (Duration Assertion);
-  meta de p95 < 500 ms analisada no relatório HTML gerado.
--->
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Carga - Alocação de Salas">
@@ -57,7 +49,6 @@
       </HeaderManager>
       <hashTree/>
 
-      <!-- ===================== PREPARAÇÃO: login + descoberta de IDs + reserva base ===================== -->
       <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="Preparação">
         <stringProp name="ThreadGroup.on_sample_error">stoptest</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
@@ -172,7 +163,6 @@ SampleResult.setIgnore();</stringProp>
         <hashTree/>
       </hashTree>
 
-      <!-- ===================== CARGA: usuários simultâneos ===================== -->
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Usuários simultâneos">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">

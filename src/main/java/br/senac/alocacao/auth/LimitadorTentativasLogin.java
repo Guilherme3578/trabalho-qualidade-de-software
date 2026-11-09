@@ -14,14 +14,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-/**
- * Proteção contra força bruta: após N falhas de login para o mesmo e-mail dentro da janela,
- * novas tentativas são recusadas com 429 até a janela expirar.
- * (Implementação em memória — adequada a uma instância; em cluster usaria um armazenamento compartilhado.)
- */
 @Component
 public class LimitadorTentativasLogin {
-
     private record Janela(int falhas, Instant inicio) {
     }
 

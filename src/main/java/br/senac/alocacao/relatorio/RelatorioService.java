@@ -31,13 +31,8 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/**
- * Relatórios gerenciais (RF12): utilização por recurso, carga horária alocada por professor
- * e conflitos evitados. Consideram apenas reservas efetivas (APROVADA, EM_USO, CONCLUIDA).
- */
 @Service
 public class RelatorioService {
-
     private static final long MAX_DIAS = 366;
 
     private final MongoTemplate mongo;

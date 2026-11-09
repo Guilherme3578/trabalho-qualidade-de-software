@@ -23,7 +23,6 @@ public record ReservaResponse(
         List<MovimentacaoMaterial> movimentacoes,
         LocalDateTime criadoEm,
         LocalDateTime atualizadoEm) {
-
     public static ReservaResponse de(Reserva r) {
         return new ReservaResponse(r.getId(), r.getSalaId(), r.getSalaCodigo(), r.getProfessorId(),
                 r.getProfessorNome(), r.getSolicitanteId(), r.getSolicitanteNome(), r.getDisciplina(),

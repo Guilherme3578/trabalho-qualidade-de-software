@@ -15,13 +15,8 @@ import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Respostas 401/403 geradas pela camada de segurança (antes de chegar aos controllers),
- * no mesmo formato Problem Details usado pelo restante da API.
- */
 @Component
 public class RespostasSeguranca {
-
     public AuthenticationEntryPoint naoAutenticado() {
         return (req, res, ex) -> escrever(res, HttpStatus.UNAUTHORIZED, CodigoErro.NAO_AUTENTICADO,
                 "Autenticação necessária. Faça login e envie o token no cabeçalho Authorization.");

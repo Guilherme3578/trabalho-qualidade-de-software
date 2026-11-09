@@ -22,7 +22,6 @@ import java.util.List;
 @RequestMapping("/api/bloqueios")
 @Tag(name = "Bloqueios", description = "Períodos de manutenção e indisponibilidade de recursos")
 public class BloqueioController {
-
     private final BloqueioService servico;
     private final UsuarioAtual usuarioAtual;
 
