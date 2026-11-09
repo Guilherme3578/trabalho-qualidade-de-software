@@ -1,5 +1,7 @@
 package br.senac.alocacao.config;
 
+import br.senac.alocacao.usuario.Usuario;
+import br.senac.alocacao.usuario.UsuarioRepository;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,13 +16,18 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
@@ -32,7 +39,8 @@ public class SecurityConfig {
     private static final String PROFESSOR = "PROFESSOR";
 
     @Bean
-    public SecurityFilterChain filtros(HttpSecurity http, RespostasSeguranca respostas) throws Exception {
+    public SecurityFilterChain filtros(HttpSecurity http, RespostasSeguranca respostas, UsuarioRepository usuarios)
+            throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -56,7 +64,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/reservas/*").hasAnyRole(PROFESSOR, COORDENADOR)
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(o -> o
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(conversorPerfis()))
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(conversorPerfis(usuarios)))
                         .authenticationEntryPoint(respostas.naoAutenticado())
                         .accessDeniedHandler(respostas.acessoNegado()))
                 .exceptionHandling(e -> e
@@ -70,13 +78,16 @@ public class SecurityConfig {
         return http.build();
     }
 
-    private JwtAuthenticationConverter conversorPerfis() {
-        JwtGrantedAuthoritiesConverter perfis = new JwtGrantedAuthoritiesConverter();
-        perfis.setAuthoritiesClaimName("perfil");
-        perfis.setAuthorityPrefix("ROLE_");
-        JwtAuthenticationConverter conversor = new JwtAuthenticationConverter();
-        conversor.setJwtGrantedAuthoritiesConverter(perfis);
-        return conversor;
+    static Converter<Jwt, AbstractAuthenticationToken> conversorPerfis(UsuarioRepository usuarios) {
+        return jwt -> {
+            String uid = jwt.getClaimAsString("uid");
+            Usuario u = (uid == null ? null : usuarios.findById(uid).filter(Usuario::isAtivo).orElse(null));
+            if (u == null) {
+                throw new InvalidBearerTokenException("Usuário inexistente ou desativado.");
+            }
+            return new JwtAuthenticationToken(jwt,
+                    List.of(new SimpleGrantedAuthority("ROLE_" + u.getPerfil().name())), u.getEmail());
+        };
     }
 
     @Bean
