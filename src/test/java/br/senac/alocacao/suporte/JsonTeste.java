@@ -7,9 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/** Monta corpos JSON para os testes de API (aceita mapas e listas aninhados). */
 public final class JsonTeste {
-
     private JsonTeste() {
     }
 

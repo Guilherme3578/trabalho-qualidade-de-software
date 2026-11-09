@@ -5,12 +5,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-/**
- * Relógio ajustável usado nos testes de integração: permite "viajar no tempo" para testar
- * regras como iniciar uso, não comparecimento e reservas no passado de forma determinística.
- */
 public class RelogioTeste extends Clock {
-
     public static final LocalDateTime AGORA_PADRAO = LocalDateTime.parse("2030-03-11T08:00");
 
     private final ZoneId zona = ZoneId.systemDefault();

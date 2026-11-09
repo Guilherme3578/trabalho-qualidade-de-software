@@ -38,16 +38,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.restassured.RestAssured.given;
 
-/**
- * Base dos testes de integração: sobe a aplicação completa em porta aleatória, com MongoDB
- * real (Testcontainers) e a API externa de notificação simulada (WireMock).
- * O banco é limpo antes de cada teste para garantir independência entre os testes.
- */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Import(ContainersTeste.class)
 public abstract class IntegracaoBase {
-
     public static final String SENHA = "Senha123";
     protected static final WireMockServer WIREMOCK = new WireMockServer(options().dynamicPort());
 
@@ -58,6 +52,11 @@ public abstract class IntegracaoBase {
     @DynamicPropertySource
     static void propriedades(DynamicPropertyRegistry registro) {
         registro.add("app.notificacao.url", () -> WIREMOCK.baseUrl() + "/notificacoes");
+        String mongoExterno = System.getenv("MONGODB_URI_TESTE");
+        if (mongoExterno != null && !mongoExterno.isBlank()) {
+            registro.add("spring.mongodb.uri", () -> mongoExterno);
+            registro.add("spring.data.mongodb.uri", () -> mongoExterno);
+        }
     }
 
     @LocalServerPort
@@ -80,8 +79,6 @@ public abstract class IntegracaoBase {
         RestAssured.port = porta;
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
-
-    // ------------------------------------------------------------------ fábricas de dados
 
     protected Usuario usuario(Perfil perfil) {
         return usuario(perfil, null);
@@ -106,8 +103,6 @@ public abstract class IntegracaoBase {
         return materiais.save(new Material(nome, "Geral", null, quantidade, "Almoxarifado", restrito));
     }
 
-    // ------------------------------------------------------------------ apoio à API
-
     protected String token(Usuario u) {
         return given().contentType(ContentType.JSON)
                 .body(JsonTeste.json(Map.of("email", u.getEmail(), "senha", SENHA)))
@@ -124,7 +119,6 @@ public abstract class IntegracaoBase {
         return LocalDateTime.parse(dataHora);
     }
 
-    /** Corpo JSON de reserva no dia de teste (2030-03-11). */
     protected static String reservaJson(Sala sala, Professor prof, String disciplina, String inicio, String fim,
                                         int alunos, List<Map<String, Object>> materiais) {
         return JsonTeste.json(JsonTeste.mapa(
