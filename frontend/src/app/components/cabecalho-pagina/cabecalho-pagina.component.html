@@ -1,0 +1,18 @@
+<header class="cabecalho animar">
+  <div class="titulo">
+    @if (icone()) {
+      <span class="icone">
+        <lucide-icon [name]="icone()" />
+      </span>
+    }
+    <div>
+      <h1>{{ titulo() }}</h1>
+      @if (subtitulo()) {
+        <p class="texto-suave">{{ subtitulo() }}</p>
+      }
+    </div>
+  </div>
+  <div class="acoes">
+    <ng-content />
+  </div>
+</header>

@@ -1,0 +1,35 @@
+<app-cabecalho-pagina
+  titulo="Notificações"
+  [subtitulo]="servico.naoLidas() ? servico.naoLidas() + ' não lida(s)' : 'Você está em dia'"
+  icone="bell"
+/>
+
+@if (carregando()) {
+  <div class="pilha">
+    @for (n of [1, 2, 3]; track n) {
+      <div class="skeleton" style="height: 84px"></div>
+    }
+  </div>
+} @else if (servico.notificacoes().length === 0) {
+  <app-estado-vazio titulo="Nenhuma notificação" texto="Avisos sobre suas reservas aparecem aqui." icone="bell" />
+} @else {
+  <ul class="lista">
+    @for (n of servico.notificacoes(); track n.id; let i = $index) {
+      <li class="cartao notificacao animar" [class.nova]="!n.lida" [style.--i]="i">
+        <span class="icone" [class]="'tipo-' + n.tipo"><lucide-icon [name]="icone(n)" /></span>
+        <div class="corpo">
+          <p>{{ n.mensagem }}</p>
+          <small class="texto-fraco">{{ n.criadoEm | date: "dd/MM/yyyy 'às' HH:mm" }}</small>
+        </div>
+        <div class="acoes">
+          @if (n.reservaId) {
+            <a class="btn btn-fantasma btn-sm" [routerLink]="['/reservas', n.reservaId]" (click)="marcarLida(n)">Ver reserva</a>
+          }
+          @if (!n.lida) {
+            <button type="button" class="btn btn-sm" (click)="marcarLida(n)"><lucide-icon name="check" /> Marcar como lida</button>
+          }
+        </div>
+      </li>
+    }
+  </ul>
+}

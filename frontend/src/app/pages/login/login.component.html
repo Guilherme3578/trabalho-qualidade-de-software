@@ -1,0 +1,95 @@
+<div class="tela">
+  <section class="apresentacao">
+    <div class="orbe orbe-1"></div>
+    <div class="orbe orbe-2"></div>
+    <div class="orbe orbe-3"></div>
+
+    <div class="marca">
+      <span class="logo"><lucide-icon name="building-2" /></span>
+      <strong>Aloca<span class="texto-degrade">SENAC</span></strong>
+    </div>
+
+    <div class="chamada">
+      <span class="selo"><lucide-icon name="sparkles" /> Sem conflitos de agenda</span>
+      <h1>Salas, professores e materiais <span class="texto-degrade">no lugar certo</span>, na hora certa.</h1>
+      <p class="texto-suave">
+        Reserve em segundos, veja a disponibilidade em tempo real e deixe que o sistema impeça dupla reserva,
+        conflitos de horário e uso de recursos em manutenção.
+      </p>
+    </div>
+
+    <ul class="destaques">
+      <li style="--i: 1" class="animar"><lucide-icon name="calendar-days" /> Disponibilidade em tempo real</li>
+      <li style="--i: 2" class="animar"><lucide-icon name="shield-check" /> Aprovação de recursos restritos</li>
+      <li style="--i: 3" class="animar"><lucide-icon name="chart-column" /> Relatórios de ocupação</li>
+    </ul>
+  </section>
+
+  <section class="acesso">
+    <form class="cartao formulario animar" [formGroup]="formulario" (ngSubmit)="entrar()" novalidate>
+      <div>
+        <h2>Bem-vindo de volta</h2>
+        <p class="texto-suave">Entre com seu e-mail institucional.</p>
+      </div>
+
+      @if (erro()) {
+        <div class="alerta" role="alert">
+          <lucide-icon name="triangle-alert" />
+          {{ erro() }}
+        </div>
+      }
+
+      <label class="campo">
+        <span>E-mail</span>
+        <input id="email" type="email" formControlName="email" placeholder="nome@senac.br" autocomplete="username" />
+        @if (formulario.controls.email.touched && formulario.controls.email.invalid) {
+          <small>Informe um e-mail válido.</small>
+        }
+      </label>
+
+      <label class="campo">
+        <span>Senha</span>
+        <div class="senha">
+          <input
+            id="senha"
+            [type]="mostrarSenha() ? 'text' : 'password'"
+            formControlName="senha"
+            placeholder="••••••••"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="olho"
+            [attr.aria-label]="mostrarSenha() ? 'Ocultar senha' : 'Mostrar senha'"
+            (click)="mostrarSenha.set(!mostrarSenha())"
+          >
+            <lucide-icon [name]="mostrarSenha() ? 'eye-off' : 'eye'" />
+          </button>
+        </div>
+        @if (formulario.controls.senha.touched && formulario.controls.senha.invalid) {
+          <small>Informe a senha.</small>
+        }
+      </label>
+
+      <button type="submit" class="btn btn-primario entrar" [disabled]="enviando()">
+        @if (enviando()) {
+          <lucide-icon name="loader-circle" class="girando" /> Entrando...
+        } @else {
+          Entrar <lucide-icon name="chevron-right" />
+        }
+      </button>
+
+      <div class="demos">
+        <p class="texto-fraco">Acesso rápido de demonstração</p>
+        <div class="lista-demos">
+          @for (demo of demos; track demo.email) {
+            <button type="button" class="demo" (click)="usarDemo(demo)">
+              <lucide-icon [name]="demo.icone" />
+              {{ demo.perfil }}
+            </button>
+          }
+        </div>
+      </div>
+    </form>
+  </section>
+</div>

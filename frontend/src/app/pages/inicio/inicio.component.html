@@ -1,0 +1,104 @@
+<section class="boas-vindas cartao animar">
+  <div>
+    <p class="data">{{ agora | date: "EEEE, d 'de' MMMM" }}</p>
+    <h1>{{ saudacao() }}, <span class="texto-degrade">{{ auth.usuario()?.nome?.split(' ')?.[0] }}</span></h1>
+    <p class="texto-suave">Aqui está o resumo das reservas para hoje e para os próximos dias.</p>
+  </div>
+  <lucide-icon name="sparkles" class="enfeite" />
+</section>
+
+<section class="indicadores">
+  @for (ind of indicadores(); track ind.rotulo; let i = $index) {
+    <article class="cartao cartao-interativo indicador animar" [class]="ind.cor" [style.--i]="i + 1">
+      <span class="icone"><lucide-icon [name]="ind.icone" /></span>
+      @if (carregando()) {
+        <span class="skeleton numero-skeleton"></span>
+      } @else {
+        <strong class="numero">{{ ind.valor }}</strong>
+      }
+      <span class="rotulo">{{ ind.rotulo }}</span>
+      <span class="texto-fraco">{{ ind.dica }}</span>
+    </article>
+  }
+</section>
+
+<div class="colunas">
+  <section class="cartao agenda animar" style="--i: 5">
+    <header class="entre">
+      <h2>Agenda de hoje</h2>
+      <a routerLink="/reservas" class="btn btn-fantasma btn-sm">Ver todas <lucide-icon name="chevron-right" /></a>
+    </header>
+
+    @if (carregando()) {
+      @for (n of [1, 2, 3]; track n) {
+        <div class="skeleton linha-skeleton"></div>
+      }
+    } @else if (hoje().length === 0) {
+      <app-estado-vazio titulo="Nenhuma reserva hoje" texto="Quando houver reservas para hoje, elas aparecem aqui em ordem de horário." icone="calendar-days" />
+    } @else {
+      <ol class="linha-tempo">
+        @for (r of hoje(); track r.id) {
+          <li [class.agora]="acontecendo(r)">
+            <span class="hora">
+              {{ r.inicio | date: 'HH:mm' }}
+              <small>{{ r.fim | date: 'HH:mm' }}</small>
+            </span>
+            <a class="evento" [routerLink]="['/reservas', r.id]">
+              <div class="entre">
+                <strong>{{ r.disciplina }}</strong>
+                <app-status-badge [status]="r.status" />
+              </div>
+              <span class="detalhes texto-suave">
+                <lucide-icon name="door-open" /> {{ r.salaCodigo }}
+                <lucide-icon name="graduation-cap" /> {{ r.professorNome }}
+                <lucide-icon name="users" /> {{ r.quantidadeAlunos }}
+              </span>
+            </a>
+          </li>
+        }
+      </ol>
+    }
+  </section>
+
+  <section class="pilha">
+    <div class="cartao animar" style="--i: 6">
+      <h2>Ações rápidas</h2>
+      <div class="atalhos">
+        @for (a of atalhos(); track a.rota) {
+          <a class="atalho" [routerLink]="a.rota">
+            <span class="icone-atalho"><lucide-icon [name]="a.icone" /></span>
+            <span>
+              <strong>{{ a.rotulo }}</strong>
+              <small class="texto-fraco">{{ a.texto }}</small>
+            </span>
+            <lucide-icon name="chevron-right" class="seta" />
+          </a>
+        }
+      </div>
+    </div>
+
+    <div class="cartao animar" style="--i: 7">
+      <h2>Próximas reservas</h2>
+      @if (!carregando() && proximas().length === 0) {
+        <p class="texto-suave vazio-curto">Nada agendado para os próximos 7 dias.</p>
+      }
+      <ul class="proximas">
+        @for (r of proximas().slice(0, 5); track r.id) {
+          <li>
+            <a [routerLink]="['/reservas', r.id]">
+              <span class="dia">
+                <strong>{{ r.inicio | date: 'dd' }}</strong>
+                <small>{{ r.inicio | date: 'MMM' }}</small>
+              </span>
+              <span class="info">
+                <strong>{{ r.disciplina }}</strong>
+                <small class="texto-fraco">{{ r.inicio | date: 'HH:mm' }}–{{ r.fim | date: 'HH:mm' }} · {{ r.salaCodigo }}</small>
+                <app-status-badge [status]="r.status" />
+              </span>
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+</div>

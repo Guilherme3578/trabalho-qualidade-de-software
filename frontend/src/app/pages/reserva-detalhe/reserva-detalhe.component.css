@@ -1,0 +1,250 @@
+.grade {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+h2 {
+  margin-bottom: 1rem;
+}
+
+.destaque {
+  display: grid;
+  gap: 1.4rem;
+  background:
+    radial-gradient(420px 180px at 100% 0%, rgba(139, 92, 246, 0.16), transparent 70%),
+    var(--superficie);
+}
+
+.horario {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.calendario {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  padding: 0.5rem 0;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  border-radius: var(--raio);
+  background: rgba(139, 92, 246, 0.1);
+  line-height: 1.15;
+  box-shadow: 0 0 30px -12px var(--primaria);
+}
+
+.calendario strong {
+  font-size: 1.9rem;
+}
+
+.calendario small {
+  color: var(--primaria-clara);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.horas {
+  font-size: 1.8rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.texto-suave::first-letter {
+  text-transform: uppercase;
+}
+
+.dados {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.dados > div {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.8rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-p);
+  background: rgba(7, 8, 13, 0.4);
+}
+
+.dados lucide-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--secundaria);
+}
+
+.dados span {
+  display: grid;
+  font-weight: 600;
+}
+
+.dados small {
+  color: var(--texto-fraco);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.observacao {
+  display: flex;
+  gap: 0.5rem;
+  color: var(--texto-suave);
+}
+
+.motivos {
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: var(--raio-p);
+  background: rgba(251, 191, 36, 0.08);
+  color: var(--aviso);
+  font-size: 0.88rem;
+}
+
+.motivos strong {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.motivos ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--texto-suave);
+}
+
+.materiais {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.materiais li {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.85rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-p);
+}
+
+.nome-material {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.numeros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.barra {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(148, 163, 214, 0.12);
+  overflow: hidden;
+}
+
+.barra span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.retirado {
+  background: var(--degrade);
+}
+
+.devolvido {
+  background: var(--sucesso);
+}
+
+.movimentar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.movimentar input {
+  width: 90px;
+  min-height: 32px;
+  height: 32px;
+}
+
+.lista-acoes {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.lista-acoes .btn {
+  width: 100%;
+}
+
+.historico {
+  position: relative;
+  display: grid;
+  gap: 1.1rem;
+  margin: 0;
+  padding: 0 0 0 1.4rem;
+  list-style: none;
+}
+
+.historico::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 5px;
+  width: 2px;
+  background: linear-gradient(var(--primaria), rgba(34, 211, 238, 0.2));
+}
+
+.historico li {
+  position: relative;
+}
+
+.historico .ponto {
+  position: absolute;
+  top: 5px;
+  left: -1.4rem;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--primaria);
+  border-radius: 50%;
+  background: var(--fundo);
+}
+
+.historico li:first-child .ponto {
+  background: var(--primaria);
+  box-shadow: 0 0 10px var(--primaria);
+}
+
+.historico div {
+  display: grid;
+  font-size: 0.88rem;
+}
+
+.historico p {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+}
+
+.fim {
+  justify-content: flex-end;
+}
+
+@media (max-width: 1000px) {
+  .grade,
+  .dados {
+    grid-template-columns: 1fr;
+  }
+}

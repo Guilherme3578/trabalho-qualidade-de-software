@@ -1,0 +1,66 @@
+<div class="estrutura" [class.menu-aberto]="menuAberto()">
+  <aside class="lateral">
+    <a class="marca" routerLink="/inicio">
+      <span class="logo">
+        <lucide-icon name="building-2" />
+      </span>
+      <span>
+        <strong>Aloca</strong><span class="texto-degrade">SENAC</span>
+        <small>Salas, professores e materiais</small>
+      </span>
+    </a>
+
+    <nav aria-label="Menu principal">
+      @for (grupo of grupos(); track grupo.titulo) {
+        <p class="grupo">{{ grupo.titulo }}</p>
+        @for (item of grupo.itens; track item.rota) {
+          <a
+            class="item"
+            [routerLink]="item.rota"
+            routerLinkActive="ativo"
+            [routerLinkActiveOptions]="{ exact: item.rota === '/reservas' }"
+          >
+            <lucide-icon [name]="item.icone" />
+            <span>{{ item.rotulo }}</span>
+          </a>
+        }
+      }
+    </nav>
+
+    <div class="rodape-lateral">
+      <div class="perfil-usuario">
+        <span class="avatar">{{ iniciais() }}</span>
+        <span class="dados">
+          <strong>{{ auth.usuario()?.nome }}</strong>
+          <small>{{ perfis[auth.usuario()!.perfil] }}</small>
+        </span>
+      </div>
+      <button type="button" class="btn btn-fantasma btn-icone" aria-label="Sair" title="Sair" (click)="auth.sair()">
+        <lucide-icon name="log-out" />
+      </button>
+    </div>
+  </aside>
+
+  <div class="sombra-menu" (click)="alternarMenu()"></div>
+
+  <div class="principal">
+    <header class="topo">
+      <button type="button" class="btn btn-fantasma btn-icone menu-mobile" aria-label="Abrir menu" (click)="alternarMenu()">
+        <lucide-icon name="menu" />
+      </button>
+      <span class="saudacao texto-suave">
+        Olá, <strong>{{ auth.usuario()?.nome?.split(' ')?.[0] }}</strong>
+      </span>
+      <a class="btn btn-fantasma btn-icone sino" routerLink="/notificacoes" aria-label="Notificações" title="Notificações">
+        <lucide-icon name="bell" />
+        @if (notificacoes.naoLidas() > 0) {
+          <span class="contador">{{ notificacoes.naoLidas() }}</span>
+        }
+      </a>
+    </header>
+
+    <main class="conteudo">
+      <router-outlet />
+    </main>
+  </div>
+</div>

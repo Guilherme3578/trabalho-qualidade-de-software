@@ -71,6 +71,10 @@ Postman: importe `postman/alocacao-salas.postman_collection.json` e `postman/loc
 | [06 — Desempenho](docs/06-desempenho.md) | Cenário JMeter, metas e resultados |
 | [07 — TDD e BDD](docs/07-tdd-bdd.md) | Funcionalidades desenvolvidas com cada técnica |
 | [08 — CI e análise estática](docs/08-ci-analise-estatica.md) | GitHub Actions, JaCoCo, SonarCloud |
+| [09 — Relatório de testes de API](docs/09-relatorio-testes-api.md) | Resultado da collection Postman (gerado automaticamente) |
+| [10 — Relatório de testes de back-end](docs/10-relatorio-testes-backend.md) | JUnit, níveis da pirâmide e cobertura JaCoCo (gerado automaticamente) |
+| [11 — Revisão de código](docs/11-revisao-de-codigo.md) | Achados da revisão e pendências de regra de negócio |
+| [12 — Relatório técnico e de testes](docs/12-relatorio-tecnico.md) | Verificação consolidada de back-end, API, front-end, integração e desempenho |
 
 ## Estrutura
 

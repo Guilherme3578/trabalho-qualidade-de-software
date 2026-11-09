@@ -1,0 +1,50 @@
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.filtros .campo {
+  min-width: 220px;
+}
+
+.total {
+  margin-left: auto;
+}
+
+.quando {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.quando small {
+  color: var(--texto-fraco);
+}
+
+.mudanca {
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.mudanca lucide-icon {
+  margin: 0 0.2rem;
+  color: var(--texto-fraco);
+  vertical-align: middle;
+}
+
+.detalhes {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+td a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}

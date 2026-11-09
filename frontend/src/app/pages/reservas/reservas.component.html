@@ -1,0 +1,83 @@
+<app-cabecalho-pagina titulo="Reservas" subtitulo="Acompanhe, filtre e abra qualquer reserva para ver detalhes e ações." icone="calendar-days">
+  @if (podeReservar) {
+    <a routerLink="/reservas/nova" class="btn btn-primario"><lucide-icon name="plus" /> Nova reserva</a>
+  }
+</app-cabecalho-pagina>
+
+<section class="cartao filtros animar" style="--i: 1">
+  <label class="campo busca">
+    <span>Buscar</span>
+    <div class="com-icone">
+      <lucide-icon name="search" />
+      <input type="search" placeholder="Disciplina, sala ou professor" [ngModel]="busca()" (ngModelChange)="busca.set($event)" />
+    </div>
+  </label>
+  <label class="campo">
+    <span>De</span>
+    <input type="date" [(ngModel)]="inicio" (change)="carregar()" />
+  </label>
+  <label class="campo">
+    <span>Até</span>
+    <input type="date" [(ngModel)]="fim" (change)="carregar()" />
+  </label>
+  <label class="campo">
+    <span>Status</span>
+    <select [(ngModel)]="status" (change)="carregar()">
+      <option value="">Todos</option>
+      @for (s of statusDisponiveis; track s[0]) {
+        <option [value]="s[0]">{{ s[1] }}</option>
+      }
+    </select>
+  </label>
+  @if (podeReservar) {
+    <label class="checkbox somente-minhas">
+      <input type="checkbox" [(ngModel)]="minhas" (change)="carregar()" />
+      Só as minhas
+    </label>
+  }
+</section>
+
+@if (carregando()) {
+  <div class="pilha">
+    @for (n of [1, 2, 3, 4]; track n) {
+      <div class="skeleton linha-skeleton"></div>
+    }
+  </div>
+} @else if (filtradas().length === 0) {
+  <app-estado-vazio titulo="Nenhuma reserva encontrada" texto="Ajuste os filtros ou o período para ver outras reservas." icone="calendar-days" />
+} @else {
+  <div class="tabela-container animar" style="--i: 2">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Horário</th>
+          <th>Disciplina</th>
+          <th>Sala</th>
+          <th>Professor</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of filtradas(); track r.id) {
+          <tr class="clicavel" tabindex="0" (click)="abrir(r)" (keydown.enter)="abrir(r)">
+            <td class="data">{{ r.inicio | date: 'dd/MM' }} <small>{{ r.inicio | date: 'EEE' }}</small></td>
+            <td class="tabular">{{ r.inicio | date: 'HH:mm' }}–{{ r.fim | date: 'HH:mm' }}</td>
+            <td>
+              <strong>{{ r.disciplina }}</strong>
+              @if (r.materiais.length) {
+                <small class="texto-fraco materiais"><lucide-icon name="package" /> {{ r.materiais.length }} material(is)</small>
+              }
+            </td>
+            <td><span class="chip">{{ r.salaCodigo }}</span></td>
+            <td>{{ r.professorNome }}</td>
+            <td><app-status-badge [status]="r.status" /></td>
+            <td class="seta"><lucide-icon name="chevron-right" /></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="texto-fraco total">{{ filtradas().length }} reserva(s)</p>
+}

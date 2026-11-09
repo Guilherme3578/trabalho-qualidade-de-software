@@ -1,0 +1,34 @@
+.cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+
+.titulo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.icone {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--degrade);
+  box-shadow: var(--brilho);
+  color: #fff;
+}
+
+.icone lucide-icon {
+  width: 24px;
+  height: 24px;
+}
+
+p {
+  margin-top: 0.25rem;
+}

@@ -1,0 +1,64 @@
+.lista {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notificacao {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  transition: opacity var(--transicao), border-color var(--transicao);
+}
+
+.notificacao:not(.nova) {
+  opacity: 0.6;
+}
+
+.nova {
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.nova::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primaria);
+  box-shadow: 0 0 10px var(--primaria);
+  transform: translateY(-50%);
+}
+
+.icone {
+  --cor: var(--primaria-clara);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--cor) 15%, transparent);
+  color: var(--cor);
+}
+
+.tipo-RESERVA_APROVADA { --cor: var(--sucesso); }
+.tipo-RESERVA_REJEITADA,
+.tipo-RESERVA_CANCELADA { --cor: var(--perigo); }
+.tipo-RESERVA_SOLICITADA { --cor: var(--aviso); }
+
+.corpo {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 700px) {
+  .notificacao {
+    flex-wrap: wrap;
+  }
+}

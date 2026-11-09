@@ -51,3 +51,32 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./mvnw -B sonar:sonar -Dsonar.token=$SONAR_TOKEN
+
+  frontend:
+    name: Front-end (Angular)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: npm 11 (mesma versão do packageManager)
+        run: npm install -g npm@11.6.2
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Testes unitários
+        run: npm run test:ci
+
+      - name: Build de produção
+        run: npm run build

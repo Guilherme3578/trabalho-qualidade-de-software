@@ -1,0 +1,21 @@
+<div class="pilha-mensagens" aria-live="polite">
+  @for (m of servico.mensagens(); track m.id) {
+    <div class="mensagem" [class]="m.tipo" role="status">
+      <lucide-icon class="icone" [name]="icones[m.tipo]" />
+      <div class="corpo">
+        <strong>{{ m.titulo }}</strong>
+        <p>{{ m.texto }}</p>
+        @if (m.detalhes.length) {
+          <ul>
+            @for (d of m.detalhes; track $index) {
+              <li>{{ d }}</li>
+            }
+          </ul>
+        }
+      </div>
+      <button type="button" class="fechar" aria-label="Fechar aviso" (click)="servico.fechar(m.id)">
+        <lucide-icon name="x" />
+      </button>
+    </div>
+  }
+</div>

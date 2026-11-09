@@ -1,0 +1,8 @@
+.patrimonio {
+  display: block;
+}
+
+.quantidade {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}

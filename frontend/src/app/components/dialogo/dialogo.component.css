@@ -1,0 +1,43 @@
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.fundo {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 4, 8, 0.7);
+  backdrop-filter: blur(4px);
+  animation: aparecer 200ms ease both;
+}
+
+.dialogo {
+  position: relative;
+  width: 100%;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  background: var(--superficie-solida);
+  animation: entrar 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+@keyframes aparecer {
+  from { opacity: 0; }
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+}

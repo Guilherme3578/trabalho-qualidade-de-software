@@ -1,0 +1,73 @@
+.grade-pedidos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 1rem;
+}
+
+.pedido {
+  display: grid;
+  gap: 0.6rem;
+  align-content: start;
+}
+
+.pedido::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  border-radius: var(--raio) var(--raio) 0 0;
+  background: linear-gradient(90deg, var(--aviso), transparent);
+}
+
+.data {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.data strong {
+  margin-right: 0.35rem;
+  color: var(--aviso);
+}
+
+.info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  font-size: 0.85rem;
+}
+
+.info span,
+.materiais {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.motivos {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.25rem 0;
+  padding: 0.75rem;
+  border-radius: var(--raio-p);
+  background: rgba(251, 191, 36, 0.07);
+  list-style: none;
+  font-size: 0.83rem;
+}
+
+.motivos li {
+  display: flex;
+  gap: 0.45rem;
+  color: var(--aviso);
+}
+
+.botoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.fim {
+  justify-content: flex-end;
+}

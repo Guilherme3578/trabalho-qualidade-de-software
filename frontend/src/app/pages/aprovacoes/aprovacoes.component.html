@@ -1,0 +1,78 @@
+<app-cabecalho-pagina
+  titulo="Aprovações"
+  [subtitulo]="pendentes().length + ' pedido(s) aguardando sua análise'"
+  icone="clipboard-check"
+/>
+
+@if (carregando()) {
+  <div class="grade-cartoes">
+    @for (n of [1, 2, 3]; track n) {
+      <div class="skeleton" style="height: 240px"></div>
+    }
+  </div>
+} @else if (pendentes().length === 0) {
+  <app-estado-vazio titulo="Tudo em dia!" texto="Não há pedidos aguardando aprovação." icone="circle-check" />
+} @else {
+  <div class="grade-pedidos">
+    @for (r of pendentes(); track r.id; let i = $index) {
+      <article class="cartao cartao-interativo pedido animar" [style.--i]="i">
+        <header class="entre">
+          <span class="data">
+            <strong>{{ r.inicio | date: 'dd/MM' }}</strong>
+            {{ r.inicio | date: 'HH:mm' }}–{{ r.fim | date: 'HH:mm' }}
+          </span>
+          <a [routerLink]="['/reservas', r.id]" class="btn btn-fantasma btn-sm">Detalhes <lucide-icon name="chevron-right" /></a>
+        </header>
+        <h3>{{ r.disciplina }}</h3>
+        <p class="texto-suave info">
+          <span><lucide-icon name="door-open" /> {{ r.salaCodigo }}</span>
+          <span><lucide-icon name="graduation-cap" /> {{ r.professorNome }}</span>
+          <span><lucide-icon name="users" /> {{ r.quantidadeAlunos }}</span>
+        </p>
+        <p class="texto-fraco">Pedido por {{ r.solicitanteNome }}</p>
+        <ul class="motivos">
+          @for (m of r.motivosAprovacao; track m) {
+            <li><lucide-icon name="shield-check" /> {{ m }}</li>
+          }
+        </ul>
+        @if (r.materiais.length) {
+          <p class="texto-fraco materiais">
+            <lucide-icon name="package" />
+            @for (i of r.materiais; track i.materialId; let ultimo = $last) {
+              {{ i.quantidade }}× {{ i.materialNome }}{{ ultimo ? '' : ', ' }}
+            }
+          </p>
+        }
+        <footer class="botoes">
+          <button type="button" class="btn btn-perigo" [disabled]="processando() === r.id" (click)="abrirRejeicao(r)">
+            <lucide-icon name="x" /> Rejeitar
+          </button>
+          <button type="button" class="btn btn-sucesso" [disabled]="processando() === r.id" (click)="aprovar(r)">
+            @if (processando() === r.id) {
+              <lucide-icon name="loader-circle" class="girando" />
+            } @else {
+              <lucide-icon name="check" />
+            }
+            Aprovar
+          </button>
+        </footer>
+      </article>
+    }
+  </div>
+}
+
+@if (rejeitando(); as r) {
+  <app-dialogo titulo="Rejeitar reserva" (fechar)="rejeitando.set(null)">
+    <div class="formulario">
+      <p class="texto-suave">{{ r.disciplina }} · {{ r.inicio | date: 'dd/MM HH:mm' }} · {{ r.salaCodigo }}</p>
+      <label class="campo">
+        <span>Motivo da rejeição</span>
+        <textarea [(ngModel)]="motivo" placeholder="Ex.: laboratório reservado para manutenção preventiva"></textarea>
+      </label>
+      <div class="acoes fim">
+        <button type="button" class="btn btn-fantasma" (click)="rejeitando.set(null)">Voltar</button>
+        <button type="button" class="btn btn-perigo" [disabled]="processando() === r.id" (click)="rejeitar()">Rejeitar</button>
+      </div>
+    </div>
+  </app-dialogo>
+}
