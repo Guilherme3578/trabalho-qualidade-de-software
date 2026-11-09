@@ -15,7 +15,8 @@ código.
 7. [Etapa 4 — Interceptor e guards](#7-etapa-4--interceptor-e-guards)
 8. [Etapa 5 — Tema visual](#8-etapa-5--tema-visual)
 9. [Etapa 6 — Componentes reutilizáveis](#9-etapa-6--componentes-reutilizáveis)
-10. [Glossário](#glossário)
+10. [Etapa 7 — Tela de login](#10-etapa-7--tela-de-login)
+11. [Glossário](#glossário)
 
 ---
 
@@ -382,6 +383,66 @@ abre pelo botão ☰ e fecha sozinha ao trocar de página.
 
 O `routerLinkActive="ativo"` aplica a classe `ativo` no link da página atual, que ganha a barra em degradê.
 
+## 10. Etapa 7 — Tela de login
+
+Pasta `src/app/pages/login`. Primeira página do sistema, em `/login`.
+
+### Formulário reativo
+
+O formulário é criado **no TypeScript**, e não no HTML. Isso deixa as validações num lugar só e facilita
+testar:
+
+```ts
+protected readonly formulario = inject(FormBuilder).nonNullable.group({
+  email: ['', [Validators.required, Validators.email]],
+  senha: ['', Validators.required]
+});
+```
+
+No HTML, cada campo é ligado pelo nome:
+
+```html
+<form [formGroup]="formulario" (ngSubmit)="entrar()">
+  <input formControlName="email" />
+  @if (formulario.controls.email.touched && formulario.controls.email.invalid) {
+    <small>Informe um e-mail válido.</small>
+  }
+</form>
+```
+
+| Conceito | Significado |
+|---|---|
+| `nonNullable` | Ao limpar o formulário, os campos voltam para `''`, e não para `null` |
+| `Validators.required` / `.email` | Regras prontas do Angular |
+| `touched` | O usuário já passou pelo campo; só então mostramos o erro, para não assustar quem acabou de abrir a tela |
+| `markAllAsTouched()` | Ao tentar enviar inválido, mostra todos os erros de uma vez |
+| `getRawValue()` | Pega os valores tipados: `{ email: string, senha: string }` |
+
+### Fluxo do login
+
+1. O usuário clica em **Entrar**; se o formulário for inválido, os erros aparecem e nada é enviado.
+2. `enviando` vira `true`: o botão fica desabilitado e mostra um ícone girando, evitando cliques duplos.
+3. `AuthService.login()` chama `POST /api/auth/login`. Em caso de sucesso, guarda token e usuário e navega para
+   `/inicio`.
+4. Em caso de erro, `MensagemService.converter()` extrai a mensagem da API ("E-mail ou senha inválidos.") e ela
+   aparece num alerta que treme.
+
+### Outros detalhes
+
+- **Mostrar senha:** um signal `mostrarSenha` troca o `type` do input entre `password` e `text`.
+- **Acesso rápido de demonstração:** os botões preenchem e-mail e senha dos usuários de teste com
+  `formulario.setValue(...)`.
+- **`visitanteGuard`:** quem já está logado e abre `/login` é levado direto para `/inicio`.
+- **Animações:** as "orbes" coloridas do fundo flutuam com `@keyframes flutuar`, e os itens da lista entram em
+  sequência com `.animar` + `--i`.
+- **Título da aba:** a rota define `title: 'Entrar · AlocaSENAC'`, e o Angular atualiza o `<title>` sozinho.
+
+### Ícones
+
+O `lucide-icon` é usado como `<lucide-icon name="calendar-days" />`. O tamanho vem do CSS global
+(`width: 1.15em`), então o ícone acompanha o tamanho do texto ao redor; para um tamanho específico, basta definir
+`width` e `height` no CSS do componente.
+
 ---
 
 ## Glossário
@@ -400,3 +461,4 @@ O `routerLinkActive="ativo"` aplica a classe `ativo` no link da página atual, q
 | **Proxy** | Servidor intermediário que repassa `/api` para o back-end |
 | **JWT** | Token assinado que identifica o usuário logado |
 | **CORS** | Regra do navegador que bloqueia chamadas entre origens diferentes |
+| **Formulário reativo** | Formulário definido no TypeScript (`FormGroup`), ligado ao HTML com `formControlName` |
