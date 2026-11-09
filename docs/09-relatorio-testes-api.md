@@ -8,13 +8,13 @@
 
 | Item | Valor |
 |---|---|
-| Data da execução | 08/11/2026 21:28:53 |
-| Duração total | 5.8 s |
+| Data da execução | 08/11/2026 21:42:43 |
+| Duração total | 5.9 s |
 | Requisições executadas | 59 (0 com falha) |
 | Asserções verificadas | 124 (0 com falha) |
 | Scripts de teste | 59 (0 com falha) |
 | Scripts de pré-requisição | 3 (0 com falha) |
-| Tempo de resposta médio | 73 ms (mín. 7 ms, máx. 747 ms) |
+| Tempo de resposta médio | 73 ms (mín. 12 ms, máx. 719 ms) |
 
 ## 9.2 Resultado por pasta
 
@@ -37,11 +37,11 @@ Nenhuma falha. Todas as asserções passaram.
 
 | Requisição | Rota | Tempo |
 |---|---|---|
-| Especificação OpenAPI [RF14] | `GET /v3/api-docs` | 747 ms |
-| Login admin@senac.br | `POST /api/auth/login` | 420 ms |
-| Criar reserva → 201 APROVADA | `POST /api/reservas` | 218 ms |
-| Login com senha errada → 401 genérico | `POST /api/auth/login` | 161 ms |
-| Login ana.souza@senac.br | `POST /api/auth/login` | 149 ms |
+| Especificação OpenAPI [RF14] | `GET /v3/api-docs` | 719 ms |
+| Login admin@senac.br | `POST /api/auth/login` | 449 ms |
+| Criar reserva → 201 APROVADA | `POST /api/reservas` | 227 ms |
+| Login com senha errada → 401 genérico | `POST /api/auth/login` | 156 ms |
+| ADMIN cria sala | `POST /api/salas` | 145 ms |
 
 ## 9.5 Detalhamento de todas as requisições
 
@@ -49,100 +49,100 @@ Nenhuma falha. Todas as asserções passaram.
 
 | # | Requisição | Rota | Status | Tempo | Asserções |
 |---|---|---|---|---|---|
-| 1 | Login admin@senac.br | `POST /api/auth/login` | 200 OK | 420 ms | ✅ Status 200<br>✅ Retorna token Bearer |
-| 2 | Login coordenador@senac.br | `POST /api/auth/login` | 200 OK | 136 ms | ✅ Status 200<br>✅ Retorna token Bearer |
-| 3 | Login responsavel@senac.br | `POST /api/auth/login` | 200 OK | 143 ms | ✅ Status 200<br>✅ Retorna token Bearer |
-| 4 | Login ana.souza@senac.br | `POST /api/auth/login` | 200 OK | 149 ms | ✅ Status 200<br>✅ Retorna token Bearer |
-| 5 | Login com senha errada → 401 genérico | `POST /api/auth/login` | 401 Unauthorized | 161 ms | ✅ Status 401<br>✅ Código de erro CREDENCIAIS_INVALIDAS<br>✅ Resposta não expõe detalhes internos<br>✅ Mensagem genérica |
-| 6 | Acesso sem token → 401 | `GET /api/salas` | 401 Unauthorized | 23 ms | ✅ Status 401<br>✅ Código de erro NAO_AUTENTICADO<br>✅ Resposta não expõe detalhes internos |
-| 7 | Quem sou eu | `GET /api/auth/eu` | 200 OK | 44 ms | ✅ Status 200<br>✅ Perfil COORDENADOR |
+| 1 | Login admin@senac.br | `POST /api/auth/login` | 200 OK | 449 ms | ✅ Status 200<br>✅ Retorna token Bearer |
+| 2 | Login coordenador@senac.br | `POST /api/auth/login` | 200 OK | 135 ms | ✅ Status 200<br>✅ Retorna token Bearer |
+| 3 | Login responsavel@senac.br | `POST /api/auth/login` | 200 OK | 132 ms | ✅ Status 200<br>✅ Retorna token Bearer |
+| 4 | Login ana.souza@senac.br | `POST /api/auth/login` | 200 OK | 134 ms | ✅ Status 200<br>✅ Retorna token Bearer |
+| 5 | Login com senha errada → 401 genérico | `POST /api/auth/login` | 401 Unauthorized | 156 ms | ✅ Status 401<br>✅ Código de erro CREDENCIAIS_INVALIDAS<br>✅ Resposta não expõe detalhes internos<br>✅ Mensagem genérica |
+| 6 | Acesso sem token → 401 | `GET /api/salas` | 401 Unauthorized | 25 ms | ✅ Status 401<br>✅ Código de erro NAO_AUTENTICADO<br>✅ Resposta não expõe detalhes internos |
+| 7 | Quem sou eu | `GET /api/auth/eu` | 200 OK | 45 ms | ✅ Status 200<br>✅ Perfil COORDENADOR |
 
 ### 02 Cadastros [RF02]
 
 | # | Requisição | Rota | Status | Tempo | Asserções |
 |---|---|---|---|---|---|
-| 1 | ADMIN cria sala | `POST /api/salas` | 201 Created | 141 ms | ✅ Status 201 |
-| 2 | ADMIN cria sala restrita | `POST /api/salas` | 201 Created | 42 ms | ✅ Status 201 |
-| 3 | ADMIN cria professor | `POST /api/professores` | 201 Created | 79 ms | ✅ Status 201 |
-| 4 | ADMIN cria segundo professor | `POST /api/professores` | 201 Created | 41 ms | ✅ Status 201 |
-| 5 | ADMIN cria material | `POST /api/materiais` | 201 Created | 59 ms | ✅ Status 201 |
-| 6 | Código de sala duplicado → 409 | `POST /api/salas` | 409 Conflict | 39 ms | ✅ Status 409<br>✅ Código de erro REGISTRO_DUPLICADO<br>✅ Resposta não expõe detalhes internos |
-| 7 | Campos inválidos → 400 com mensagens [RNF03] | `POST /api/salas` | 400 Bad Request | 51 ms | ✅ Status 400<br>✅ Código de erro VALIDACAO<br>✅ Resposta não expõe detalhes internos<br>✅ Lista os campos inválidos |
-| 8 | PROFESSOR tentando criar sala → 403 [RNF02] | `POST /api/salas` | 403 Forbidden | 12 ms | ✅ Status 403<br>✅ Código de erro ACESSO_NEGADO<br>✅ Resposta não expõe detalhes internos |
+| 1 | ADMIN cria sala | `POST /api/salas` | 201 Created | 145 ms | ✅ Status 201 |
+| 2 | ADMIN cria sala restrita | `POST /api/salas` | 201 Created | 39 ms | ✅ Status 201 |
+| 3 | ADMIN cria professor | `POST /api/professores` | 201 Created | 83 ms | ✅ Status 201 |
+| 4 | ADMIN cria segundo professor | `POST /api/professores` | 201 Created | 50 ms | ✅ Status 201 |
+| 5 | ADMIN cria material | `POST /api/materiais` | 201 Created | 63 ms | ✅ Status 201 |
+| 6 | Código de sala duplicado → 409 | `POST /api/salas` | 409 Conflict | 41 ms | ✅ Status 409<br>✅ Código de erro REGISTRO_DUPLICADO<br>✅ Resposta não expõe detalhes internos |
+| 7 | Campos inválidos → 400 com mensagens [RNF03] | `POST /api/salas` | 400 Bad Request | 34 ms | ✅ Status 400<br>✅ Código de erro VALIDACAO<br>✅ Resposta não expõe detalhes internos<br>✅ Lista os campos inválidos |
+| 8 | PROFESSOR tentando criar sala → 403 [RNF02] | `POST /api/salas` | 403 Forbidden | 21 ms | ✅ Status 403<br>✅ Código de erro ACESSO_NEGADO<br>✅ Resposta não expõe detalhes internos |
 
 ### 03 Pesquisa [RF03]
 
 | # | Requisição | Rota | Status | Tempo | Asserções |
 |---|---|---|---|---|---|
-| 1 | Salas por tipo e capacidade | `GET /api/salas?tipo=SALA_AULA&capacidadeMinima=30` | 200 OK | 58 ms | ✅ Status 200<br>✅ Todas com capacidade >= 30 |
-| 2 | Salas por localização | `GET /api/salas?localizacao=bloco%20p` | 200 OK | 23 ms | ✅ Status 200<br>✅ Encontra as salas do Bloco P |
-| 3 | Salas disponíveis no horário | `GET /api/salas?inicio=2026-12-22T09:00&fim=2026-12-22T11:00` | 200 OK | 86 ms | ✅ Status 200 |
-| 4 | Professores por competência | `GET /api/professores?competencia=qualidade%20de%20software` | 200 OK | 36 ms | ✅ Status 200<br>✅ Encontra pelo menos um |
-| 5 | Materiais com quantidade disponível | `GET /api/materiais?inicio=2026-12-22T09:00&fim=2026-12-22T11:00` | 200 OK | 71 ms | ✅ Status 200<br>✅ Informa quantidadeDisponivel |
-| 6 | Injeção no filtro é tratada como texto [RNF03] | `GET /api/salas?localizacao=.*` | 200 OK | 18 ms | ✅ Status 200<br>✅ Nenhum resultado indevido |
+| 1 | Salas por tipo e capacidade | `GET /api/salas?tipo=SALA_AULA&capacidadeMinima=30` | 200 OK | 50 ms | ✅ Status 200<br>✅ Todas com capacidade >= 30 |
+| 2 | Salas por localização | `GET /api/salas?localizacao=bloco%20p` | 200 OK | 29 ms | ✅ Status 200<br>✅ Encontra as salas do Bloco P |
+| 3 | Salas disponíveis no horário | `GET /api/salas?inicio=2027-10-01T09:00&fim=2027-10-01T11:00` | 200 OK | 87 ms | ✅ Status 200 |
+| 4 | Professores por competência | `GET /api/professores?competencia=qualidade%20de%20software` | 200 OK | 26 ms | ✅ Status 200<br>✅ Encontra pelo menos um |
+| 5 | Materiais com quantidade disponível | `GET /api/materiais?inicio=2027-10-01T09:00&fim=2027-10-01T11:00` | 200 OK | 64 ms | ✅ Status 200<br>✅ Informa quantidadeDisponivel |
+| 6 | Injeção no filtro é tratada como texto [RNF03] | `GET /api/salas?localizacao=.*` | 200 OK | 17 ms | ✅ Status 200<br>✅ Nenhum resultado indevido |
 
 ### 04 Reservas e conflitos [RF04][RF05]
 
 | # | Requisição | Rota | Status | Tempo | Asserções |
 |---|---|---|---|---|---|
-| 1 | Criar reserva → 201 APROVADA | `POST /api/reservas` | 201 Created | 218 ms | ✅ Status 201<br>✅ Aprovada automaticamente |
-| 2 | Mesma sala, horário sobreposto → 409 CONFLITO_SALA | `POST /api/reservas` | 409 Conflict | 58 ms | ✅ Status 409<br>✅ Código de erro CONFLITO_SALA<br>✅ Resposta não expõe detalhes internos<br>✅ Mensagem compreensível |
-| 3 | Mesmo professor em outra sala → 409 CONFLITO_PROFESSOR | `POST /api/reservas` | 409 Conflict | 49 ms | ✅ Status 409<br>✅ Código de erro CONFLITO_PROFESSOR<br>✅ Resposta não expõe detalhes internos |
-| 4 | Material esgotado no horário → 409 CONFLITO_MATERIAL | `POST /api/reservas` | 409 Conflict | 83 ms | ✅ Status 409<br>✅ Código de erro CONFLITO_MATERIAL<br>✅ Resposta não expõe detalhes internos |
-| 5 | Horário adjacente (fim = início) → 201 | `POST /api/reservas` | 201 Created | 89 ms | ✅ Status 201 |
-| 6 | Término antes do início → 422 [RN01] | `POST /api/reservas` | 422 Unprocessable Entity (WebDAV) (RFC 4918) | 18 ms | ✅ Status 422<br>✅ Código de erro HORARIO_INVALIDO<br>✅ Resposta não expõe detalhes internos<br>✅ Mensagem RN01 |
-| 7 | Mais alunos que a capacidade → 422 [RN09] | `POST /api/reservas` | 422 Unprocessable Entity (WebDAV) (RFC 4918) | 30 ms | ✅ Status 422<br>✅ Código de erro CAPACIDADE_EXCEDIDA<br>✅ Resposta não expõe detalhes internos |
-| 8 | Professor reservando para outro professor → 403 | `POST /api/reservas` | 403 Forbidden | 17 ms | ✅ Status 403<br>✅ Código de erro ACESSO_NEGADO<br>✅ Resposta não expõe detalhes internos |
-| 9 | Alterar reserva (com versão) | `PUT /api/reservas/6af113c7bc5b8373a85b4990` | 200 OK | 75 ms | ✅ Status 200 |
-| 10 | Alterar com versão desatualizada → 409 | `PUT /api/reservas/6af113c7bc5b8373a85b4990` | 409 Conflict | 32 ms | ✅ Status 409<br>✅ Código de erro VERSAO_DESATUALIZADA<br>✅ Resposta não expõe detalhes internos |
-| 11 | Cancelar reserva adjacente | `POST /api/reservas/6af113c8bc5b8373a85b4997/cancelar` | 200 OK | 58 ms | ✅ Status 200<br>✅ CANCELADA |
-| 12 | Apagar reserva não iniciada → 204 | `DELETE /api/reservas/6af113c8bc5b8373a85b4997` | 204 No Content | 40 ms | ✅ Status 204 |
-| 13 | Minhas reservas | `GET /api/reservas?minhas=true` | 200 OK | 23 ms | ✅ Status 200 |
+| 1 | Criar reserva → 201 APROVADA | `POST /api/reservas` | 201 Created | 227 ms | ✅ Status 201<br>✅ Aprovada automaticamente |
+| 2 | Mesma sala, horário sobreposto → 409 CONFLITO_SALA | `POST /api/reservas` | 409 Conflict | 60 ms | ✅ Status 409<br>✅ Código de erro CONFLITO_SALA<br>✅ Resposta não expõe detalhes internos<br>✅ Mensagem compreensível |
+| 3 | Mesmo professor em outra sala → 409 CONFLITO_PROFESSOR | `POST /api/reservas` | 409 Conflict | 56 ms | ✅ Status 409<br>✅ Código de erro CONFLITO_PROFESSOR<br>✅ Resposta não expõe detalhes internos |
+| 4 | Material esgotado no horário → 409 CONFLITO_MATERIAL | `POST /api/reservas` | 409 Conflict | 71 ms | ✅ Status 409<br>✅ Código de erro CONFLITO_MATERIAL<br>✅ Resposta não expõe detalhes internos |
+| 5 | Horário adjacente (fim = início) → 201 | `POST /api/reservas` | 201 Created | 69 ms | ✅ Status 201 |
+| 6 | Término antes do início → 422 [RN01] | `POST /api/reservas` | 422 Unprocessable Entity (WebDAV) (RFC 4918) | 19 ms | ✅ Status 422<br>✅ Código de erro HORARIO_INVALIDO<br>✅ Resposta não expõe detalhes internos<br>✅ Mensagem RN01 |
+| 7 | Mais alunos que a capacidade → 422 [RN09] | `POST /api/reservas` | 422 Unprocessable Entity (WebDAV) (RFC 4918) | 27 ms | ✅ Status 422<br>✅ Código de erro CAPACIDADE_EXCEDIDA<br>✅ Resposta não expõe detalhes internos |
+| 8 | Professor reservando para outro professor → 403 | `POST /api/reservas` | 403 Forbidden | 21 ms | ✅ Status 403<br>✅ Código de erro ACESSO_NEGADO<br>✅ Resposta não expõe detalhes internos |
+| 9 | Alterar reserva (com versão) | `PUT /api/reservas/6af11705614ffe62c9ccb769` | 200 OK | 71 ms | ✅ Status 200 |
+| 10 | Alterar com versão desatualizada → 409 | `PUT /api/reservas/6af11705614ffe62c9ccb769` | 409 Conflict | 24 ms | ✅ Status 409<br>✅ Código de erro VERSAO_DESATUALIZADA<br>✅ Resposta não expõe detalhes internos |
+| 11 | Cancelar reserva adjacente | `POST /api/reservas/6af11706614ffe62c9ccb770/cancelar` | 200 OK | 55 ms | ✅ Status 200<br>✅ CANCELADA |
+| 12 | Apagar reserva não iniciada → 204 | `DELETE /api/reservas/6af11706614ffe62c9ccb770` | 204 No Content | 42 ms | ✅ Status 204 |
+| 13 | Minhas reservas | `GET /api/reservas?minhas=true` | 200 OK | 35 ms | ✅ Status 200 |
 
 ### 05 Aprovação de recursos restritos [RF07][RN06]
 
 | # | Requisição | Rota | Status | Tempo | Asserções |
 |---|---|---|---|---|---|
-| 1 | Reserva em sala restrita → SOLICITADA | `POST /api/reservas` | 201 Created | 83 ms | ✅ Status 201<br>✅ Aguardando aprovação<br>✅ Informa o motivo |
-| 2 | COORDENADOR tentando aprovar → 403 | `POST /api/reservas/6af113c8bc5b8373a85b499f/aprovar` | 403 Forbidden | 15 ms | ✅ Status 403<br>✅ Código de erro ACESSO_NEGADO<br>✅ Resposta não expõe detalhes internos |
-| 3 | ADMIN tentando aprovar → 403 | `POST /api/reservas/6af113c8bc5b8373a85b499f/aprovar` | 403 Forbidden | 8 ms | ✅ Status 403<br>✅ Código de erro ACESSO_NEGADO<br>✅ Resposta não expõe detalhes internos |
-| 4 | Pendentes de aprovação (RESPONSAVEL) | `GET /api/reservas?status=SOLICITADA` | 200 OK | 17 ms | ✅ Status 200 |
-| 5 | RESPONSAVEL aprova | `POST /api/reservas/6af113c8bc5b8373a85b499f/aprovar` | 200 OK | 41 ms | ✅ Status 200<br>✅ APROVADA |
-| 6 | Aprovar de novo → 409 TRANSICAO_INVALIDA | `POST /api/reservas/6af113c8bc5b8373a85b499f/aprovar` | 409 Conflict | 23 ms | ✅ Status 409<br>✅ Código de erro TRANSICAO_INVALIDA<br>✅ Resposta não expõe detalhes internos |
-| 7 | Histórico auditável da reserva [RF10][RN08] | `GET /api/reservas/6af113c8bc5b8373a85b499f/historico` | 200 OK | 24 ms | ✅ Status 200<br>✅ Registra criação e aprovação |
+| 1 | Reserva em sala restrita → SOLICITADA | `POST /api/reservas` | 201 Created | 70 ms | ✅ Status 201<br>✅ Aguardando aprovação<br>✅ Informa o motivo |
+| 2 | COORDENADOR tentando aprovar → 403 | `POST /api/reservas/6af11706614ffe62c9ccb778/aprovar` | 403 Forbidden | 13 ms | ✅ Status 403<br>✅ Código de erro ACESSO_NEGADO<br>✅ Resposta não expõe detalhes internos |
+| 3 | ADMIN tentando aprovar → 403 | `POST /api/reservas/6af11706614ffe62c9ccb778/aprovar` | 403 Forbidden | 12 ms | ✅ Status 403<br>✅ Código de erro ACESSO_NEGADO<br>✅ Resposta não expõe detalhes internos |
+| 4 | Pendentes de aprovação (RESPONSAVEL) | `GET /api/reservas?status=SOLICITADA` | 200 OK | 20 ms | ✅ Status 200 |
+| 5 | RESPONSAVEL aprova | `POST /api/reservas/6af11706614ffe62c9ccb778/aprovar` | 200 OK | 60 ms | ✅ Status 200<br>✅ APROVADA |
+| 6 | Aprovar de novo → 409 TRANSICAO_INVALIDA | `POST /api/reservas/6af11706614ffe62c9ccb778/aprovar` | 409 Conflict | 38 ms | ✅ Status 409<br>✅ Código de erro TRANSICAO_INVALIDA<br>✅ Resposta não expõe detalhes internos |
+| 7 | Histórico auditável da reserva [RF10][RN08] | `GET /api/reservas/6af11706614ffe62c9ccb778/historico` | 200 OK | 28 ms | ✅ Status 200<br>✅ Registra criação e aprovação |
 
 ### 06 Manutenção [RF08][RN04]
 
 | # | Requisição | Rota | Status | Tempo | Asserções |
 |---|---|---|---|---|---|
-| 1 | ADMIN bloqueia a sala para manutenção | `POST /api/bloqueios` | 201 Created | 67 ms | ✅ Status 201 |
-| 2 | Reservar sala em manutenção → 409 | `POST /api/reservas` | 409 Conflict | 43 ms | ✅ Status 409<br>✅ Código de erro RECURSO_EM_MANUTENCAO<br>✅ Resposta não expõe detalhes internos<br>✅ Informa o motivo |
-| 3 | ADMIN remove o bloqueio | `DELETE /api/bloqueios/6af113c9bc5b8373a85b49a4` | 204 No Content | 37 ms | ✅ Status 204 |
+| 1 | ADMIN bloqueia a sala para manutenção | `POST /api/bloqueios` | 201 Created | 77 ms | ✅ Status 201 |
+| 2 | Reservar sala em manutenção → 409 | `POST /api/reservas` | 409 Conflict | 40 ms | ✅ Status 409<br>✅ Código de erro RECURSO_EM_MANUTENCAO<br>✅ Resposta não expõe detalhes internos<br>✅ Informa o motivo |
+| 3 | ADMIN remove o bloqueio | `DELETE /api/bloqueios/6af11707614ffe62c9ccb77d` | 204 No Content | 41 ms | ✅ Status 204 |
 
 ### 07 Uso, retirada e devolução [RF09] (executar entre 07h e 21h30)
 
 | # | Requisição | Rota | Status | Tempo | Asserções |
 |---|---|---|---|---|---|
-| 1 | Reserva começando em 10 min com material | `POST /api/reservas` | 201 Created | 111 ms | ✅ Status 201 |
-| 2 | Iniciar uso → EM_USO | `POST /api/reservas/6af113c9bc5b8373a85b49a8/iniciar` | 200 OK | 43 ms | ✅ Status 200<br>✅ EM_USO |
-| 3 | Apagar reserva iniciada → 409 [RN07] | `DELETE /api/reservas/6af113c9bc5b8373a85b49a8` | 409 Conflict | 27 ms | ✅ Status 409<br>✅ Código de erro RESERVA_INICIADA<br>✅ Resposta não expõe detalhes internos |
-| 4 | Retirada acima do reservado → 422 | `POST /api/reservas/6af113c9bc5b8373a85b49a8/retiradas` | 422 Unprocessable Entity (WebDAV) (RFC 4918) | 34 ms | ✅ Status 422<br>✅ Código de erro MOVIMENTACAO_INVALIDA<br>✅ Resposta não expõe detalhes internos |
-| 5 | RESPONSAVEL registra retirada | `POST /api/reservas/6af113c9bc5b8373a85b49a8/retiradas` | 200 OK | 37 ms | ✅ Status 200 |
-| 6 | Concluir com material pendente → 409 | `POST /api/reservas/6af113c9bc5b8373a85b49a8/concluir` | 409 Conflict | 22 ms | ✅ Status 409<br>✅ Código de erro MATERIAIS_PENDENTES<br>✅ Resposta não expõe detalhes internos |
-| 7 | RESPONSAVEL registra devolução | `POST /api/reservas/6af113c9bc5b8373a85b49a8/devolucoes` | 200 OK | 33 ms | ✅ Status 200 |
-| 8 | Concluir → CONCLUIDA | `POST /api/reservas/6af113c9bc5b8373a85b49a8/concluir` | 200 OK | 40 ms | ✅ Status 200<br>✅ CONCLUIDA |
+| 1 | Reserva começando em 10 min com material | `POST /api/reservas` | 201 Created | 88 ms | ✅ Status 201 |
+| 2 | Iniciar uso → EM_USO | `POST /api/reservas/6af11707614ffe62c9ccb781/iniciar` | 200 OK | 47 ms | ✅ Status 200<br>✅ EM_USO |
+| 3 | Apagar reserva iniciada → 409 [RN07] | `DELETE /api/reservas/6af11707614ffe62c9ccb781` | 409 Conflict | 29 ms | ✅ Status 409<br>✅ Código de erro RESERVA_INICIADA<br>✅ Resposta não expõe detalhes internos |
+| 4 | Retirada acima do reservado → 422 | `POST /api/reservas/6af11707614ffe62c9ccb781/retiradas` | 422 Unprocessable Entity (WebDAV) (RFC 4918) | 53 ms | ✅ Status 422<br>✅ Código de erro MOVIMENTACAO_INVALIDA<br>✅ Resposta não expõe detalhes internos |
+| 5 | RESPONSAVEL registra retirada | `POST /api/reservas/6af11707614ffe62c9ccb781/retiradas` | 200 OK | 42 ms | ✅ Status 200 |
+| 6 | Concluir com material pendente → 409 | `POST /api/reservas/6af11707614ffe62c9ccb781/concluir` | 409 Conflict | 27 ms | ✅ Status 409<br>✅ Código de erro MATERIAIS_PENDENTES<br>✅ Resposta não expõe detalhes internos |
+| 7 | RESPONSAVEL registra devolução | `POST /api/reservas/6af11707614ffe62c9ccb781/devolucoes` | 200 OK | 63 ms | ✅ Status 200 |
+| 8 | Concluir → CONCLUIDA | `POST /api/reservas/6af11707614ffe62c9ccb781/concluir` | 200 OK | 60 ms | ✅ Status 200<br>✅ CONCLUIDA |
 
 ### 08 Relatórios, auditoria e notificações [RF10][RF11][RF12]
 
 | # | Requisição | Rota | Status | Tempo | Asserções |
 |---|---|---|---|---|---|
-| 1 | Relatório de utilização | `GET /api/relatorios/utilizacao?inicio=2026-12-22&fim=2026-12-22` | 200 OK | 81 ms | ✅ Status 200<br>✅ Tem salas e materiais |
-| 2 | Carga horária por professor | `GET /api/relatorios/carga-horaria?inicio=2026-12-22&fim=2026-12-22` | 200 OK | 36 ms | ✅ Status 200 |
-| 3 | Conflitos evitados (hoje) | `GET /api/relatorios/conflitos-evitados?inicio=2026-11-08&fim=2026-11-08` | 200 OK | 35 ms | ✅ Status 200<br>✅ Contabilizou os conflitos desta execução |
-| 4 | PROFESSOR acessando relatório → 403 | `GET /api/relatorios/utilizacao?inicio=2026-12-22&fim=2026-12-22` | 403 Forbidden | 7 ms | ✅ Status 403<br>✅ Código de erro ACESSO_NEGADO<br>✅ Resposta não expõe detalhes internos |
-| 5 | Auditoria (ADMIN) | `GET /api/auditoria?entidade=Reserva` | 200 OK | 22 ms | ✅ Status 200 |
-| 6 | Notificações do coordenador | `GET /api/notificacoes` | 200 OK | 28 ms | ✅ Status 200 |
-| 7 | Especificação OpenAPI [RF14] | `GET /v3/api-docs` | 200 OK | 747 ms | ✅ Status 200 |
+| 1 | Relatório de utilização | `GET /api/relatorios/utilizacao?inicio=2027-10-01&fim=2027-10-01` | 200 OK | 52 ms | ✅ Status 200<br>✅ Tem salas e materiais |
+| 2 | Carga horária por professor | `GET /api/relatorios/carga-horaria?inicio=2027-10-01&fim=2027-10-01` | 200 OK | 25 ms | ✅ Status 200 |
+| 3 | Conflitos evitados (hoje) | `GET /api/relatorios/conflitos-evitados?inicio=2026-11-08&fim=2026-11-08` | 200 OK | 47 ms | ✅ Status 200<br>✅ Contabilizou os conflitos desta execução |
+| 4 | PROFESSOR acessando relatório → 403 | `GET /api/relatorios/utilizacao?inicio=2027-10-01&fim=2027-10-01` | 403 Forbidden | 14 ms | ✅ Status 403<br>✅ Código de erro ACESSO_NEGADO<br>✅ Resposta não expõe detalhes internos |
+| 5 | Auditoria (ADMIN) | `GET /api/auditoria?entidade=Reserva` | 200 OK | 23 ms | ✅ Status 200 |
+| 6 | Notificações do coordenador | `GET /api/notificacoes` | 200 OK | 30 ms | ✅ Status 200 |
+| 7 | Especificação OpenAPI [RF14] | `GET /v3/api-docs` | 200 OK | 719 ms | ✅ Status 200 |
 
 ## 9.6 Como reproduzir
 

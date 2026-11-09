@@ -3,20 +3,20 @@
 > Arquivo **gerado automaticamente** por `scripts/rastreabilidade.py` — não edite à mão.
 > Cada teste cita os requisitos que verifica no próprio nome (ex.: `[RF05][RN02]`).
 
-Última execução encontrada em `target/`: **133 testes, 0 falha(s).**
+Última execução encontrada em `target/`: **250 testes, 0 falha(s).**
 
 ## Resumo
 
 | Requisito | Descrição | Qtde. de testes | Níveis |
 |---|---|---|---|
 | RF01 | Autenticação e autorização por perfil | 5 | API caixa-preta |
-| RF02 | Cadastro e consulta de salas, professores e materiais | 3 | API caixa-preta |
+| RF02 | Cadastro e consulta de salas, professores e materiais | 4 | API caixa-preta |
 | RF03 | Pesquisa por tipo, capacidade, localização, competência e disponibilidade | 7 | API caixa-preta, Unitário |
 | RF04 | Criação, alteração e cancelamento de reservas | 7 | API caixa-preta, End-to-end, Integração |
 | RF05 | Detecção de sobreposição de horários, inclusive na agenda do professor | 6 | API caixa-preta, End-to-end, Integração |
 | RF06 | Proteção contra dupla reserva em solicitações simultâneas | 11 | Concorrência, Unitário |
 | RF07 | Aprovação obrigatória para recursos restritos | 13 | API caixa-preta, Integração, Unitário |
-| RF08 | Bloqueio de recursos em manutenção | 3 | Integração |
+| RF08 | Bloqueio de recursos em manutenção | 5 | Concorrência, Integração |
 | RF09 | Registro de retirada e devolução de materiais e equipamentos | 8 | API caixa-preta, BDD, Integração |
 | RF10 | Histórico auditável de mudanças | 2 | API caixa-preta |
 | RF11 | Notificação simulada / integração com API externa | 6 | Integração |
@@ -26,7 +26,7 @@
 | RN01 | O término deve ser posterior ao início | 4 | API caixa-preta, Unitário |
 | RN02 | Reservas do mesmo recurso não podem se sobrepor — sala, material ou professor | 15 | Integração, Unitário |
 | RN03 | Duas solicitações simultâneas devem produzir uma única reserva aceita | 6 | Concorrência |
-| RN04 | Recursos em manutenção não podem ser reservados | 2 | Integração |
+| RN04 | Recursos em manutenção não podem ser reservados | 4 | Concorrência, Integração |
 | RN05 | Ciclo de estados SOLICITADA → APROVADA → EM_USO → CONCLUIDA; alternativos REJEITADA, CANCELADA, NAO_COMPARECEU | 8 | Integração, Unitário |
 | RN06 | Somente responsáveis aprovam recursos restritos | 5 | API caixa-preta, Integração, Unitário |
 | RN07 | Reservas iniciadas não podem ser apagadas | 5 | API caixa-preta, Integração, Unitário |
@@ -34,7 +34,7 @@
 | RN09 | Quantidade de alunos não pode exceder a capacidade da sala | 1 | Integração |
 | RN10 | Reservas no futuro, no mesmo dia, entre 07:00 e 23:00, com duração entre 30 min e 6 h | 4 | Integração, Unitário |
 | RNF01 | Desempenho sob carga | 1 | JMeter |
-| RNF02 | Autorização e proteção de acesso | 17 | API caixa-preta, Unitário |
+| RNF02 | Autorização e proteção de acesso | 20 | API caixa-preta, Unitário |
 | RNF03 | Validação de entrada | 10 | API caixa-preta, Unitário |
 | RNF04 | Tratamento seguro de erros | 5 | API caixa-preta, Unitário |
 | RNF05 | Cobertura de testes | 1 | JaCoCo |
@@ -58,6 +58,7 @@
 |---|---|---|
 | API caixa-preta | `CadastroPesquisaApiIT` | API caixa-preta: cadastros e pesquisa |
 | API caixa-preta | `CadastroPesquisaApiIT` | ADMIN cadastra sala, professor e material; demais perfis consultam |
+| API caixa-preta | `CadastroPesquisaApiIT` | Campos booleanos opcionais omitidos assumem false em vez de erro de formato |
 | API caixa-preta | `CadastroPesquisaApiIT` | Código de sala duplicado devolve 409 compreensível |
 
 ### RF03 — Pesquisa por tipo, capacidade, localização, competência e disponibilidade
@@ -133,9 +134,11 @@
 
 | Nível | Classe / arquivo | Caso de teste |
 |---|---|---|
+| Concorrência | `ConcorrenciaReservaIT` | Bloqueio e reserva simultâneos: a reserva é recusada ou aparece como afetada |
 | Integração | `ReservaServiceIT` | Sala em manutenção não pode ser reservada |
 | Integração | `ReservaServiceIT` | Material em manutenção não pode ser reservado |
 | Integração | `ReservaServiceIT` | Bloqueio informa reservas já existentes afetadas |
+| Integração | `ReservaServiceIT` | Reserva pendente não pode ser aprovada se o recurso entrou em manutenção |
 
 ### RF09 — Registro de retirada e devolução de materiais e equipamentos
 
@@ -242,8 +245,10 @@
 
 | Nível | Classe / arquivo | Caso de teste |
 |---|---|---|
+| Concorrência | `ConcorrenciaReservaIT` | Bloqueio e reserva simultâneos: a reserva é recusada ou aparece como afetada |
 | Integração | `ReservaServiceIT` | Sala em manutenção não pode ser reservada |
 | Integração | `ReservaServiceIT` | Material em manutenção não pode ser reservado |
+| Integração | `ReservaServiceIT` | Reserva pendente não pode ser aprovada se o recurso entrou em manutenção |
 
 ### RN05 — Ciclo de estados SOLICITADA → APROVADA → EM_USO → CONCLUIDA; alternativos REJEITADA, CANCELADA, NAO_COMPARECEU
 
@@ -316,6 +321,8 @@
 | API caixa-preta | `SegurancaApiIT` | {0} {1} sem token → 401 |
 | API caixa-preta | `SegurancaApiIT` | Rotas protegidas exigem autenticação |
 | API caixa-preta | `SegurancaApiIT` | Token adulterado é rejeitado |
+| API caixa-preta | `SegurancaApiIT` | Usuário desativado perde o acesso imediatamente, mesmo com token ainda válido |
+| API caixa-preta | `SegurancaApiIT` | Mudança de perfil vale imediatamente: o perfil antigo do token não é aceito |
 | API caixa-preta | `SegurancaApiIT` | Token forjado com outra chave e perfil ADMIN é rejeitado |
 | API caixa-preta | `SegurancaApiIT` | {0} não pode {1} {2} → 403 |
 | API caixa-preta | `SegurancaApiIT` | Autorização por perfil |
@@ -325,6 +332,7 @@
 | API caixa-preta | `SegurancaApiIT` | Lista de usuários (ADMIN) nunca devolve o hash da senha |
 | Unitário | `LimitadorTentativasLoginTest` | Proteção contra força bruta no login |
 | Unitário | `LimitadorTentativasLoginTest` | Bloqueia após o número máximo de falhas |
+| Unitário | `LimitadorTentativasLoginTest` | Tentativas expiradas são descartadas para a memória não crescer sem limite |
 | Unitário | `LimitadorTentativasLoginTest` | Libera após a janela expirar |
 | Unitário | `LimitadorTentativasLoginTest` | Login bem-sucedido zera o contador |
 | Unitário | `LimitadorTentativasLoginTest` | Contadores são independentes por e-mail |
