@@ -1,0 +1,115 @@
+<app-cabecalho-pagina titulo="Manutenções" subtitulo="Bloqueie salas, professores ou materiais por um período. Nenhuma reserva nova é aceita nesse intervalo." icone="wrench">
+  <button type="button" class="btn btn-primario" (click)="novo()"><lucide-icon name="plus" /> Nova manutenção</button>
+</app-cabecalho-pagina>
+
+@if (carregando()) {
+  <div class="skeleton tabela-skeleton"></div>
+} @else if (bloqueios().length === 0) {
+  <app-estado-vazio titulo="Nenhuma manutenção registrada" texto="Quando um recurso precisar ficar indisponível, registre aqui." icone="wrench" />
+} @else {
+  <div class="lista">
+    @for (b of bloqueios(); track b.id; let i = $index) {
+      <article class="cartao manutencao animar" [style.--i]="i" [class.vigente]="vigente(b)" [class.encerrado]="encerrado(b)">
+        <span class="icone"><lucide-icon name="wrench" /></span>
+        <div class="dados">
+          <div class="entre">
+            <strong>{{ nomeRecurso(b) }}</strong>
+            <span class="acoes">
+              <span class="chip">{{ rotulosTipo[b.tipoRecurso] }}</span>
+              @if (vigente(b)) {
+                <span class="badge badge-aviso">Em andamento</span>
+              } @else if (encerrado(b)) {
+                <span class="badge badge-neutro">Encerrada</span>
+              } @else {
+                <span class="badge badge-info">Agendada</span>
+              }
+            </span>
+          </div>
+          <p class="texto-suave">{{ b.motivo }}</p>
+          <small class="texto-fraco">{{ b.inicio | date: 'dd/MM/yyyy HH:mm' }} até {{ b.fim | date: 'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+        <button type="button" class="btn btn-fantasma btn-icone" aria-label="Remover manutenção" title="Remover" (click)="removendo.set(b)">
+          <lucide-icon name="trash-2" />
+        </button>
+      </article>
+    }
+  </div>
+}
+
+@if (dialogoAberto()) {
+  <app-dialogo titulo="Nova manutenção" (fechar)="dialogoAberto.set(false)">
+    <form class="formulario" [formGroup]="formulario" (ngSubmit)="salvar()" novalidate>
+      <div class="linha-campos">
+        <label class="campo">
+          <span>Tipo de recurso</span>
+          <select formControlName="tipoRecurso">
+            @for (t of tipos; track t[0]) {
+              <option [value]="t[0]">{{ t[1] }}</option>
+            }
+          </select>
+        </label>
+        <label class="campo">
+          <span>Recurso</span>
+          <select formControlName="recursoId">
+            <option value="" disabled>Selecione</option>
+            @for (r of opcoes(); track r.id) {
+              <option [value]="r.id">{{ r.nome }}</option>
+            }
+          </select>
+          @if (formulario.controls.recursoId.touched && formulario.controls.recursoId.invalid) {
+            <small>Escolha o recurso.</small>
+          }
+        </label>
+      </div>
+      <div class="linha-campos">
+        <label class="campo">
+          <span>Início</span>
+          <input type="datetime-local" formControlName="inicio" />
+        </label>
+        <label class="campo">
+          <span>Término</span>
+          <input type="datetime-local" formControlName="fim" />
+        </label>
+      </div>
+      <label class="campo">
+        <span>Motivo</span>
+        <input formControlName="motivo" placeholder="Ex.: troca do ar-condicionado" />
+        @if (formulario.controls.motivo.touched && formulario.controls.motivo.invalid) {
+          <small>Informe o motivo.</small>
+        }
+      </label>
+      <div class="acoes fim">
+        <button type="button" class="btn btn-fantasma" (click)="dialogoAberto.set(false)">Cancelar</button>
+        <button type="submit" class="btn btn-primario" [disabled]="salvando()"><lucide-icon name="check" /> Registrar</button>
+      </div>
+    </form>
+  </app-dialogo>
+}
+
+@if (afetadas(); as ids) {
+  <app-dialogo titulo="Reservas afetadas" (fechar)="afetadas.set(null)">
+    <div class="formulario">
+      <div class="aviso-afetadas">
+        <strong><lucide-icon name="triangle-alert" /> {{ ids.length }} reserva(s) já existentes caem nesse período.</strong>
+        <p>Elas continuam registradas. Avise os responsáveis ou cancele-as se necessário.</p>
+      </div>
+      <ul class="lista-afetadas">
+        @for (id of ids; track id) {
+          <li><a [routerLink]="['/reservas', id]" (click)="afetadas.set(null)">Abrir reserva <lucide-icon name="chevron-right" /></a></li>
+        }
+      </ul>
+    </div>
+  </app-dialogo>
+}
+
+@if (removendo(); as b) {
+  <app-dialogo titulo="Remover manutenção" (fechar)="removendo.set(null)">
+    <div class="formulario">
+      <p class="texto-suave">{{ nomeRecurso(b) }} voltará a ficar disponível para reservas nesse período.</p>
+      <div class="acoes fim">
+        <button type="button" class="btn btn-fantasma" (click)="removendo.set(null)">Voltar</button>
+        <button type="button" class="btn btn-perigo" (click)="remover()"><lucide-icon name="trash-2" /> Remover</button>
+      </div>
+    </div>
+  </app-dialogo>
+}

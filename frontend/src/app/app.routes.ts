@@ -6,6 +6,11 @@ import { AprovacoesComponent } from './pages/aprovacoes/aprovacoes.component';
 import { DisponibilidadeComponent } from './pages/disponibilidade/disponibilidade.component';
 import { InicioComponent } from './pages/inicio/inicio.component';
 import { LoginComponent } from './pages/login/login.component';
+import { ManutencoesComponent } from './pages/manutencoes/manutencoes.component';
+import { MateriaisComponent } from './pages/materiais/materiais.component';
+import { ProfessoresComponent } from './pages/professores/professores.component';
+import { SalasComponent } from './pages/salas/salas.component';
+import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 import { ReservaDetalheComponent } from './pages/reserva-detalhe/reserva-detalhe.component';
 import { ReservaFormComponent } from './pages/reserva-form/reserva-form.component';
 import { ReservasComponent } from './pages/reservas/reservas.component';
@@ -43,7 +48,19 @@ export const routes: Routes = [
         data: { perfis: ['PROFESSOR', 'COORDENADOR'] },
         title: 'Alterar reserva · AlocaSENAC'
       },
-      { path: 'reservas/:id', component: ReservaDetalheComponent, title: 'Reserva · AlocaSENAC' }
+      { path: 'reservas/:id', component: ReservaDetalheComponent, title: 'Reserva · AlocaSENAC' },
+      {
+        path: '',
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMIN'] },
+        children: [
+          { path: 'salas', component: SalasComponent, title: 'Salas · AlocaSENAC' },
+          { path: 'professores', component: ProfessoresComponent, title: 'Professores · AlocaSENAC' },
+          { path: 'materiais', component: MateriaisComponent, title: 'Materiais · AlocaSENAC' },
+          { path: 'manutencoes', component: ManutencoesComponent, title: 'Manutenções · AlocaSENAC' },
+          { path: 'usuarios', component: UsuariosComponent, title: 'Usuários · AlocaSENAC' }
+        ]
+      }
     ]
   },
   { path: '**', redirectTo: '' }

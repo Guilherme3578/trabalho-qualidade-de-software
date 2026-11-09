@@ -1,0 +1,82 @@
+<app-cabecalho-pagina titulo="Professores" subtitulo="Docentes e as disciplinas que cada um está habilitado a lecionar." icone="graduation-cap">
+  <button type="button" class="btn btn-primario" (click)="novo()"><lucide-icon name="plus" /> Novo professor</button>
+</app-cabecalho-pagina>
+
+<div class="barra-busca animar" style="--i: 1">
+  <lucide-icon name="search" />
+  <input type="search" placeholder="Buscar por nome, e-mail ou competência" [ngModel]="busca()" (ngModelChange)="busca.set($event)" />
+</div>
+
+@if (carregando()) {
+  <div class="skeleton tabela-skeleton"></div>
+} @else if (filtrados().length === 0) {
+  <app-estado-vazio titulo="Nenhum professor encontrado" icone="graduation-cap" />
+} @else {
+  <div class="tabela-container animar" style="--i: 2">
+    <table>
+      <thead>
+        <tr><th>Nome</th><th>E-mail</th><th>Departamento</th><th>Competências</th><th>Situação</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (p of filtrados(); track p.id) {
+          <tr [class.inativo]="!p.ativo">
+            <td><strong>{{ p.nome }}</strong></td>
+            <td class="texto-suave">{{ p.email }}</td>
+            <td>{{ p.departamento }}</td>
+            <td>
+              <span class="competencias">
+                @for (c of p.competencias; track c) {
+                  <span class="chip">{{ c }}</span>
+                }
+              </span>
+            </td>
+            <td><span class="badge" [class]="p.ativo ? 'badge-sucesso' : 'badge-neutro'">{{ p.ativo ? 'Ativo' : 'Inativo' }}</span></td>
+            <td>
+              <span class="acoes fim">
+                <button type="button" class="btn btn-fantasma btn-sm" (click)="editar(p)"><lucide-icon name="pencil" /> Editar</button>
+                <button type="button" class="btn btn-fantasma btn-sm" (click)="alternarAtivo(p)">
+                  <lucide-icon name="power" /> {{ p.ativo ? 'Desativar' : 'Ativar' }}
+                </button>
+              </span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (dialogoAberto()) {
+  <app-dialogo [titulo]="editando() ? 'Editar professor' : 'Novo professor'" (fechar)="dialogoAberto.set(false)">
+    <form class="formulario" [formGroup]="formulario" (ngSubmit)="salvar()" novalidate>
+      <label class="campo">
+        <span>Nome</span>
+        <input formControlName="nome" placeholder="Nome completo" />
+        @if (formulario.controls.nome.touched && formulario.controls.nome.invalid) {
+          <small>Informe o nome.</small>
+        }
+      </label>
+      <div class="linha-campos">
+        <label class="campo">
+          <span>E-mail</span>
+          <input type="email" formControlName="email" placeholder="nome@senac.br" />
+          @if (formulario.controls.email.touched && formulario.controls.email.invalid) {
+            <small>Informe um e-mail válido.</small>
+          }
+        </label>
+        <label class="campo">
+          <span>Departamento</span>
+          <input formControlName="departamento" placeholder="Computação" />
+        </label>
+      </div>
+      <label class="campo">
+        <span>Competências (separadas por vírgula)</span>
+        <input formControlName="competencias" placeholder="Banco de Dados, Engenharia de Software" />
+      </label>
+      <div class="acoes fim">
+        <button type="button" class="btn btn-fantasma" (click)="dialogoAberto.set(false)">Cancelar</button>
+        <button type="submit" class="btn btn-primario" [disabled]="salvando()"><lucide-icon name="check" /> Salvar</button>
+      </div>
+    </form>
+  </app-dialogo>
+}

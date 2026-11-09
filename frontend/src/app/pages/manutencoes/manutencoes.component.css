@@ -1,0 +1,82 @@
+.lista {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.manutencao {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.icone {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(96, 165, 250, 0.12);
+  color: var(--info);
+}
+
+.vigente .icone {
+  background: rgba(251, 191, 36, 0.14);
+  color: var(--aviso);
+  animation: pulsar 2s ease-in-out infinite;
+}
+
+.encerrado {
+  opacity: 0.55;
+}
+
+.dados {
+  display: grid;
+  flex: 1;
+  gap: 0.2rem;
+}
+
+.aviso-afetadas {
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: var(--raio-p);
+  background: rgba(251, 191, 36, 0.08);
+  color: var(--aviso);
+  font-size: 0.88rem;
+}
+
+.aviso-afetadas strong {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.aviso-afetadas p {
+  margin-top: 0.3rem;
+  color: var(--texto-suave);
+}
+
+.lista-afetadas {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista-afetadas a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-p);
+  color: var(--texto);
+  transition: border-color var(--transicao), background var(--transicao);
+}
+
+.lista-afetadas a:hover {
+  border-color: rgba(139, 92, 246, 0.45);
+  background: rgba(139, 92, 246, 0.07);
+}

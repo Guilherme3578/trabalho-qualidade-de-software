@@ -242,6 +242,7 @@ lucide-icon svg {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
+  align-items: start;
 }
 
 .campo {
@@ -499,4 +500,38 @@ tbody tr:last-child td {
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
   }
+}
+
+.barra-busca {
+  position: relative;
+  max-width: 460px;
+  margin-bottom: 1.25rem;
+}
+
+.barra-busca lucide-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.85rem;
+  color: var(--texto-fraco);
+  transform: translateY(-50%);
+}
+
+.barra-busca input {
+  padding-left: 2.5rem;
+}
+
+.tabela-skeleton {
+  height: 320px;
+}
+
+tr.inativo td {
+  opacity: 0.5;
+}
+
+tr.inativo td:last-child {
+  opacity: 1;
+}
+
+.acoes.fim {
+  justify-content: flex-end;
 }

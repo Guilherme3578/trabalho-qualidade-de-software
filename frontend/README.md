@@ -20,7 +20,8 @@ código.
 12. [Etapa 9 — Formulário de reserva](#12-etapa-9--formulário-de-reserva)
 13. [Etapa 10 — Lista e detalhe de reservas](#13-etapa-10--lista-e-detalhe-de-reservas)
 14. [Etapa 11 — Disponibilidade e aprovações](#14-etapa-11--disponibilidade-e-aprovações)
-15. [Glossário](#glossário)
+15. [Etapa 12 — Cadastros do administrador](#15-etapa-12--cadastros-do-administrador)
+16. [Glossário](#glossário)
 
 ---
 
@@ -686,6 +687,75 @@ this.pendentes.update(lista => lista.filter(r => r.id !== reserva.id));
 
 - `processando` guarda o **id** do pedido em andamento, e não um simples `true`/`false`. Assim, só os botões
   daquele cartão ficam travados.
+
+## 15. Etapa 12 — Cadastros do administrador
+
+Cinco telas, todas restritas ao perfil **ADMIN** e com o mesmo padrão:
+
+| Tela | Rota | Endpoints |
+|---|---|---|
+| Salas | `/salas` | `GET/POST /api/salas`, `PUT /api/salas/{id}`, `PATCH /api/salas/{id}/ativa` |
+| Professores | `/professores` | `GET/POST /api/professores`, `PUT .../{id}`, `PATCH .../{id}/ativo` |
+| Materiais | `/materiais` | `GET/POST /api/materiais`, `PUT .../{id}`, `PATCH .../{id}/ativo` |
+| Usuários | `/usuarios` | `GET/POST /api/usuarios`, `PATCH .../{id}/ativo` |
+| Manutenções | `/manutencoes` | `GET/POST /api/bloqueios`, `DELETE /api/bloqueios/{id}` |
+
+### Um guard para várias rotas
+
+Em vez de repetir `canActivate` em cada rota, elas ficam como **filhas** de uma rota sem componente que tem o
+guard:
+
+```ts
+{
+  path: '',
+  canActivate: [perfilGuard],
+  data: { perfis: ['ADMIN'] },
+  children: [
+    { path: 'salas', component: SalasComponent },
+    { path: 'professores', component: ProfessoresComponent }
+  ]
+}
+```
+
+### Padrão das telas de cadastro
+
+1. **Busca local** em um `computed`, sobre a lista carregada.
+2. **Tabela** com situação (ativo/inativo) e ações. Linhas inativas ficam esmaecidas (`tr.inativo`).
+3. **Um diálogo para criar e editar.** O signal `editando` guarda o item em edição (`null` = novo). Ao salvar:
+
+```ts
+(atual ? this.servico.atualizar(atual.id, dados) : this.servico.criar(dados)).subscribe(...)
+```
+
+4. **Desativar em vez de apagar.** O registro continua existindo, porque reservas antigas apontam para ele, mas
+   deixa de aparecer para novas reservas. A tabela atualiza só a linha alterada:
+
+```ts
+this.salas.update(lista => lista.map(s => (s.id === atualizada.id ? atualizada : s)));
+```
+
+### As validações espelham o back-end
+
+| Campo | Regra no front | Regra na API |
+|---|---|---|
+| Código da sala | `Validators.pattern(/^[A-Za-z0-9-]{1,20}$/)` | `@Pattern(regexp = "^[A-Za-z0-9-]{1,20}$")` |
+| Capacidade | `min(1)`, `max(1000)` | `@Min(1)`, `@Max(1000)` |
+| Senha do usuário | 8+ caracteres com letras e números | `@Size(min = 8)` + `@Pattern` |
+
+O front valida para dar resposta imediata. A API valida de novo porque é ela que garante a regra: se algo
+escapar, a mensagem dela aparece no aviso.
+
+### Particularidades
+
+- **Professores:** as competências são digitadas separadas por vírgula e viram uma lista:
+  `"BD, POO".split(',').map(c => c.trim()).filter(Boolean)` → `['BD', 'POO']`.
+- **Usuários:** o perfil PROFESSOR exige um professor vinculado (o campo só aparece nesse caso). O próprio admin
+  não pode se desativar, então o botão não aparece na linha dele. Desativar alguém bloqueia o acesso na hora,
+  porque a API confere o usuário a cada requisição.
+- **Manutenções:** ao escolher o tipo de recurso, a lista de recursos muda (`valueChanges` do campo tipo). Ao
+  registrar, a API devolve `reservasAfetadas`, as reservas que já existiam no período, e a tela mostra um aviso
+  com links para elas. O status de cada manutenção (agendada, em andamento, encerrada) é calculado pela data
+  atual.
 
 ---
 
