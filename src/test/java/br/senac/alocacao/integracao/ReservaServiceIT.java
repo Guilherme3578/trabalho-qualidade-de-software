@@ -174,6 +174,20 @@ class ReservaServiceIT extends IntegracaoBase {
     }
 
     @Test
+    @DisplayName("[RF08][RN04] Reserva pendente não pode ser aprovada se o recurso entrou em manutenção")
+    void aprovarRecursoEmManutencao() {
+        ReservaResponse r = criar(labRestrito, ana, "Qualidade de Software", "09:00", "11:00");
+        bloqueios.criar(new BloqueioRequest(TipoRecurso.SALA, labRestrito.getId(), em("2030-03-11T08:00"),
+                em("2030-03-11T12:00"), "Vazamento no teto"), admin);
+
+        assertThatThrownBy(() -> servico.aprovar(r.id(), "ok", responsavel))
+                .isInstanceOf(NegocioException.class)
+                .hasMessageContaining("Vazamento no teto")
+                .extracting("codigo").isEqualTo(CodigoErro.RECURSO_EM_MANUTENCAO);
+        assertThat(servico.obter(r.id()).status()).isEqualTo(StatusReserva.SOLICITADA);
+    }
+
+    @Test
     @DisplayName("[RF07] Professor sem competência fica SOLICITADA (validação docente)")
     void docenteSemCompetencia() {
         ReservaResponse r = criar(a101, ana, "Banco de Dados", "09:00", "11:00");
