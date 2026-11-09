@@ -1,0 +1,117 @@
+<app-cabecalho-pagina titulo="Relatórios" subtitulo="Ocupação de salas e materiais, carga horária dos professores e conflitos evitados." icone="chart-column" />
+
+<section class="cartao periodo animar" style="--i: 1">
+  <label class="campo">
+    <span>De</span>
+    <input type="date" [(ngModel)]="inicio" />
+  </label>
+  <label class="campo">
+    <span>Até</span>
+    <input type="date" [(ngModel)]="fim" />
+  </label>
+  <button type="button" class="btn btn-primario" [disabled]="carregando()" (click)="gerar()">
+    <lucide-icon name="chart-column" /> Gerar relatório
+  </button>
+</section>
+
+<section class="resumo">
+  <article class="cartao cartao-interativo indicador animar" style="--i: 2">
+    <span class="icone violeta"><lucide-icon name="calendar-days" /></span>
+    <strong>{{ totalReservas() }}</strong>
+    <span class="texto-suave">reservas efetivas</span>
+  </article>
+  <article class="cartao cartao-interativo indicador animar" style="--i: 3">
+    <span class="icone ciano"><lucide-icon name="clock" /></span>
+    <strong>{{ totalHoras() | number: '1.0-1' }} h</strong>
+    <span class="texto-suave">horas de sala reservadas</span>
+  </article>
+  <article class="cartao cartao-interativo indicador animar" style="--i: 4">
+    <span class="icone verde"><lucide-icon name="door-open" /></span>
+    <strong>{{ ocupacaoMedia() | number: '1.0-1' }}%</strong>
+    <span class="texto-suave">ocupação média das salas</span>
+  </article>
+  <article class="cartao cartao-interativo indicador animar destaque-conflitos" style="--i: 5">
+    <span class="icone ambar"><lucide-icon name="shield-check" /></span>
+    <strong>{{ conflitos()?.total ?? 0 }}</strong>
+    <span class="texto-suave">conflitos evitados</span>
+  </article>
+</section>
+
+<div class="grade">
+  <section class="cartao animar" style="--i: 6">
+    <h2>Ocupação das salas</h2>
+    <p class="texto-fraco">Horas reservadas sobre {{ utilizacao()?.horasDisponiveisPorRecurso ?? 0 }} h disponíveis por sala no período.</p>
+    <ul class="barras">
+      @for (s of utilizacao()?.salas ?? []; track s.recursoId) {
+        <li>
+          <div class="entre">
+            <span>{{ s.descricao }}</span>
+            <span class="valor">{{ s.taxaOcupacaoPercentual | number: '1.0-1' }}% <small>· {{ s.reservas }} res.</small></span>
+          </div>
+          <div class="trilho"><span [style.width.%]="largura(s.taxaOcupacaoPercentual, maiorOcupacao())"></span></div>
+        </li>
+      } @empty {
+        <app-estado-vazio titulo="Sem dados" icone="door-open" />
+      }
+    </ul>
+  </section>
+
+  <section class="cartao animar" style="--i: 7">
+    <h2>Carga horária dos professores</h2>
+    <p class="texto-fraco">Horas alocadas em reservas efetivas.</p>
+    <ul class="barras">
+      @for (c of carga(); track c.professorId) {
+        <li>
+          <div class="entre">
+            <span>{{ c.professorNome }}</span>
+            <span class="valor">{{ c.horasAlocadas | number: '1.0-1' }} h <small>· {{ c.reservas }} aula(s)</small></span>
+          </div>
+          <div class="trilho ciano"><span [style.width.%]="largura(c.horasAlocadas, maiorCarga())"></span></div>
+        </li>
+      } @empty {
+        <app-estado-vazio titulo="Nenhuma aula no período" icone="graduation-cap" />
+      }
+    </ul>
+  </section>
+
+  <section class="cartao animar" style="--i: 8">
+    <h2>Uso de materiais</h2>
+    <p class="texto-fraco">Ocupação média do estoque de cada material.</p>
+    <ul class="barras">
+      @for (m of utilizacao()?.materiais ?? []; track m.recursoId) {
+        <li>
+          <div class="entre">
+            <span>{{ m.descricao }}</span>
+            <span class="valor">{{ m.taxaOcupacaoPercentual | number: '1.0-1' }}%</span>
+          </div>
+          <div class="trilho verde"><span [style.width.%]="m.taxaOcupacaoPercentual"></span></div>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="cartao animar" style="--i: 9">
+    <h2>Conflitos evitados</h2>
+    <p class="texto-fraco">Tentativas de reserva recusadas pelo sistema para impedir choque de horário.</p>
+    @if ((conflitos()?.total ?? 0) === 0) {
+      <app-estado-vazio titulo="Nenhum conflito no período" texto="Nenhuma tentativa de reserva conflitante foi registrada." icone="shield-check" />
+    } @else {
+      <div class="tipos">
+        @for (t of tiposConflito(); track t.rotulo) {
+          <span class="chip">{{ t.rotulo }}: <strong>{{ t.quantidade }}</strong></span>
+        }
+      </div>
+      <ul class="barras">
+        @for (r of conflitos()?.porRecurso ?? []; track r.recursoId) {
+          <li>
+            <div class="entre">
+              <span>{{ r.descricao }}</span>
+              <span class="valor">{{ r.quantidade }}</span>
+            </div>
+            <div class="trilho ambar"><span [style.width.%]="largura(r.quantidade, conflitos()!.total)"></span></div>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</div>

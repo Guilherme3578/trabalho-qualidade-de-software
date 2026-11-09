@@ -1,0 +1,61 @@
+<app-cabecalho-pagina titulo="Auditoria" subtitulo="Registro de quem fez o quê e quando: criações, mudanças de status, exclusões e acessos." icone="history" />
+
+<section class="cartao filtros animar" style="--i: 1">
+  <label class="campo">
+    <span>Entidade</span>
+    <select [(ngModel)]="entidade" (change)="carregar()">
+      <option value="">Todas</option>
+      @for (e of listaEntidades; track e[0]) {
+        <option [value]="e[0]">{{ e[1] }}</option>
+      }
+    </select>
+  </label>
+  <label class="campo">
+    <span>Ação</span>
+    <select [(ngModel)]="acao" (change)="carregar()">
+      <option value="">Todas</option>
+      @for (a of acoes; track a[0]) {
+        <option [value]="a[0]">{{ a[1] }}</option>
+      }
+    </select>
+  </label>
+  <span class="texto-fraco total">{{ eventos().length }} evento(s)</span>
+</section>
+
+@if (carregando()) {
+  <div class="skeleton tabela-skeleton"></div>
+} @else if (eventos().length === 0) {
+  <app-estado-vazio titulo="Nenhum evento encontrado" icone="history" />
+} @else {
+  <div class="tabela-container animar" style="--i: 2">
+    <table>
+      <thead>
+        <tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Entidade</th><th>Mudança</th><th>Detalhes</th></tr>
+      </thead>
+      <tbody>
+        @for (e of eventos(); track e.id) {
+          <tr>
+            <td class="quando">{{ e.dataHora | date: 'dd/MM/yy' }} <small>{{ e.dataHora | date: 'HH:mm:ss' }}</small></td>
+            <td>{{ e.usuarioNome ?? 'Sistema' }}</td>
+            <td><span class="badge" [class]="cor(e.acao)">{{ rotulos[e.acao] }}</span></td>
+            <td>
+              @if (e.entidade === 'Reserva' && e.entidadeId && e.acao !== 'EXCLUSAO') {
+                <a [routerLink]="['/reservas', e.entidadeId]">Reserva <lucide-icon name="chevron-right" /></a>
+              } @else {
+                {{ entidades[e.entidade] ?? e.entidade }}
+              }
+            </td>
+            <td class="mudanca">
+              @if (e.estadoAnterior || e.estadoNovo) {
+                <span class="texto-fraco">{{ estado(e.estadoAnterior) || '—' }}</span>
+                <lucide-icon name="chevron-right" />
+                <span>{{ estado(e.estadoNovo) || '—' }}</span>
+              }
+            </td>
+            <td class="detalhes texto-suave" [title]="e.detalhes ?? ''">{{ e.detalhes }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

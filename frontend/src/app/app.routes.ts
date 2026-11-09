@@ -5,7 +5,10 @@ import { visitanteGuard } from './guards/visitante.guard';
 import { AprovacoesComponent } from './pages/aprovacoes/aprovacoes.component';
 import { DisponibilidadeComponent } from './pages/disponibilidade/disponibilidade.component';
 import { InicioComponent } from './pages/inicio/inicio.component';
+import { AuditoriaComponent } from './pages/auditoria/auditoria.component';
 import { LoginComponent } from './pages/login/login.component';
+import { NotificacoesComponent } from './pages/notificacoes/notificacoes.component';
+import { RelatoriosComponent } from './pages/relatorios/relatorios.component';
 import { ManutencoesComponent } from './pages/manutencoes/manutencoes.component';
 import { MateriaisComponent } from './pages/materiais/materiais.component';
 import { ProfessoresComponent } from './pages/professores/professores.component';
@@ -49,6 +52,21 @@ export const routes: Routes = [
         title: 'Alterar reserva · AlocaSENAC'
       },
       { path: 'reservas/:id', component: ReservaDetalheComponent, title: 'Reserva · AlocaSENAC' },
+      { path: 'notificacoes', component: NotificacoesComponent, title: 'Notificações · AlocaSENAC' },
+      {
+        path: 'relatorios',
+        component: RelatoriosComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['COORDENADOR', 'RESPONSAVEL', 'ADMIN'] },
+        title: 'Relatórios · AlocaSENAC'
+      },
+      {
+        path: 'auditoria',
+        component: AuditoriaComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['RESPONSAVEL', 'ADMIN'] },
+        title: 'Auditoria · AlocaSENAC'
+      },
       {
         path: '',
         canActivate: [perfilGuard],

@@ -21,7 +21,8 @@ código.
 13. [Etapa 10 — Lista e detalhe de reservas](#13-etapa-10--lista-e-detalhe-de-reservas)
 14. [Etapa 11 — Disponibilidade e aprovações](#14-etapa-11--disponibilidade-e-aprovações)
 15. [Etapa 12 — Cadastros do administrador](#15-etapa-12--cadastros-do-administrador)
-16. [Glossário](#glossário)
+16. [Etapa 13 — Relatórios, auditoria e notificações](#16-etapa-13--relatórios-auditoria-e-notificações)
+17. [Glossário](#glossário)
 
 ---
 
@@ -756,6 +757,56 @@ escapar, a mensagem dela aparece no aviso.
   registrar, a API devolve `reservasAfetadas`, as reservas que já existiam no período, e a tela mostra um aviso
   com links para elas. O status de cada manutenção (agendada, em andamento, encerrada) é calculado pela data
   atual.
+
+## 16. Etapa 13 — Relatórios, auditoria e notificações
+
+### Relatórios (`pages/relatorios`, rota `/relatorios`)
+
+Para COORDENADOR, RESPONSAVEL e ADMIN. Para um período escolhido, busca três relatórios em paralelo
+(`forkJoin`):
+
+| Bloco | Endpoint | O que mostra |
+|---|---|---|
+| Indicadores | (calculado) | Total de reservas, horas reservadas, ocupação média e conflitos evitados |
+| Ocupação das salas | `/api/relatorios/utilizacao` | Taxa de ocupação de cada sala |
+| Carga horária | `/api/relatorios/carga-horaria` | Horas de aula de cada professor, da maior para a menor |
+| Uso de materiais | `/api/relatorios/utilizacao` | Ocupação média do estoque |
+| Conflitos evitados | `/api/relatorios/conflitos-evitados` | Reservas recusadas por choque de horário, por tipo e por recurso |
+
+**Gráficos sem biblioteca.** As barras são `<div>` com largura em `%`, calculada em relação ao maior valor da
+lista, para a maior barra ocupar a largura toda:
+
+```ts
+protected largura(valor: number, maximo: number): number {
+  return maximo > 0 ? Math.max(2, (valor / maximo) * 100) : 0;
+}
+```
+
+O `Math.max(2, ...)` deixa um traço visível mesmo para valores muito pequenos. A animação de "crescer" usa
+`transform: scaleX(0)` → `scaleX(1)`, que é mais leve para o navegador do que animar a largura.
+
+**Pipe `number`:** `{{ 4.25 | number: '1.0-1' }}` mostra `4,3` (no mínimo 1 dígito inteiro, de 0 a 1 casa
+decimal, com vírgula por causa do `pt-BR`).
+
+### Auditoria (`pages/auditoria`, rota `/auditoria`)
+
+Para RESPONSAVEL e ADMIN. Tabela com todos os eventos registrados pela API (`GET /api/auditoria`), filtráveis
+por entidade e ação: quem fez, quando, o quê e a mudança de estado (ex.: Aguardando aprovação → Aprovada). Eventos
+de reserva têm link para a reserva. As ações têm cores diferentes (criação em verde, exclusão e falha de login em
+vermelho).
+
+### Notificações (`pages/notificacoes`, rota `/notificacoes`)
+
+Para todos. Aberta pelo sino da barra superior. Lista os avisos enviados ao usuário (reserva aprovada,
+rejeitada, cancelada) e permite marcar como lida.
+
+O `NotificacaoService` guarda a lista num signal e expõe `naoLidas` como `computed`. Por isso, ao marcar uma
+notificação como lida aqui, o **contador do sino no layout diminui na hora**, sem nenhuma comunicação extra
+entre os componentes: os dois leem o mesmo signal.
+
+```ts
+readonly naoLidas = computed(() => this.lista().filter(n => !n.lida).length);
+```
 
 ---
 
