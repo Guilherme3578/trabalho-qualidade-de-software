@@ -16,7 +16,8 @@ código.
 8. [Etapa 5 — Tema visual](#8-etapa-5--tema-visual)
 9. [Etapa 6 — Componentes reutilizáveis](#9-etapa-6--componentes-reutilizáveis)
 10. [Etapa 7 — Tela de login](#10-etapa-7--tela-de-login)
-11. [Glossário](#glossário)
+11. [Etapa 8 — Painel inicial](#11-etapa-8--painel-inicial)
+12. [Glossário](#glossário)
 
 ---
 
@@ -96,6 +97,13 @@ Regra de dependência: `pages` e `components` usam `services`, que usam `models`
 O front-end **só conversa com a API** por HTTP. Quem lê e grava no MongoDB é exclusivamente o back-end em Java.
 Os arquivos de `models/` descrevem o **JSON que a API envia e recebe**, e não as coleções do banco. Se o banco
 mudar, o front não precisa mudar.
+
+### Por que os ícones dos arquivos são diferentes no VS Code?
+
+Todos os arquivos `.ts` são **TypeScript**. O tema de ícones do VS Code olha o sufixo antes do `.ts` e mostra o
+logo do Angular ("A") para os tipos oficiais do framework: `.component.ts`, `.service.ts`, `.guard.ts`,
+`.interceptor.ts`. Os `.model.ts` aparecem com o ícone "TS" comum porque "model" não é um tipo do Angular, só uma
+interface TypeScript. A diferença é apenas visual.
 
 Cada componente tem três arquivos:
 
@@ -443,6 +451,66 @@ O `lucide-icon` é usado como `<lucide-icon name="calendar-days" />`. O tamanho 
 (`width: 1.15em`), então o ícone acompanha o tamanho do texto ao redor; para um tamanho específico, basta definir
 `width` e `height` no CSS do componente.
 
+## 11. Etapa 8 — Painel inicial
+
+Pasta `src/app/pages/inicio`, rota `/inicio`. É a primeira tela depois do login, com o resumo do dia.
+
+| Bloco | Conteúdo |
+|---|---|
+| Boas-vindas | Data por extenso, "Bom dia/Boa tarde/Boa noite" e o primeiro nome |
+| Indicadores | Reservas hoje, em uso agora, aguardando aprovação e próximos 7 dias |
+| Agenda de hoje | Linha do tempo com as reservas do dia; a que está acontecendo agora brilha em ciano |
+| Ações rápidas | Atalhos que mudam conforme o perfil |
+| Próximas reservas | As 5 próximas, com dia, horário, sala e status |
+
+Professores e coordenadores veem **as próprias** reservas (`minhas: true`). Responsável e administrador veem
+todas.
+
+### Várias requisições em paralelo: `forkJoin`
+
+O painel precisa de três listas. Em vez de esperar uma terminar para pedir a próxima, o `forkJoin` dispara as três
+juntas e entrega o resultado quando **todas** terminarem:
+
+```ts
+forkJoin({
+  hoje: this.reservas.listar({ inicio: inicioDoDia(), fim: fimDoDia(), minhas }),
+  proximas: this.reservas.listar({ inicio: inicioDoDia(), fim: fimDoDia(somarDias(this.agora, 7)), minhas }),
+  pendentes: this.reservas.listar({ status: 'SOLICITADA', minhas })
+}).subscribe(dados => { /* dados.hoje, dados.proximas, dados.pendentes */ });
+```
+
+### Indicadores com `computed`
+
+Os números não são guardados à parte: são **calculados** a partir das listas. Quando uma lista muda, o
+`computed` recalcula e a tela atualiza sozinha.
+
+```ts
+protected readonly indicadores = computed(() => [
+  { rotulo: 'Em uso agora', valor: this.hoje().filter(r => r.status === 'EM_USO').length, ... }
+]);
+```
+
+### Pipe `date`
+
+Pipes transformam um valor só na exibição. Com o idioma `pt-BR` configurado no `app.config.ts`:
+
+| Template | Resultado |
+|---|---|
+| `{{ agora \| date: "EEEE, d 'de' MMMM" }}` | domingo, 8 de novembro |
+| `{{ r.inicio \| date: 'HH:mm' }}` | 08:00 |
+| `{{ r.inicio \| date: 'MMM' }}` | nov. |
+
+### Datas no formato da API (`services/datas.ts`)
+
+A API usa data e hora **sem fuso**, como `2026-11-09T08:00`. As funções `dataIso`, `dataHoraIso`, `inicioDoDia`
+e `fimDoDia` montam esse formato a partir de um `Date` do JavaScript usando o horário local. Não se usa
+`toISOString()` porque ele converte para UTC e mudaria a hora (08:00 viraria 11:00).
+
+### Carregamento
+
+Enquanto os dados não chegam (`carregando()`), os números e a agenda mostram blocos `.skeleton` com brilho
+animado, no mesmo tamanho do conteúdo final, para a tela não "pular" quando os dados aparecem.
+
 ---
 
 ## Glossário
@@ -461,4 +529,6 @@ O `lucide-icon` é usado como `<lucide-icon name="calendar-days" />`. O tamanho 
 | **Proxy** | Servidor intermediário que repassa `/api` para o back-end |
 | **JWT** | Token assinado que identifica o usuário logado |
 | **CORS** | Regra do navegador que bloqueia chamadas entre origens diferentes |
+| **Pipe** | Transformação de valor na exibição, como `date`, que formata datas |
+| **forkJoin** | Operador do RxJS que espera várias requisições em paralelo terminarem |
 | **Formulário reativo** | Formulário definido no TypeScript (`FormGroup`), ligado ao HTML com `formControlName` |
