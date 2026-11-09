@@ -117,6 +117,17 @@ public class DisponibilidadeService {
         }
     }
 
+    public void garantirSemManutencao(Reserva r) {
+        Intervalo intervalo = new Intervalo(r.getInicio(), r.getFim());
+        garantirSemBloqueio(TipoRecurso.SALA, r.getSalaId(), "A sala " + r.getSalaCodigo(), intervalo);
+        garantirSemBloqueio(TipoRecurso.PROFESSOR, r.getProfessorId(), "O professor " + r.getProfessorNome(),
+                intervalo);
+        for (ItemReserva item : r.getItens()) {
+            garantirSemBloqueio(TipoRecurso.MATERIAL, item.materialId(), "O material " + item.materialNome(),
+                    intervalo);
+        }
+    }
+
     private void garantirSemBloqueio(TipoRecurso tipo, String id, String descricao, Intervalo intervalo) {
         bloqueiosSobrepostos(tipo, id, intervalo).stream().findFirst().ifPresent(b -> {
             Map<String, Object> det = new LinkedHashMap<>();

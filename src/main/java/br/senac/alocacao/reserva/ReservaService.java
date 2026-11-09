@@ -167,12 +167,19 @@ public class ReservaService {
             disponibilidade.garantirMaterial(listaMateriais.get(i), itens.get(i).quantidade(), intervalo, ignorarId);
         }
 
-        tocarAgenda(Sala.class, sala.getId());
-        tocarAgenda(Professor.class, professor.getId());
-        listaMateriais.stream().map(Material::getId).sorted(Comparator.naturalOrder())
-                .forEach(mid -> tocarAgenda(Material.class, mid));
+        tocarAgenda(sala.getId(), professor.getId(), listaMateriais.stream().map(Material::getId).toList());
 
         return new Agenda(sala, professor, listaMateriais, itens);
+    }
+
+    private void tocarAgendaDa(Reserva r) {
+        tocarAgenda(r.getSalaId(), r.getProfessorId(), r.getItens().stream().map(ItemReserva::materialId).toList());
+    }
+
+    private void tocarAgenda(String salaId, String professorId, List<String> materialIds) {
+        tocarAgenda(Sala.class, salaId);
+        tocarAgenda(Professor.class, professorId);
+        materialIds.stream().sorted(Comparator.naturalOrder()).forEach(mid -> tocarAgenda(Material.class, mid));
     }
 
     private void tocarAgenda(Class<?> tipo, String id) {
@@ -203,11 +210,14 @@ public class ReservaService {
         return ReservaResponse.de(reservas.save(r));
     }
 
-    @Transactional
     public ReservaResponse aprovar(String id, String observacao, Usuario responsavel) {
-        Reserva r = buscar(id);
-        mudarStatus(r, StatusReserva.APROVADA, responsavel, observacao);
-        return ReservaResponse.de(reservas.save(r));
+        return protecao.executar(() -> {
+            Reserva r = buscar(id);
+            disponibilidade.garantirSemManutencao(r);
+            tocarAgendaDa(r);
+            mudarStatus(r, StatusReserva.APROVADA, responsavel, observacao);
+            return ReservaResponse.de(reservas.save(r));
+        });
     }
 
     @Transactional
