@@ -69,6 +69,9 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
+      - name: npm 11 (mesma versão do packageManager)
+        run: npm install -g npm@11.6.2
+
       - name: Instalar dependências
         run: npm ci
 
