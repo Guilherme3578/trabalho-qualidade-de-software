@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""
-Gera docs/04-matriz-rastreabilidade.md cruzando os requisitos de docs/01-requisitos.md
-com os testes que os citam (IDs entre colchetes no @DisplayName, ex.: "[RF05][RN02] ...",
-e tags @RFxx nos arquivos .feature).
-
-Uso:  python3 scripts/rastreabilidade.py
-Se existirem relatórios do Surefire/Failsafe em target/, a coluna "Resultado" é preenchida.
-"""
 import re
 import sys
 import xml.etree.ElementTree as ET
