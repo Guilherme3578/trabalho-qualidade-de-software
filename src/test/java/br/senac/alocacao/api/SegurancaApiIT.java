@@ -45,6 +45,33 @@ class SegurancaApiIT extends IntegracaoBase {
     }
 
     @Test
+    @DisplayName("[RNF02] Usuário desativado perde o acesso imediatamente, mesmo com token ainda válido")
+    void usuarioDesativadoPerdeAcesso() {
+        Usuario u = usuario(Perfil.ADMIN);
+        String token = token(u);
+        given().auth().oauth2(token).get("/api/salas").then().statusCode(200);
+
+        u.setAtivo(false);
+        usuarios.save(u);
+
+        given().auth().oauth2(token).get("/api/salas").then().statusCode(401)
+                .body("codigo", equalTo("NAO_AUTENTICADO"));
+        given().auth().oauth2(token).get("/api/usuarios").then().statusCode(401);
+    }
+
+    @Test
+    @DisplayName("[RNF02] Mudança de perfil vale imediatamente: o perfil antigo do token não é aceito")
+    void perfilAtualizadoValeImediatamente() {
+        Usuario u = usuario(Perfil.ADMIN);
+        String token = token(u);
+        mongo.updateFirst(org.springframework.data.mongodb.core.query.Query.query(
+                        org.springframework.data.mongodb.core.query.Criteria.where("id").is(u.getId())),
+                new org.springframework.data.mongodb.core.query.Update().set("perfil", Perfil.PROFESSOR), Usuario.class);
+
+        given().auth().oauth2(token).get("/api/usuarios").then().statusCode(403);
+    }
+
+    @Test
     @DisplayName("[RNF02] Token forjado com outra chave e perfil ADMIN é rejeitado")
     void tokenForjado() {
         String forjado = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4IiwicGVyZmlsIjoiQURNSU4iLCJ1aWQiOiIxIn0."
