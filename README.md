@@ -9,7 +9,7 @@ desenvolvido para a disciplina de **Qualidade de Software**. O foco é apresenta
 | Camada | Tecnologia |
 |---|---|
 | Back-end / API REST | Java 21, Spring Boot 4 (Web MVC, Security, Validation, Data MongoDB) |
-| Banco de dados | MongoDB 8 (replica set, transações multi-documento) |
+| Banco de dados | MongoDB 9 (replica set, transações multi-documento) |
 | Interface web | HTML + CSS + JavaScript (responsiva, servida pelo Spring Boot) |
 | Documentação da API | OpenAPI 3 / Swagger UI (springdoc) |
 | Testes | JUnit 5, Mockito, AssertJ, Testcontainers, WireMock, REST Assured, Cucumber, Selenium, JMeter |

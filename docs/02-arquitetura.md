@@ -5,7 +5,7 @@
 ## 2.1 Visão geral
 
 Aplicação única **Java 21 + Spring Boot 4**, que expõe uma API REST e serve a interface web estática.
-Persistência em **MongoDB 8** (replica set, necessário para transações multi-documento).
+Persistência em **MongoDB 9** (replica set, necessário para transações multi-documento).
 
 ```mermaid
 flowchart LR

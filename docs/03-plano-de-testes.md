@@ -21,7 +21,7 @@ flowchart TB
 | Nível | Ferramentas | Classes | O que garante | Precisa de Docker? |
 |---|---|---|---|---|
 | Unitário / parametrizado | JUnit 5, AssertJ, Mockito | `*Test` | Regras puras: sobreposição, horários, máquina de estados, pico de materiais, aprovação | Não |
-| Integração | Spring Boot Test, **Testcontainers (MongoDB 8)** | `integracao/*IT` | Regras com banco real: conflitos, manutenção, auditoria na mesma transação | Sim |
+| Integração | Spring Boot Test, **Testcontainers (MongoDB 9)** | `integracao/*IT` | Regras com banco real: conflitos, manutenção, auditoria na mesma transação | Sim |
 | Integração externa | **WireMock** | `NotificacaoWireMockIT` | Contrato JSON, falha 500 e timeout da API de notificação | Sim |
 | Concorrência | `ExecutorService` + `CountDownLatch` | `ConcorrenciaReservaIT` | 20 solicitações simultâneas → uma aceita | Sim |
 | API caixa-preta | **REST Assured** | `api/*IT` | Contrato HTTP, códigos de status, autorização, validação, erros seguros | Sim |
