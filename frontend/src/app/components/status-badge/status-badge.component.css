@@ -1,0 +1,14 @@
+.badge {
+  display: inline-flex;
+}
+
+.ponto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.pulsando {
+  animation: pulsar 1.6s ease-in-out infinite;
+}

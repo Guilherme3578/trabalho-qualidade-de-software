@@ -14,7 +14,8 @@ código.
 6. [Etapa 3 — Services](#6-etapa-3--services)
 7. [Etapa 4 — Interceptor e guards](#7-etapa-4--interceptor-e-guards)
 8. [Etapa 5 — Tema visual](#8-etapa-5--tema-visual)
-9. [Glossário](#glossário)
+9. [Etapa 6 — Componentes reutilizáveis](#9-etapa-6--componentes-reutilizáveis)
+10. [Glossário](#glossário)
 
 ---
 
@@ -83,6 +84,17 @@ frontend/
 ```
 
 Regra de dependência: `pages` e `components` usam `services`, que usam `models`. Nunca o contrário.
+
+### O front não acessa o banco de dados
+
+```
+[ Angular / TypeScript ]  --HTTP + JSON-->  [ Spring / Java ]  -->  [ MongoDB ]
+        frontend/                            src/main/java            banco
+```
+
+O front-end **só conversa com a API** por HTTP. Quem lê e grava no MongoDB é exclusivamente o back-end em Java.
+Os arquivos de `models/` descrevem o **JSON que a API envia e recebe**, e não as coleções do banco. Se o banco
+mudar, o front não precisa mudar.
 
 Cada componente tem três arquivos:
 
@@ -312,6 +324,63 @@ alterar um lugar:
 A fonte Inter vem do pacote `@fontsource-variable/inter`, registrado em `angular.json` → `styles`. Ela é servida
 pelo próprio app, e não pelo Google Fonts, porque a política de segurança (CSP) do back-end só permite recursos
 da mesma origem.
+
+## 9. Etapa 6 — Componentes reutilizáveis
+
+Pasta `src/app/components`. São peças usadas por várias telas. Cada uma fica na sua pasta, com `.ts`, `.html` e
+`.css`.
+
+| Componente | Seletor | Para quê |
+|---|---|---|
+| `layout` | `<app-layout>` | Moldura das telas internas: menu lateral, barra superior e `<router-outlet>` |
+| `mensagens` | `<app-mensagens>` | Avisos flutuantes de sucesso, erro e atenção (lê o `MensagemService`) |
+| `status-badge` | `<app-status-badge [status]="r.status" />` | Selo colorido do status; pisca em "Em uso" e "Aguardando" |
+| `cabecalho-pagina` | `<app-cabecalho-pagina titulo="..." icone="..." />` | Título da tela, com espaço para botões |
+| `estado-vazio` | `<app-estado-vazio titulo="..." />` | Mensagem para lista vazia |
+| `dialogo` | `<app-dialogo titulo="..." (fechar)="...">` | Janela modal; fecha com Esc, com o X ou clicando fora |
+
+### Entrada e saída de dados: `input()` e `output()`
+
+```ts
+export class StatusBadgeComponent {
+  readonly status = input.required<StatusReserva>();
+  protected readonly rotulo = computed(() => STATUS_RESERVA[this.status()]);
+}
+```
+
+- **`input()`**: dado que vem **de fora**, do componente pai (`[status]="reserva.status"`). É um signal; lê com
+  `status()`. `input.required` obriga o pai a informar.
+- **`output()`**: evento que o componente **dispara para o pai**. No `dialogo`, `fechar.emit()` avisa que o
+  usuário quer fechar, e o pai decide o que fazer: `(fechar)="dialogoAberto.set(false)"`.
+
+### Projeção de conteúdo: `<ng-content />`
+
+O `dialogo` e o `cabecalho-pagina` não sabem o que vão exibir dentro deles. O `<ng-content />` marca onde entra
+o HTML que o pai colocou entre as tags:
+
+```html
+<app-dialogo titulo="Cancelar reserva" (fechar)="fechar()">
+  <p>Este texto aparece dentro do diálogo.</p>
+</app-dialogo>
+```
+
+### Sintaxe de template
+
+| Sintaxe | Exemplo | Significado |
+|---|---|---|
+| `{{ }}` | `{{ m.titulo }}` | Mostra um valor |
+| `[prop]` | `[class.ativo]="menuAberto()"` | Liga uma propriedade a um valor |
+| `(evento)` | `(click)="sair()"` | Reage a um evento |
+| `@if` | `@if (texto()) { <p>...</p> }` | Mostra só se a condição for verdadeira |
+| `@for` | `@for (m of mensagens(); track m.id) { ... }` | Repete para cada item; `track` identifica o item para o Angular não recriar à toa |
+
+### Layout e menu por perfil
+
+O `layout` monta o menu a partir de uma lista (`MENU`) em que cada item informa os perfis que podem vê-lo.
+Um `computed` filtra os itens pelo perfil do usuário logado. No celular (até 900px), o menu vira uma gaveta que
+abre pelo botão ☰ e fecha sozinha ao trocar de página.
+
+O `routerLinkActive="ativo"` aplica a classe `ativo` no link da página atual, que ganha a barra em degradê.
 
 ---
 

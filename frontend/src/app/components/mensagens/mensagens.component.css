@@ -1,0 +1,91 @@
+.pilha-mensagens {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 100;
+  display: grid;
+  gap: 0.75rem;
+  width: min(400px, calc(100vw - 2.5rem));
+}
+
+.mensagem {
+  --cor: var(--info);
+  position: relative;
+  display: flex;
+  gap: 0.85rem;
+  padding: 1rem 1rem 1rem 1.1rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cor) 35%, transparent);
+  border-radius: var(--raio);
+  background: rgba(16, 18, 28, 0.92);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.8), 0 0 24px -10px var(--cor);
+  animation: deslizar 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.mensagem::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--cor);
+}
+
+.sucesso { --cor: var(--sucesso); }
+.erro { --cor: var(--perigo); }
+.aviso { --cor: var(--aviso); }
+
+.icone {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  color: var(--cor);
+}
+
+.corpo {
+  flex: 1;
+  font-size: 0.88rem;
+}
+
+.corpo p {
+  margin-top: 0.15rem;
+  color: var(--texto-suave);
+}
+
+ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--texto-suave);
+}
+
+.fechar {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--texto-fraco);
+  cursor: pointer;
+  transition: background var(--transicao), color var(--transicao);
+}
+
+.fechar:hover {
+  background: rgba(148, 163, 214, 0.12);
+  color: var(--texto);
+}
+
+.fechar lucide-icon {
+  width: 16px;
+  height: 16px;
+}
+
+@keyframes deslizar {
+  from {
+    opacity: 0;
+    transform: translateX(24px) scale(0.98);
+  }
+}

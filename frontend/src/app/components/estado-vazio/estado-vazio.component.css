@@ -1,0 +1,29 @@
+.vazio {
+  display: grid;
+  justify-items: center;
+  gap: 0.6rem;
+  padding: 3rem 1.5rem;
+  border: 1px dashed var(--borda-forte);
+  border-radius: var(--raio);
+  text-align: center;
+}
+
+.icone {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 0.4rem;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--primaria-clara);
+}
+
+.icone lucide-icon {
+  width: 26px;
+  height: 26px;
+}
+
+p {
+  max-width: 420px;
+}

@@ -1,0 +1,10 @@
+<div class="vazio animar">
+  <span class="icone">
+    <lucide-icon [name]="icone()" />
+  </span>
+  <h3>{{ titulo() }}</h3>
+  @if (texto()) {
+    <p class="texto-suave">{{ texto() }}</p>
+  }
+  <ng-content />
+</div>

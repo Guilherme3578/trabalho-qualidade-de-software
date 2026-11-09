@@ -1,0 +1,12 @@
+<div class="fundo" (click)="fechar.emit()"></div>
+<section class="dialogo cartao" role="dialog" aria-modal="true" [attr.aria-label]="titulo()" [style.max-width]="largura()">
+  <header>
+    <h2>{{ titulo() }}</h2>
+    <button type="button" class="btn btn-fantasma btn-icone" aria-label="Fechar" (click)="fechar.emit()">
+      <lucide-icon name="x" />
+    </button>
+  </header>
+  <div class="conteudo">
+    <ng-content />
+  </div>
+</section>
