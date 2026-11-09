@@ -22,7 +22,9 @@ código.
 14. [Etapa 11 — Disponibilidade e aprovações](#14-etapa-11--disponibilidade-e-aprovações)
 15. [Etapa 12 — Cadastros do administrador](#15-etapa-12--cadastros-do-administrador)
 16. [Etapa 13 — Relatórios, auditoria e notificações](#16-etapa-13--relatórios-auditoria-e-notificações)
-17. [Glossário](#glossário)
+17. [Etapa 14 — Testes unitários](#17-etapa-14--testes-unitários)
+18. [Etapa 15 — Carregamento sob demanda (lazy loading)](#18-etapa-15--carregamento-sob-demanda-lazy-loading)
+19. [Glossário](#glossário)
 
 ---
 
@@ -808,6 +810,83 @@ entre os componentes: os dois leem o mesmo signal.
 readonly naoLidas = computed(() => this.lista().filter(n => !n.lida).length);
 ```
 
+## 17. Etapa 14 — Testes unitários
+
+Os testes ficam ao lado do arquivo testado, com o sufixo `.spec.ts`, e rodam com **Vitest** (`npm test`).
+
+| Arquivo | O que garante | Testes |
+|---|---|---|
+| `services/datas.spec.ts` | Datas no formato da API sem fuso, soma de dias, cálculo de duração | 6 |
+| `services/parametros.spec.ts` | Filtros vazios não vão para a URL | 2 |
+| `services/mensagem.service.spec.ts` | Conversão do Problem Details, servidor fora do ar, avisos somem sozinhos | 5 |
+| `services/auth.service.spec.ts` | Login guarda token e usuário, confere perfil, logout apaga a sessão | 4 |
+| `guards/guards.spec.ts` | Bloqueio sem login, redirecionamento do login, permissão por perfil | 9 |
+| `interceptors/auth.interceptor.spec.ts` | Token só nas chamadas `/api/`, logout no 401, mas não no login nem no 403 | 6 |
+| `components/status-badge/...spec.ts` | Texto e cor de cada um dos 7 status | 8 |
+
+### Estrutura de um teste
+
+```ts
+describe('authInterceptor', () => {
+  it('faz logout quando a API responde 401', () => {
+    http.get('/api/reservas').subscribe({ error: () => undefined });
+    controle.expectOne('/api/reservas').flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(authFalso.sair).toHaveBeenCalledTimes(1);
+  });
+});
+```
+
+- `describe` agrupa os testes de uma unidade; `it` é um caso de teste.
+- **Preparar → agir → verificar**: monta o cenário, executa a ação e confere o resultado com `expect`.
+
+### Testes parametrizados: `it.each`
+
+Um mesmo teste roda com várias entradas, como os testes parametrizados do JUnit no back-end:
+
+```ts
+it.each([
+  ['RESPONSAVEL', ['RESPONSAVEL'], true],
+  ['PROFESSOR', ['ADMIN'], false]
+])('perfilGuard: %s acessando rota de %j → %s', (atual, exigidos, permitido) => { ... });
+```
+
+### Ferramentas do Angular para testes
+
+| Ferramenta | Uso |
+|---|---|
+| `TestBed` | Monta um "mini-app" com os providers que o teste precisa |
+| `provideHttpClientTesting()` + `HttpTestingController` | Intercepta as chamadas HTTP: nenhuma requisição sai de verdade; o teste decide a resposta com `flush()` |
+| `{ provide: AuthService, useValue: authFalso }` | Troca um service real por um **dublê** controlado pelo teste |
+| `TestBed.runInInjectionContext()` | Executa guards e funções que usam `inject()` |
+| `vi.fn()` | Função espiã: registra se e quantas vezes foi chamada |
+| `vi.useFakeTimers()` + `advanceTimersByTime()` | Avança o relógio sem esperar, para testar avisos que somem após 8 s |
+| `fixture.componentRef.setInput()` | Define um `input()` de componente no teste |
+
+`controle.verify()` no `afterEach` garante que nenhuma requisição ficou sem resposta, ou seja, que o código não
+fez chamadas a mais do que o teste esperava.
+
+## 18. Etapa 15 — Carregamento sob demanda (lazy loading)
+
+O build de produção avisou que o pacote inicial passou do limite (`budget`) de 500 kB: eram 518 kB, porque todas
+as telas iam juntas no primeiro acesso. Com **lazy loading**, cada página vira um arquivo separado, baixado só
+quando o usuário entra nela:
+
+```ts
+{
+  path: 'relatorios',
+  loadComponent: () => import('./pages/relatorios/relatorios.component').then(m => m.RelatoriosComponent)
+}
+```
+
+| | Antes | Depois |
+|---|---|---|
+| Pacote inicial | 518 kB | 320 kB |
+| Transferido (compactado) | 124 kB | 91 kB |
+
+O `import()` dinâmico diz ao compilador para separar aquele arquivo. Um professor, por exemplo, nunca baixa o
+código das telas de administração. O `LayoutComponent` continua carregado direto, porque aparece em todas as
+telas internas.
+
 ---
 
 ## Glossário
@@ -829,4 +908,6 @@ readonly naoLidas = computed(() => this.lista().filter(n => !n.lida).length);
 | **Pipe** | Transformação de valor na exibição, como `date`, que formata datas |
 | **forkJoin** | Operador do RxJS que espera várias requisições em paralelo terminarem |
 | **ngModel** | Ligação de mão dupla entre um campo e uma variável (formulários de template) |
+| **Lazy loading** | Carregar o código de uma tela só quando ela é aberta (`loadComponent`) |
+| **Dublê de teste** | Objeto falso que substitui uma dependência real durante o teste |
 | **Formulário reativo** | Formulário definido no TypeScript (`FormGroup`), ligado ao HTML com `formControlName` |
