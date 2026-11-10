@@ -52,10 +52,11 @@
 |---|---|---|
 | RNF01 | Desempenho sob carga | JMeter: 20 usuários simultâneos, erro < 1%, cada requisição ≤ 1000 ms, meta p95 ≤ 500 ms |
 | RNF02 | Autorização e proteção de acesso | Testes de 401/403 por perfil, token adulterado, força bruta (429), cabeçalhos de segurança |
-| RNF03 | Validação de entrada | Bean Validation com mensagens em português; testes de JSON malformado, injeção NoSQL/regex, atribuição em massa |
+| RNF03 | Validação de entrada | Bean Validation com mensagens em português; testes de JSON malformado, injeção de SQL e curingas do LIKE, atribuição em massa |
 | RNF04 | Tratamento seguro de erros | Problem Details (RFC 9457) com `codigo` e `correlationId`; nenhum stack trace exposto |
 | RNF05 | Cobertura de testes | JaCoCo: ≥ 80% de linhas e ≥ 70% de ramificações (o build falha abaixo disso) |
 | RNF06 | Qualidade estática | SonarCloud com Quality Gate aprovado em cada pull request |
+| RNF07 | Integridade dos dados no banco relacional | MySQL com chaves estrangeiras, chaves únicas e CHECK; esquema versionado (Flyway) e validado pelo Hibernate na inicialização |
 
 ## 1.5 Ciclo de vida da reserva
 

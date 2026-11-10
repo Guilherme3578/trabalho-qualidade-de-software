@@ -7,7 +7,7 @@
 
 1. Leitura dos pontos críticos: criação, alteração e aprovação de reservas, bloqueios de manutenção,
    autenticação, autorização e tratamento de erros.
-2. Execução de toda a suíte de testes contra um MongoDB real (replica set), incluindo os testes de integração,
+2. Execução de toda a suíte de testes contra um banco real (na época, MongoDB; hoje, MySQL 8.4), incluindo os testes de integração,
    concorrência, BDD e E2E, que ainda não tinham rodado.
 3. Execução da collection do Postman contra a aplicação no perfil `dev`.
 4. Para cada defeito confirmado: primeiro um teste que reproduz o problema e falha (commit `test:`), depois a
@@ -33,7 +33,7 @@ aprovadas**. Os detalhes estão em [09-relatorio-testes-api.md](09-relatorio-tes
 | Área | O que foi conferido |
 |---|---|
 | Dupla reserva | 20 pedidos simultâneos para a mesma sala, professor ou estoque: só os pedidos possíveis são aceitos (também via HTTP) |
-| Injeção NoSQL / regex | Filtros de texto usam `Pattern.quote`; sem operadores do MongoDB vindos do cliente |
+| Injeção de SQL | Consultas JPQL parametrizadas; curingas do LIKE escapados (após a migração para MySQL) |
 | Login | Mensagem genérica para e-mail inexistente e senha errada; comparação com hash fictício para não revelar, pelo tempo de resposta, se o e-mail existe |
 | Erros | Problem Details sem stack trace, mensagem interna ou nome de exceção |
 | JWT | Assinatura HS256 com segredo de no mínimo 32 caracteres (a aplicação não sobe sem ele); token adulterado ou forjado → 401 |
@@ -54,6 +54,6 @@ Estes pontos são decisões de regra de negócio, por isso não foram mudados se
 ## 11.5 Pendências de ambiente
 
 - Docker: o usuário do Linux ainda não está no grupo `docker`. Até lá, os testes de integração rodam com o
-  MongoDB local (`MONGODB_URI_TESTE`, ver [10-relatorio-testes-backend.md](10-relatorio-testes-backend.md)).
+  MySQL local (`MYSQL_URL_TESTE`, ver [10-relatorio-testes-backend.md](10-relatorio-testes-backend.md)).
 - SonarCloud: trocar `sonar.organization` e `sonar.projectKey` no `pom.xml` pelos do projeto criado.
 - Repositório no GitHub: necessário para o GitHub Actions e o SonarCloud rodarem nos pull requests.

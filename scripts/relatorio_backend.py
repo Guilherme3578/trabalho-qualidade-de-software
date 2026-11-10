@@ -10,6 +10,7 @@ saida = Path(sys.argv[2]) if len(sys.argv) > 2 else raiz / "docs" / "10-relatori
 NIVEIS = [
     ("api", "API caixa-preta"),
     ("integracao", "Integração (MySQL real + WireMock)"),
+    ("banco", "Integridade do banco (MySQL)"),
     ("concorrencia", "Concorrência"),
     ("bdd", "BDD (Cucumber)"),
     ("e2e", "E2E (Selenium)"),

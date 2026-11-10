@@ -3,7 +3,7 @@
 > Arquivo **gerado automaticamente** por `scripts/rastreabilidade.py` — não edite à mão.
 > Cada teste cita os requisitos que verifica no próprio nome (ex.: `[RF05][RN02]`).
 
-Última execução encontrada em `target/`: **250 testes, 0 falha(s).**
+Última execução encontrada em `target/`: **262 testes, 0 falha(s).**
 
 ## Resumo
 
@@ -11,7 +11,7 @@
 |---|---|---|---|
 | RF01 | Autenticação e autorização por perfil | 5 | API caixa-preta |
 | RF02 | Cadastro e consulta de salas, professores e materiais | 4 | API caixa-preta |
-| RF03 | Pesquisa por tipo, capacidade, localização, competência e disponibilidade | 7 | API caixa-preta, Unitário |
+| RF03 | Pesquisa por tipo, capacidade, localização, competência e disponibilidade | 9 | API caixa-preta, Unitário |
 | RF04 | Criação, alteração e cancelamento de reservas | 7 | API caixa-preta, End-to-end, Integração |
 | RF05 | Detecção de sobreposição de horários, inclusive na agenda do professor | 6 | API caixa-preta, End-to-end, Integração |
 | RF06 | Proteção contra dupla reserva em solicitações simultâneas | 11 | Concorrência, Unitário |
@@ -35,10 +35,11 @@
 | RN10 | Reservas no futuro, no mesmo dia, entre 07:00 e 23:00, com duração entre 30 min e 6 h | 4 | Integração, Unitário |
 | RNF01 | Desempenho sob carga | 1 | JMeter |
 | RNF02 | Autorização e proteção de acesso | 20 | API caixa-preta, Unitário |
-| RNF03 | Validação de entrada | 10 | API caixa-preta, Unitário |
+| RNF03 | Validação de entrada | 11 | API caixa-preta, Unitário |
 | RNF04 | Tratamento seguro de erros | 5 | API caixa-preta, Unitário |
 | RNF05 | Cobertura de testes | 1 | JaCoCo |
 | RNF06 | Qualidade estática | 1 | SonarCloud |
+| RNF07 | Integridade dos dados no banco relacional | 7 | Integração (banco) |
 
 ## Detalhamento
 
@@ -70,7 +71,9 @@
 | API caixa-preta | `CadastroPesquisaApiIT` | Pesquisa por disponibilidade exclui salas ocupadas e em manutenção |
 | API caixa-preta | `CadastroPesquisaApiIT` | Pesquisa de professores por competência e disponibilidade |
 | API caixa-preta | `CadastroPesquisaApiIT` | Pesquisa de materiais informa a quantidade disponível no período |
-| Unitário | `UtilitariosTest` | Igualdade ignora maiúsculas |
+| Unitário | `UtilitariosTest` | filtro vazio \ |
+| Unitário | `UtilitariosTest` | Filtros vazios não restringem a pesquisa |
+| Unitário | `UtilitariosTest` | Igualdade remove espaços nas pontas (comparação sem maiúsculas é feita na consulta) |
 | Unitário | `UtilitariosTest` | Disponibilidade exige início e término juntos |
 
 ### RF04 — Criação, alteração e cancelamento de reservas
@@ -106,9 +109,9 @@
 | Concorrência | `ConcorrenciaReservaIT` | Mesmo professor em 20 salas diferentes ao mesmo tempo → 1 aceito |
 | Concorrência | `ConcorrenciaReservaIT` | Estoque de 3 projetores e 20 pedidos simultâneos de 1 → exatamente 3 aceitos |
 | Concorrência | `ConcorrenciaReservaIT` | Via HTTP: 10 requisições simultâneas à API → um 201 e nove 409 |
-| Unitário | `ProtecaoConcorrenciaTest` | Repetição de transações em conflito de escrita |
-| Unitário | `ProtecaoConcorrenciaTest` | WriteConflict é repetido até a operação conseguir |
-| Unitário | `ProtecaoConcorrenciaTest` | Erro com rótulo TransientTransactionError é considerado transitório |
+| Unitário | `ProtecaoConcorrenciaTest` | Repetição de transações em deadlock ou espera de trava |
+| Unitário | `ProtecaoConcorrenciaTest` | Deadlock do MySQL é repetido até a operação conseguir |
+| Unitário | `ProtecaoConcorrenciaTest` | Falhas de trava são transitórias; violação de integridade não é |
 | Unitário | `ProtecaoConcorrenciaTest` | Erros de negócio não são repetidos |
 | Unitário | `ProtecaoConcorrenciaTest` | Após o limite de tentativas, devolve erro CONCORRENCIA compreensível |
 
@@ -341,16 +344,17 @@
 
 | Nível | Classe / arquivo | Caso de teste |
 |---|---|---|
+| API caixa-preta | `CadastroPesquisaApiIT` | Curingas e SQL na pesquisa são tratados como texto literal |
 | API caixa-preta | `SegurancaApiIT` | API caixa-preta: segurança |
 | API caixa-preta | `SegurancaApiIT` | Campos inválidos devolvem 400 com a lista de mensagens em português |
 | API caixa-preta | `SegurancaApiIT` | corpo malformado: {0} |
 | API caixa-preta | `SegurancaApiIT` | JSON malformado devolve 400 sem detalhes internos |
 | API caixa-preta | `SegurancaApiIT` | Parâmetro de data em formato inválido devolve 400 legível |
 | API caixa-preta | `SegurancaApiIT` | busca com \ |
-| API caixa-preta | `SegurancaApiIT` | Injeção NoSQL / regex em filtros não retorna dados indevidos |
+| API caixa-preta | `SegurancaApiIT` | Injeção de SQL e curingas em filtros não retornam dados indevidos |
 | API caixa-preta | `SegurancaApiIT` | Campos extras no corpo (ex.: status) são ignorados — sem atribuição em massa |
-| Unitário | `UtilitariosTest` | entrada maliciosa \ |
-| Unitário | `UtilitariosTest` | Filtros escapam expressões regulares (evita injeção NoSQL/ReDoS) |
+| Unitário | `UtilitariosTest` | entrada \ |
+| Unitário | `UtilitariosTest` | Filtros de texto escapam curingas do LIKE (o valor segue como parâmetro, sem SQL injection) |
 
 ### RNF04 — Tratamento seguro de erros
 
@@ -373,4 +377,16 @@
 | Nível | Classe / arquivo | Caso de teste |
 |---|---|---|
 | SonarCloud | `.github/workflows/ci.yml` | análise estática e Quality Gate em cada pull request |
+
+### RNF07 — Integridade dos dados no banco relacional
+
+| Nível | Classe / arquivo | Caso de teste |
+|---|---|---|
+| Integração (banco) | `IntegridadeRelacionalIT` | Banco relacional: integridade garantida pelo MySQL |
+| Integração (banco) | `IntegridadeRelacionalIT` | O esquema é criado pelas migrações versionadas do Flyway |
+| Integração (banco) | `IntegridadeRelacionalIT` | Chave estrangeira impede reserva apontando para sala inexistente |
+| Integração (banco) | `IntegridadeRelacionalIT` | Sala com reservas não pode ser apagada diretamente no banco |
+| Integração (banco) | `IntegridadeRelacionalIT` | CHECK impede período invertido mesmo fora da API |
+| Integração (banco) | `IntegridadeRelacionalIT` | CHECK de bloqueio exige exatamente o recurso do tipo informado |
+| Integração (banco) | `IntegridadeRelacionalIT` | Apagar a reserva remove itens e motivos em cascata |
 

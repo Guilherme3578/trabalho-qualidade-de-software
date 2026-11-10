@@ -4,6 +4,11 @@
 > front-end, integração entre eles e desempenho. Os números detalhados estão nos relatórios gerados
 > automaticamente ([09 — API](09-relatorio-testes-api.md), [10 — back-end](10-relatorio-testes-backend.md))
 > e em [06 — desempenho](06-desempenho.md).
+>
+> **Atualização de 10/11/2026 (branch `feat/migracao-mysql`):** o banco passou de MongoDB para **MySQL 8.4**,
+> após feedback do professor. Back-end, collection Postman e carga JMeter foram executados de novo sobre o
+> MySQL, e os números abaixo são os novos. O front-end não foi alterado (a API manteve o mesmo contrato),
+> então os resultados dele são os de 08/11.
 
 ## 12.1 Resultado geral
 
@@ -11,21 +16,21 @@
 
 | Suíte | Ferramenta | Executado | Resultado |
 |---|---|---|---|
-| Unitários do back-end | JUnit 5 (Surefire) | 134 testes | ✅ 0 falhas |
-| API caixa-preta, integração, concorrência, BDD e E2E | JUnit 5, Testcontainers/MongoDB real, WireMock, Cucumber, Selenium (Failsafe) | 116 testes | ✅ 0 falhas |
-| Cobertura do back-end | JaCoCo | 85,2% de linhas, 72,6% de desvios | ✅ meta 80% / 70% |
+| Unitários do back-end | JUnit 5 (Surefire) | 136 testes | ✅ 0 falhas |
+| API caixa-preta, integração, integridade do banco, concorrência, BDD e E2E | JUnit 5, Testcontainers/MySQL real, WireMock, Cucumber, Selenium (Failsafe) | 126 testes | ✅ 0 falhas |
+| Cobertura do back-end | JaCoCo | 86,4% de linhas, 73,2% de desvios | ✅ meta 80% / 70% |
 | API pela collection | Postman (Newman 6.2.1) | 59 requisições, 124 asserções | ✅ 0 falhas |
 | Unitários do front-end | Vitest (Angular) | 40 testes em 7 arquivos | ✅ 0 falhas |
 | Build de produção do front-end | Angular CLI | 1 build | ✅ sem erros nem avisos |
 | Integração front-end → API | Smoke test pelo proxy do Angular | 4 perfis × 12 rotas | ✅ respostas conforme o perfil |
-| Carga | JMeter 5 | 2.004 requisições, 20 usuários | ✅ 0% de erro, p95 = 21 ms |
+| Carga | JMeter 5 | 2.004 requisições, 20 usuários | ✅ 0% de erro, p95 = 52 ms |
 
 ## 12.2 Visão técnica do sistema
 
 | Camada | Tecnologia | Observação |
 |---|---|---|
 | Back-end | Java 21, Spring Boot 4.0.9, Spring Security (JWT HS256), springdoc | API REST em `/api/*`, erros em Problem Details (RFC 9457) |
-| Banco | MongoDB 8 em replica set | Transações usadas na proteção contra dupla reserva (RF06) |
+| Banco | MySQL 8.4 (JPA/Hibernate 7, esquema versionado com Flyway) | FKs, chaves únicas e CHECK; travas `SELECT ... FOR UPDATE` contra dupla reserva (RF06) |
 | Front-end | Angular 21 (standalone, signals, lazy loading), TypeScript 5.9, lucide-angular | Pasta `frontend/`, 13 páginas e 6 componentes reutilizáveis |
 | Notificações | Cliente HTTP para API externa | Simulada com WireMock nos testes (RF11) |
 | CI | GitHub Actions | Jobs de back-end (build, testes, JaCoCo, SonarCloud), front-end e JMeter em todo PR |
@@ -107,9 +112,8 @@ Observações que não são defeitos do código:
 ## 12.7 Como reproduzir
 
 ```bash
-mongod --replSet rs0 --port 27017 --bind_ip 127.0.0.1 --dbpath ~/mongo-dev/db
-
-MONGODB_URI_TESTE='mongodb://127.0.0.1:27017/alocacao_teste?replicaSet=rs0' ./mvnw verify
+# MySQL local com o usuário alocacao e os bancos alocacao e alocacao_teste (ver README)
+MYSQL_URL_TESTE='jdbc:mysql://127.0.0.1:3306/alocacao_teste' ./mvnw verify
 python3 scripts/relatorio_backend.py .
 
 cp target/alocacao-salas-*.jar /tmp/app.jar

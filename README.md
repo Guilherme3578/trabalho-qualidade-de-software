@@ -8,8 +8,8 @@ desenvolvido para a disciplina de **Qualidade de Software**. O foco é apresenta
 
 | Camada | Tecnologia |
 |---|---|
-| Back-end / API REST | Java 21, Spring Boot 4 (Web MVC, Security, Validation, Data MongoDB) |
-| Banco de dados | MongoDB 9 (replica set, transações multi-documento) |
+| Back-end / API REST | Java 21, Spring Boot 4 (Web MVC, Security, Validation, Data JPA / Hibernate) |
+| Banco de dados | MySQL 8.4 (relacional, com FKs e CHECK), esquema versionado com Flyway |
 | Interface web | HTML + CSS + JavaScript (responsiva, servida pelo Spring Boot) |
 | Documentação da API | OpenAPI 3 / Swagger UI (springdoc) |
 | Testes | JUnit 5, Mockito, AssertJ, Testcontainers, WireMock, REST Assured, Cucumber, Selenium, JMeter |
@@ -17,13 +17,36 @@ desenvolvido para a disciplina de **Qualidade de Software**. O foco é apresenta
 
 ## Como executar
 
-**Pré-requisitos:** Java 21 e Docker. O Maven não é obrigatório, porque o projeto inclui o wrapper `./mvnw`.
+**Pré-requisitos:** Java 21 e MySQL 8 (instalado na máquina ou via Docker). O Maven não é obrigatório,
+porque o projeto inclui o wrapper `./mvnw`.
+
+### Banco de dados (MySQL)
+
+A aplicação conecta, por padrão, em `jdbc:mysql://localhost:3306/alocacao` com o usuário `alocacao` /
+senha `alocacao`. As tabelas são criadas automaticamente pelo **Flyway** na primeira execução.
+
+**Opção A: MySQL instalado na máquina** (Workbench, extensão do VS Code etc.). Crie uma única vez o
+usuário e os bancos de desenvolvimento e de teste:
+
+```sql
+CREATE DATABASE IF NOT EXISTS alocacao;
+CREATE DATABASE IF NOT EXISTS alocacao_teste;
+CREATE USER IF NOT EXISTS 'alocacao'@'localhost' IDENTIFIED BY 'alocacao';
+GRANT ALL PRIVILEGES ON alocacao.* TO 'alocacao'@'localhost';
+GRANT ALL PRIVILEGES ON alocacao_teste.* TO 'alocacao'@'localhost';
+```
+
+No Linux, com o `root` autenticando pelo sistema: `sudo mysql < arquivo.sql`.
+
+**Opção B: Docker.** `docker compose up -d mysql wiremock` sobe o MySQL já com esse usuário. Se a porta
+3306 estiver ocupada por um MySQL local, use `MYSQL_PORTA=3307 docker compose up -d mysql` e
+`DB_URL=jdbc:mysql://localhost:3307/alocacao`.
+
+Outra conexão pode ser configurada pelas variáveis `DB_URL`, `DB_USUARIO` e `DB_SENHA`.
+
+### Aplicação
 
 ```bash
-# 1. Subir MongoDB e o simulador da API de notificações
-docker compose up -d mongo wiremock
-
-# 2. Rodar a aplicação com dados de demonstração
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
@@ -50,8 +73,9 @@ Para rodar: classe `AlocacaoApplication` com *Active profiles* = `dev`.
 ## Testes
 
 ```bash
-./mvnw test                  # unitários (não precisa de Docker)
-./mvnw verify                # todos: integração, API, concorrência, BDD, E2E + cobertura
+./mvnw test                  # unitários (não precisa de banco)
+./mvnw verify                # todos: integração, API, concorrência, BDD, E2E + cobertura (MySQL via Testcontainers)
+MYSQL_URL_TESTE='jdbc:mysql://localhost:3306/alocacao_teste' ./mvnw verify   # sem Docker, usando o MySQL local
 ./mvnw verify -Psem-e2e      # todos, exceto o navegador (Selenium)
 ./mvnw verify -Pdesempenho   # JMeter (com a aplicação rodando)
 python3 scripts/rastreabilidade.py   # atualiza a matriz de rastreabilidade
@@ -80,7 +104,7 @@ Postman: importe `postman/alocacao-salas.postman_collection.json` e `postman/loc
 
 ```
 src/main/java/br/senac/alocacao/
-├── config/        segurança, JWT, MongoDB, OpenAPI, relógio, dados de demonstração
+├── config/        segurança, JWT, OpenAPI, relógio, dados de demonstração
 ├── comum/         tratamento de erros e utilitários
 ├── auth/ usuario/ autenticação e usuários
 ├── sala/ professor/ material/ bloqueio/   cadastros e manutenção
