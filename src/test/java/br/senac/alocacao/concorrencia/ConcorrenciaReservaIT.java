@@ -8,7 +8,7 @@ import br.senac.alocacao.comum.CodigoErro;
 import br.senac.alocacao.comum.NegocioException;
 import br.senac.alocacao.material.Material;
 import br.senac.alocacao.professor.Professor;
-import br.senac.alocacao.reserva.Reserva;
+import br.senac.alocacao.reserva.ReservaRepository;
 import br.senac.alocacao.reserva.ReservaRequest;
 import br.senac.alocacao.reserva.ReservaService;
 import br.senac.alocacao.sala.Sala;
@@ -42,6 +42,7 @@ class ConcorrenciaReservaIT extends IntegracaoBase {
 
     @Autowired ReservaService servico;
     @Autowired BloqueioService bloqueios;
+    @Autowired ReservaRepository reservas;
 
     private Map<String, Integer> disparar(List<Callable<Object>> tarefas) throws Exception {
         ExecutorService pool = Executors.newFixedThreadPool(tarefas.size());
@@ -86,7 +87,7 @@ class ConcorrenciaReservaIT extends IntegracaoBase {
 
         assertThat(r).containsEntry("ACEITA", 1);
         assertThat(r.getOrDefault(CodigoErro.CONFLITO_SALA.name(), 0)).isEqualTo(THREADS - 1);
-        assertThat(mongo.findAll(Reserva.class)).hasSize(1);
+        assertThat(reservas.count()).isEqualTo(1);
     }
 
     @Test

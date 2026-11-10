@@ -1,12 +1,22 @@
 spring:
   application:
     name: alocacao-salas
-  mongodb:
-    uri: ${MONGODB_URI:mongodb://localhost:27017/alocacao?directConnection=true}
-  data:
-    mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/alocacao?directConnection=true}
-      auto-index-creation: true
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/alocacao?createDatabaseIfNotExist=true&characterEncoding=UTF-8}
+    username: ${DB_USUARIO:alocacao}
+    password: ${DB_SENHA:alocacao}
+    hikari:
+      transaction-isolation: TRANSACTION_READ_COMMITTED
+      maximum-pool-size: ${DB_POOL:20}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+  flyway:
+    locations: classpath:db/migration
   jackson:
     default-property-inclusion: always
     deserialization:

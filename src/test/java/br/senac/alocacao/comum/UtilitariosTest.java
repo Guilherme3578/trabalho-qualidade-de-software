@@ -3,6 +3,7 @@ package br.senac.alocacao.comum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.LocalDateTime;
@@ -14,19 +15,32 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Utilitários de filtro e JSON")
 class UtilitariosTest {
-    @ParameterizedTest(name = "[RNF03] entrada maliciosa \"{0}\" é tratada literalmente")
-    @ValueSource(strings = {".*", "^$", "a|b", "(.*)+$", "{\"$gt\": \"\"}", "'; db.dropDatabase(); '"})
-    @DisplayName("[RNF03] Filtros escapam expressões regulares (evita injeção NoSQL/ReDoS)")
-    void filtroEscapado(String entrada) {
-        assertThat(Filtros.contem(entrada).matcher("texto qualquer sem relação").find()).isFalse();
-        assertThat(Filtros.contem(entrada).matcher("prefixo " + entrada + " sufixo").find()).isTrue();
+    @ParameterizedTest(name = "[RNF03] entrada \"{0}\" vira padrão LIKE \"{1}\"")
+    @CsvSource(delimiter = '|', quoteCharacter = '"', value = {
+            "bloco a|%bloco a%",
+            "  bloco  |%bloco%",
+            "100%|%100\\%%",
+            "a_b|%a\\_b%",
+            "c:\\temp|%c:\\\\temp%",
+            "'; DROP TABLE salas; --|%'; DROP TABLE salas; --%"})
+    @DisplayName("[RNF03] Filtros de texto escapam curingas do LIKE (o valor segue como parâmetro, sem SQL injection)")
+    void filtroEscapado(String entrada, String esperado) {
+        assertThat(Filtros.contem(entrada)).isEqualTo(esperado);
+    }
+
+    @ParameterizedTest(name = "[RF03] filtro vazio \"{0}\" é ignorado")
+    @ValueSource(strings = {"", "   "})
+    @DisplayName("[RF03] Filtros vazios não restringem a pesquisa")
+    void filtroVazio(String entrada) {
+        assertThat(Filtros.contem(entrada)).isNull();
+        assertThat(Filtros.igual(entrada)).isNull();
+        assertThat(Filtros.contem(null)).isNull();
     }
 
     @Test
-    @DisplayName("[RF03] Igualdade ignora maiúsculas")
+    @DisplayName("[RF03] Igualdade remove espaços nas pontas (comparação sem maiúsculas é feita na consulta)")
     void igual() {
-        assertThat(Filtros.igual("banco de dados").matcher("Banco de Dados").matches()).isTrue();
-        assertThat(Filtros.igual("banco").matcher("Banco de Dados").matches()).isFalse();
+        assertThat(Filtros.igual("  Banco de Dados ")).isEqualTo("Banco de Dados");
     }
 
     @Test

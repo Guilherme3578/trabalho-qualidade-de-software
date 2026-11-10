@@ -6,6 +6,7 @@ import br.senac.alocacao.material.Material;
 import br.senac.alocacao.material.MaterialRepository;
 import br.senac.alocacao.reserva.ItemReserva;
 import br.senac.alocacao.reserva.Reserva;
+import br.senac.alocacao.reserva.ReservaRepository;
 import br.senac.alocacao.reserva.StatusReserva;
 import br.senac.alocacao.reserva.regras.PoliticaHorario;
 import br.senac.alocacao.sala.Sala;
@@ -15,10 +16,8 @@ import br.senac.alocacao.relatorio.RelatorioDtos.ConflitosPorRecurso;
 import br.senac.alocacao.relatorio.RelatorioDtos.RelatorioConflitos;
 import br.senac.alocacao.relatorio.RelatorioDtos.RelatorioUtilizacao;
 import br.senac.alocacao.relatorio.RelatorioDtos.UtilizacaoRecurso;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -32,15 +31,19 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class RelatorioService {
     private static final long MAX_DIAS = 366;
 
-    private final MongoTemplate mongo;
+    private final ReservaRepository reservas;
+    private final ConflitoEvitadoRepository conflitosEvitados;
     private final SalaRepository salas;
     private final MaterialRepository materiais;
 
-    public RelatorioService(MongoTemplate mongo, SalaRepository salas, MaterialRepository materiais) {
-        this.mongo = mongo;
+    public RelatorioService(ReservaRepository reservas, ConflitoEvitadoRepository conflitosEvitados,
+                            SalaRepository salas, MaterialRepository materiais) {
+        this.reservas = reservas;
+        this.conflitosEvitados = conflitosEvitados;
         this.salas = salas;
         this.materiais = materiais;
     }
@@ -97,8 +100,8 @@ public class RelatorioService {
 
     public RelatorioConflitos conflitosEvitados(LocalDate inicio, LocalDate fim) {
         validarPeriodo(inicio, fim);
-        List<ConflitoEvitado> conflitos = mongo.find(Query.query(Criteria.where("registradoEm")
-                .gte(inicio.atStartOfDay()).lt(fim.plusDays(1).atStartOfDay())), ConflitoEvitado.class);
+        List<ConflitoEvitado> conflitos = conflitosEvitados.findByRegistradoEmGreaterThanEqualAndRegistradoEmLessThan(
+                inicio.atStartOfDay(), fim.plusDays(1).atStartOfDay());
 
         Map<String, Long> porTipo = conflitos.stream()
                 .collect(Collectors.groupingBy(ConflitoEvitado::tipo, TreeMap::new, Collectors.counting()));
@@ -124,8 +127,7 @@ public class RelatorioService {
     private List<Reserva> reservasEfetivas(LocalDate inicio, LocalDate fim) {
         LocalDateTime de = inicio.atStartOfDay();
         LocalDateTime ate = fim.plusDays(1).atStartOfDay();
-        return mongo.find(Query.query(Criteria.where("status").in(StatusReserva.EFETIVOS)
-                .and("inicio").gte(de).lt(ate)), Reserva.class);
+        return reservas.efetivasNoPeriodo(StatusReserva.EFETIVOS, de, ate);
     }
 
     private static void validarPeriodo(LocalDate inicio, LocalDate fim) {

@@ -1,6 +1,7 @@
 package br.senac.alocacao.integracao;
 
 import br.senac.alocacao.auditoria.AcaoAuditoria;
+import br.senac.alocacao.auditoria.AuditoriaRepository;
 import br.senac.alocacao.auditoria.AuditoriaService;
 import br.senac.alocacao.auditoria.EventoAuditoria;
 import br.senac.alocacao.bloqueio.BloqueioRequest;
@@ -11,6 +12,7 @@ import br.senac.alocacao.comum.NegocioException;
 import br.senac.alocacao.material.Material;
 import br.senac.alocacao.professor.Professor;
 import br.senac.alocacao.relatorio.ConflitoEvitado;
+import br.senac.alocacao.relatorio.ConflitoEvitadoRepository;
 import br.senac.alocacao.reserva.MovimentacaoRequest;
 import br.senac.alocacao.reserva.ReservaRequest;
 import br.senac.alocacao.reserva.ReservaResponse;
@@ -31,11 +33,13 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DisplayName("Integração: regras de reserva com MongoDB real")
+@DisplayName("Integração: regras de reserva com MySQL real")
 class ReservaServiceIT extends IntegracaoBase {
     @Autowired ReservaService servico;
     @Autowired BloqueioService bloqueios;
     @Autowired AuditoriaService auditoria;
+    @Autowired AuditoriaRepository auditoriaRepositorio;
+    @Autowired ConflitoEvitadoRepository conflitosEvitados;
 
     Usuario coordenador;
     Usuario responsavel;
@@ -205,10 +209,10 @@ class ReservaServiceIT extends IntegracaoBase {
         servico.concluir(r.id(), coordenador);
 
         List<EventoAuditoria> transicoes = auditoria.historico("Reserva", r.id()).stream()
-                .filter(e -> e.acao() == AcaoAuditoria.TRANSICAO_ESTADO).toList();
-        assertThat(transicoes).extracting(EventoAuditoria::estadoNovo)
+                .filter(e -> e.getAcao() == AcaoAuditoria.TRANSICAO_ESTADO).toList();
+        assertThat(transicoes).extracting(EventoAuditoria::getEstadoNovo)
                 .containsExactly("APROVADA", "EM_USO", "CONCLUIDA");
-        assertThat(transicoes).extracting(EventoAuditoria::usuarioNome)
+        assertThat(transicoes).extracting(EventoAuditoria::getUsuarioNome)
                 .containsExactly(responsavel.getNome(), coordenador.getNome(), coordenador.getNome());
     }
 
@@ -218,21 +222,21 @@ class ReservaServiceIT extends IntegracaoBase {
         ReservaResponse r = criar(a101, ana, "Qualidade de Software", "09:00", "11:00");
         servico.cancelar(r.id(), "motivo", coordenador);
         List<EventoAuditoria> h = auditoria.historico("Reserva", r.id());
-        assertThat(h).extracting(EventoAuditoria::acao).containsExactly(
+        assertThat(h).extracting(EventoAuditoria::getAcao).containsExactly(
                 AcaoAuditoria.CRIACAO, AcaoAuditoria.TRANSICAO_ESTADO, AcaoAuditoria.TRANSICAO_ESTADO);
-        assertThat(h.get(1).usuarioNome()).isEqualTo(AuditoriaService.SISTEMA);
-        assertThat(h.get(2).estadoAnterior()).isEqualTo("APROVADA");
-        assertThat(h.get(2).estadoNovo()).isEqualTo("CANCELADA");
-        assertThat(h.get(2).detalhes()).isEqualTo("motivo");
+        assertThat(h.get(1).getUsuarioNome()).isEqualTo(AuditoriaService.SISTEMA);
+        assertThat(h.get(2).getEstadoAnterior()).isEqualTo("APROVADA");
+        assertThat(h.get(2).getEstadoNovo()).isEqualTo("CANCELADA");
+        assertThat(h.get(2).getDetalhes()).isEqualTo("motivo");
     }
 
     @Test
     @DisplayName("[RN08] Operação recusada não deixa auditoria parcial (mesma transação)")
     void semAuditoriaParcial() {
         criar(a101, ana, "Qualidade de Software", "09:00", "11:00");
-        long antes = mongo.count(new org.springframework.data.mongodb.core.query.Query(), EventoAuditoria.class);
+        long antes = auditoriaRepositorio.count();
         assertThatThrownBy(() -> criar(a101, bruno, "Banco de Dados", "09:00", "11:00"));
-        long depois = mongo.count(new org.springframework.data.mongodb.core.query.Query(), EventoAuditoria.class);
+        long depois = auditoriaRepositorio.count();
         assertThat(depois).isEqualTo(antes);
     }
 
@@ -253,7 +257,7 @@ class ReservaServiceIT extends IntegracaoBase {
         ReservaResponse r = criar(a101, ana, "Qualidade de Software", "09:00", "11:00");
         servico.excluir(r.id(), coordenador);
         assertThat(servico.pesquisar(null, null, null, null, null, null)).isEmpty();
-        assertThat(auditoria.historico("Reserva", r.id())).extracting(EventoAuditoria::acao)
+        assertThat(auditoria.historico("Reserva", r.id())).extracting(EventoAuditoria::getAcao)
                 .contains(AcaoAuditoria.EXCLUSAO);
     }
 
@@ -323,7 +327,7 @@ class ReservaServiceIT extends IntegracaoBase {
     void conflitoRegistrado() {
         criar(a101, ana, "Qualidade de Software", "09:00", "11:00");
         assertThatThrownBy(() -> criar(a101, bruno, "Banco de Dados", "10:00", "11:00"));
-        List<ConflitoEvitado> conflitos = mongo.findAll(ConflitoEvitado.class);
+        List<ConflitoEvitado> conflitos = conflitosEvitados.findAll();
         assertThat(conflitos).hasSize(1);
         assertThat(conflitos.get(0).tipo()).isEqualTo("CONFLITO_SALA");
         assertThat(conflitos.get(0).recursoId()).isEqualTo(a101.getId());

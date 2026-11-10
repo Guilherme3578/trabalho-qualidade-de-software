@@ -11,7 +11,7 @@
 | Força bruta no login (API4) | 5 falhas em 15 min bloqueiam o e-mail (HTTP 429) | `LimitadorTentativasLoginTest`, `AutenticacaoApiIT.forcaBruta` |
 | Enumeração de usuários | Mesma mensagem para e-mail inexistente, senha errada ou usuário inativo; BCrypt executado sempre | `mensagemGenerica` |
 | Senhas expostas | Somente o hash BCrypt é armazenado; DTOs nunca expõem o hash; `toString` dos requests omite a senha | `semHash`, `loginValido` |
-| Injeção NoSQL / regex (A03) | Filtros textuais com `Pattern.quote`; consultas tipadas com `Criteria` (sem concatenação) | `injecaoNoFiltro`, `UtilitariosTest.filtroEscapado` |
+| Injeção de SQL (A03) | Consultas JPQL com parâmetros nomeados (nunca concatenação); curingas `%` e `_` do LIKE escapados em `Filtros.contem` | `injecaoNoFiltro`, `pesquisaComCuringasLiterais`, `UtilitariosTest.filtroEscapado` |
 | Atribuição em massa (API3) | DTOs (`record`) com apenas os campos permitidos; status e id nunca vêm do cliente | `atribuicaoEmMassa` |
 | Entrada inválida | Bean Validation com mensagens em português; tamanhos máximos em todos os textos e listas | `validacaoCampos`, `jsonMalformado`, `parametroInvalido` |
 | Vazamento de informação em erros (A05) | `ApiExceptionHandler` + `server.error.include-stacktrace=never`; Problem Details com `codigo` e `correlationId` | `erroSeguro`, `rotaInexistente` |

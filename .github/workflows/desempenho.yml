@@ -20,8 +20,8 @@ jobs:
           java-version: 21
           cache: maven
 
-      - name: Subir MongoDB (replica set) e WireMock
-        run: docker compose up -d --wait mongo wiremock
+      - name: Subir MySQL e WireMock
+        run: docker compose up -d --wait mysql wiremock
 
       - name: Empacotar e iniciar a aplicação
         env:

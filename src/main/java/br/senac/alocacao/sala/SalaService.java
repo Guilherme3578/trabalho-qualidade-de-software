@@ -7,10 +7,6 @@ import br.senac.alocacao.comum.NegocioException;
 import br.senac.alocacao.reserva.DisponibilidadeService;
 import br.senac.alocacao.reserva.regras.Intervalo;
 import br.senac.alocacao.usuario.Usuario;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,40 +19,28 @@ public class SalaService {
     private static final String ENTIDADE = "Sala";
 
     private final SalaRepository salas;
-    private final MongoTemplate mongo;
     private final DisponibilidadeService disponibilidade;
     private final AuditoriaService auditoria;
 
-    public SalaService(SalaRepository salas, MongoTemplate mongo, DisponibilidadeService disponibilidade,
+    public SalaService(SalaRepository salas, DisponibilidadeService disponibilidade,
                        AuditoriaService auditoria) {
         this.salas = salas;
-        this.mongo = mongo;
         this.disponibilidade = disponibilidade;
         this.auditoria = auditoria;
     }
 
+    @Transactional(readOnly = true)
     public List<SalaResponse> pesquisar(TipoSala tipo, Integer capacidadeMinima, String localizacao,
                                         LocalDateTime inicio, LocalDateTime fim, boolean incluirInativas) {
         Optional<Intervalo> intervalo = Filtros.intervaloOpcional(inicio, fim);
-        Criteria c = new Criteria();
-        if (!incluirInativas || intervalo.isPresent()) {
-            c = c.and("ativa").is(true);
-        }
-        if (tipo != null) {
-            c = c.and("tipo").is(tipo);
-        }
-        if (capacidadeMinima != null) {
-            c = c.and("capacidade").gte(capacidadeMinima);
-        }
-        if (Filtros.preenchido(localizacao)) {
-            c = c.and("localizacao").regex(Filtros.contem(localizacao));
-        }
-        return mongo.find(Query.query(c).with(Sort.by("codigo")), Sala.class).stream()
+        boolean somenteAtivas = !incluirInativas || intervalo.isPresent();
+        return salas.pesquisar(somenteAtivas, tipo, capacidadeMinima, Filtros.contem(localizacao)).stream()
                 .filter(s -> intervalo.map(i -> disponibilidade.salaLivre(s, i)).orElse(true))
                 .map(SalaResponse::de)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public SalaResponse obter(String id) {
         return SalaResponse.de(buscar(id));
     }

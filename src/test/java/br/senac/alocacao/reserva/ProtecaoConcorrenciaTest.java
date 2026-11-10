@@ -2,14 +2,16 @@ package br.senac.alocacao.reserva;
 
 import br.senac.alocacao.comum.CodigoErro;
 import br.senac.alocacao.comum.NegocioException;
-import com.mongodb.MongoException;
+import jakarta.persistence.PessimisticLockException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.sql.SQLTransactionRollbackException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,7 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@DisplayName("[RF06] Repetição de transações em conflito de escrita")
+@DisplayName("[RF06] Repetição de transações em deadlock ou espera de trava")
 class ProtecaoConcorrenciaTest {
     private final TransactionTemplate tx = mock(TransactionTemplate.class);
     private final ProtecaoConcorrencia protecao = new ProtecaoConcorrencia(tx);
@@ -29,17 +31,18 @@ class ProtecaoConcorrenciaTest {
         when(tx.execute(any())).thenAnswer(inv -> ((TransactionCallback<Object>) inv.getArgument(0)).doInTransaction(null));
     }
 
-    private static MongoException writeConflict() {
-        return new MongoException(112, "WriteConflict");
+    private static RuntimeException deadlock() {
+        return new CannotAcquireLockException("Deadlock found when trying to get lock",
+                new SQLTransactionRollbackException("Deadlock found when trying to get lock", "40001", 1213));
     }
 
     @Test
-    @DisplayName("[RF06] WriteConflict é repetido até a operação conseguir")
+    @DisplayName("[RF06] Deadlock do MySQL é repetido até a operação conseguir")
     void repeteAteConseguir() {
         AtomicInteger chamadas = new AtomicInteger();
         String r = protecao.executar(() -> {
             if (chamadas.incrementAndGet() < 3) {
-                throw new DataAccessResourceFailureException("envolto", writeConflict());
+                throw deadlock();
             }
             return "ok";
         });
@@ -48,11 +51,13 @@ class ProtecaoConcorrenciaTest {
     }
 
     @Test
-    @DisplayName("[RF06] Erro com rótulo TransientTransactionError é considerado transitório")
-    void rotuloTransitorio() {
-        MongoException e = new MongoException("abortada");
-        e.addLabel(MongoException.TRANSIENT_TRANSACTION_ERROR_LABEL);
-        assertThat(ProtecaoConcorrencia.transitorio(new RuntimeException(e))).isTrue();
+    @DisplayName("[RF06] Falhas de trava são transitórias; violação de integridade não é")
+    void classificacaoTransitoria() {
+        assertThat(ProtecaoConcorrencia.transitorio(new RuntimeException(
+                new SQLTransactionRollbackException("Lock wait timeout exceeded", "40001", 1205)))).isTrue();
+        assertThat(ProtecaoConcorrencia.transitorio(new PessimisticLockException("trava")))
+                .isTrue();
+        assertThat(ProtecaoConcorrencia.transitorio(new DataIntegrityViolationException("FK"))).isFalse();
         assertThat(ProtecaoConcorrencia.transitorio(new RuntimeException("outro"))).isFalse();
     }
 
@@ -71,7 +76,7 @@ class ProtecaoConcorrenciaTest {
     @DisplayName("[RF06] Após o limite de tentativas, devolve erro CONCORRENCIA compreensível")
     void desiste() {
         assertThatThrownBy(() -> protecao.executar(() -> {
-            throw writeConflict();
+            throw deadlock();
         })).isInstanceOf(NegocioException.class)
                 .extracting("codigo").isEqualTo(CodigoErro.CONCORRENCIA);
     }

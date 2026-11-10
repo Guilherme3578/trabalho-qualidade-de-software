@@ -60,10 +60,12 @@ public class NotificacaoService {
         repositorio.save(n);
     }
 
+    @Transactional(readOnly = true)
     public List<Notificacao> minhas(String usuarioId) {
-        return repositorio.findTop100ByDestinatarioIdOrderByCriadoEmDesc(usuarioId);
+        return repositorio.findTop100ByDestinatarioIdOrderByCriadoEmDescIdDesc(usuarioId);
     }
 
+    @Transactional
     public Notificacao marcarLida(String id, String usuarioId) {
         Notificacao n = repositorio.findById(id)
                 .filter(x -> x.getDestinatarioId().equals(usuarioId))

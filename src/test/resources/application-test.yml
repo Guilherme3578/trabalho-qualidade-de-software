@@ -8,4 +8,4 @@ app:
 logging:
   level:
     br.senac.alocacao: INFO
-    org.mongodb.driver: WARN
+    org.hibernate.SQL: WARN

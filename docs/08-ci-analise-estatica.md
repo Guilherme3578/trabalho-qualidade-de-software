@@ -7,7 +7,7 @@
 | Workflow | Quando roda | O que faz |
 |---|---|---|
 | `.github/workflows/ci.yml` | Todo **pull request**, push na `main` e manualmente | Java 21 → `./mvnw verify` (todos os testes + verificação de cobertura) → publica relatórios → análise SonarCloud |
-| `.github/workflows/desempenho.yml` | Todo pull request e manualmente | Sobe MongoDB e WireMock, inicia a aplicação e executa o plano JMeter |
+| `.github/workflows/desempenho.yml` | Todo pull request e manualmente | Sobe MySQL e WireMock, inicia a aplicação e executa o plano JMeter |
 
 Os runners `ubuntu-latest` já têm Docker, então Testcontainers funciona sem configuração extra.
 

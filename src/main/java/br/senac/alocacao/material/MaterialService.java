@@ -7,10 +7,6 @@ import br.senac.alocacao.comum.NegocioException;
 import br.senac.alocacao.reserva.DisponibilidadeService;
 import br.senac.alocacao.reserva.regras.Intervalo;
 import br.senac.alocacao.usuario.Usuario;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,39 +19,30 @@ public class MaterialService {
     private static final String ENTIDADE = "Material";
 
     private final MaterialRepository materiais;
-    private final MongoTemplate mongo;
     private final DisponibilidadeService disponibilidade;
     private final AuditoriaService auditoria;
 
-    public MaterialService(MaterialRepository materiais, MongoTemplate mongo, DisponibilidadeService disponibilidade,
+    public MaterialService(MaterialRepository materiais, DisponibilidadeService disponibilidade,
                            AuditoriaService auditoria) {
         this.materiais = materiais;
-        this.mongo = mongo;
         this.disponibilidade = disponibilidade;
         this.auditoria = auditoria;
     }
 
+    @Transactional(readOnly = true)
     public List<MaterialResponse> pesquisar(String categoria, String localizacao, String nome,
                                             LocalDateTime inicio, LocalDateTime fim, Integer quantidadeMinima) {
         Optional<Intervalo> intervalo = Filtros.intervaloOpcional(inicio, fim);
         int minimo = quantidadeMinima == null ? 1 : quantidadeMinima;
-        Criteria c = Criteria.where("ativo").is(true);
-        if (Filtros.preenchido(categoria)) {
-            c = c.and("categoria").regex(Filtros.igual(categoria));
-        }
-        if (Filtros.preenchido(localizacao)) {
-            c = c.and("localizacao").regex(Filtros.contem(localizacao));
-        }
-        if (Filtros.preenchido(nome)) {
-            c = c.and("nome").regex(Filtros.contem(nome));
-        }
-        return mongo.find(Query.query(c).with(Sort.by("nome")), Material.class).stream()
+        return materiais.pesquisar(Filtros.igual(categoria), Filtros.contem(localizacao), Filtros.contem(nome))
+                .stream()
                 .map(m -> MaterialResponse.de(m,
                         intervalo.map(i -> disponibilidade.quantidadeDisponivel(m, i, null)).orElse(null)))
                 .filter(r -> r.quantidadeDisponivel() == null || r.quantidadeDisponivel() >= minimo)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public MaterialResponse obter(String id) {
         return MaterialResponse.de(buscar(id), null);
     }

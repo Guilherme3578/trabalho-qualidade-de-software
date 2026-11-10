@@ -98,11 +98,11 @@ Regra de dependência: `pages` e `components` usam `services`, que usam `models`
 ### O front não acessa o banco de dados
 
 ```
-[ Angular / TypeScript ]  --HTTP + JSON-->  [ Spring / Java ]  -->  [ MongoDB ]
+[ Angular / TypeScript ]  --HTTP + JSON-->  [ Spring / Java ]  -->  [ MySQL ]
         frontend/                            src/main/java            banco
 ```
 
-O front-end **só conversa com a API** por HTTP. Quem lê e grava no MongoDB é exclusivamente o back-end em Java.
+O front-end **só conversa com a API** por HTTP. Quem lê e grava no MySQL é exclusivamente o back-end em Java.
 Os arquivos de `models/` descrevem o **JSON que a API envia e recebe**, e não as coleções do banco. Se o banco
 mudar, o front não precisa mudar.
 

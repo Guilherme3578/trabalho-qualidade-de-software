@@ -1,29 +1,39 @@
 package br.senac.alocacao.notificacao;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
-@Document("notificacoes")
+@Entity
+@Table(name = "notificacoes")
 public class Notificacao {
     @Id
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
     private String id;
 
-    @Indexed
     private String destinatarioId;
 
     private String destinatarioEmail;
 
     private String tipo;
 
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String mensagem;
 
     private String reservaId;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private StatusNotificacao status;
 
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String erro;
 
     private boolean lida;

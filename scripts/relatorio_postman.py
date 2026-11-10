@@ -131,7 +131,7 @@ for pasta, linhas in por_pasta.items():
 md.append("")
 md.append("## 9.6 Como reproduzir")
 md.append("")
-md.append("1. Suba o MongoDB e o WireMock: `docker compose up -d mongo wiremock`.")
+md.append("1. Suba o MySQL e o WireMock: `docker compose up -d mysql wiremock` (ou use um MySQL local, ver README).")
 md.append("2. Inicie a aplicação no perfil `dev`: `./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`.")
 md.append("3. Execute a collection, pelo Collection Runner do Postman ou pela linha de comando:")
 md.append("")

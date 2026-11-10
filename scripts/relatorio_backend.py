@@ -9,7 +9,8 @@ saida = Path(sys.argv[2]) if len(sys.argv) > 2 else raiz / "docs" / "10-relatori
 
 NIVEIS = [
     ("api", "API caixa-preta"),
-    ("integracao", "Integração (MongoDB real + WireMock)"),
+    ("integracao", "Integração (MySQL real + WireMock)"),
+    ("banco", "Integridade do banco (MySQL)"),
     ("concorrencia", "Concorrência"),
     ("bdd", "BDD (Cucumber)"),
     ("e2e", "E2E (Selenium)"),
@@ -152,9 +153,9 @@ md += ["## 10.8 Como reproduzir", "", "```bash",
        "./mvnw verify                            # unitários + integração + cobertura (Testcontainers usa Docker)",
        "python3 scripts/relatorio_backend.py     # regenera este relatório",
        "```", "",
-       "Sem Docker, os testes de integração podem usar um MongoDB local configurado como replica set:", "",
+       "Sem Docker, os testes de integração podem usar um MySQL local (banco `alocacao_teste`):", "",
        "```bash",
-       "MONGODB_URI_TESTE='mongodb://127.0.0.1:27017/alocacao_teste?replicaSet=rs0' ./mvnw verify",
+       "MYSQL_URL_TESTE='jdbc:mysql://127.0.0.1:3306/alocacao_teste' ./mvnw verify",
        "```", ""]
 
 saida.write_text("\n".join(md), encoding="utf-8")

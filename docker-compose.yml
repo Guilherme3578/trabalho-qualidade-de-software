@@ -1,18 +1,20 @@
 services:
-  mongo:
-    image: mongo:9.0
-    command: ["--replSet", "rs0", "--bind_ip_all"]
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: alocacao
+      MYSQL_USER: alocacao
+      MYSQL_PASSWORD: alocacao
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root-apenas-local}
     ports:
-      - "27017:27017"
+      - "${MYSQL_PORTA:-3306}:3306"
     volumes:
-      - mongo-dados:/data/db
+      - mysql-dados:/var/lib/mysql
     healthcheck:
-      test: >
-        mongosh --quiet --eval "try { rs.status().ok } catch (e) {
-        rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'localhost:27017'}]}).ok }"
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-ualocacao", "-palocacao"]
       interval: 5s
-      timeout: 10s
-      retries: 20
+      timeout: 5s
+      retries: 30
 
   wiremock:
     image: wiremock/wiremock:3.13.1
@@ -25,11 +27,13 @@ services:
     build: .
     profiles: ["app"]
     depends_on:
-      mongo:
+      mysql:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      MONGODB_URI: mongodb://mongo:27017/alocacao?directConnection=true
+      DB_URL: jdbc:mysql://mysql:3306/alocacao
+      DB_USUARIO: alocacao
+      DB_SENHA: alocacao
       JWT_SEGREDO: ${JWT_SEGREDO:-troque-este-segredo-em-producao-0123456789}
       NOTIFICACAO_HABILITADA: "true"
       NOTIFICACAO_URL: http://wiremock:8080/notificacoes
@@ -37,4 +41,4 @@ services:
       - "8080:8080"
 
 volumes:
-  mongo-dados:
+  mysql-dados:

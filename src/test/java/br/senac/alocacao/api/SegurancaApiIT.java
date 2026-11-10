@@ -64,9 +64,7 @@ class SegurancaApiIT extends IntegracaoBase {
     void perfilAtualizadoValeImediatamente() {
         Usuario u = usuario(Perfil.ADMIN);
         String token = token(u);
-        mongo.updateFirst(org.springframework.data.mongodb.core.query.Query.query(
-                        org.springframework.data.mongodb.core.query.Criteria.where("id").is(u.getId())),
-                new org.springframework.data.mongodb.core.query.Update().set("perfil", Perfil.PROFESSOR), Usuario.class);
+        jdbc.update("UPDATE usuarios SET perfil = ? WHERE id = ?", Perfil.PROFESSOR.name(), u.getId());
 
         given().auth().oauth2(token).get("/api/usuarios").then().statusCode(403);
     }
@@ -158,8 +156,9 @@ class SegurancaApiIT extends IntegracaoBase {
     }
 
     @ParameterizedTest(name = "[RNF03] busca com \"{0}\" é tratada como texto")
-    @ValueSource(strings = {".*", "{\"$ne\":null}", "$where", "A|B", "(a+)+$"})
-    @DisplayName("[RNF03] Injeção NoSQL / regex em filtros não retorna dados indevidos")
+    @ValueSource(strings = {"%", "_", "' OR '1'='1", "Bloco A' -- ", "'; DROP TABLE salas; --",
+            "\\", ".*", "{\"$ne\":null}"})
+    @DisplayName("[RNF03] Injeção de SQL e curingas em filtros não retornam dados indevidos")
     void injecaoNoFiltro(String malicioso) {
         sala("A101", 40, false);
         como(usuario(Perfil.COORDENADOR)).queryParam("localizacao", malicioso).get("/api/salas").then()

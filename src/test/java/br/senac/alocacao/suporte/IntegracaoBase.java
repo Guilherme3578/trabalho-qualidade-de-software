@@ -14,13 +14,12 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
-import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -52,15 +51,16 @@ public abstract class IntegracaoBase {
     @DynamicPropertySource
     static void propriedades(DynamicPropertyRegistry registro) {
         registro.add("app.notificacao.url", () -> WIREMOCK.baseUrl() + "/notificacoes");
-        String uriMongo = ContainersTeste.uriMongo();
-        registro.add("spring.mongodb.uri", () -> uriMongo);
-        registro.add("spring.data.mongodb.uri", () -> uriMongo);
+        ContainersTeste.Conexao banco = ContainersTeste.conexao();
+        registro.add("spring.datasource.url", banco::url);
+        registro.add("spring.datasource.username", banco::usuario);
+        registro.add("spring.datasource.password", banco::senha);
     }
 
     @LocalServerPort
     protected int porta;
 
-    @Autowired protected MongoTemplate mongo;
+    @Autowired protected JdbcTemplate jdbc;
     @Autowired protected RelogioTeste relogio;
     @Autowired protected PasswordEncoder encoder;
     @Autowired protected UsuarioRepository usuarios;
@@ -70,7 +70,7 @@ public abstract class IntegracaoBase {
 
     @BeforeEach
     protected void prepararAmbiente() {
-        mongo.getCollectionNames().forEach(c -> mongo.getCollection(c).deleteMany(new Document()));
+        LimpezaBanco.limpar(jdbc);
         relogio.definir(RelogioTeste.AGORA_PADRAO);
         WIREMOCK.resetAll();
         WIREMOCK.stubFor(post(urlEqualTo("/notificacoes")).willReturn(aResponse().withStatus(202)));

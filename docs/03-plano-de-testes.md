@@ -21,7 +21,7 @@ flowchart TB
 | Nível | Ferramentas | Classes | O que garante | Precisa de Docker? |
 |---|---|---|---|---|
 | Unitário / parametrizado | JUnit 5, AssertJ, Mockito | `*Test` | Regras puras: sobreposição, horários, máquina de estados, pico de materiais, aprovação | Não |
-| Integração | Spring Boot Test, **Testcontainers (MongoDB 9)** | `integracao/*IT` | Regras com banco real: conflitos, manutenção, auditoria na mesma transação | Sim |
+| Integração | Spring Boot Test, **Testcontainers (MySQL 8.4)** | `integracao/*IT`, `banco/*IT` | Regras com banco real: conflitos, manutenção, auditoria na mesma transação, FKs e CHECK | Sim |
 | Integração externa | **WireMock** | `NotificacaoWireMockIT` | Contrato JSON, falha 500 e timeout da API de notificação | Sim |
 | Concorrência | `ExecutorService` + `CountDownLatch` | `ConcorrenciaReservaIT` | 20 solicitações simultâneas → uma aceita | Sim |
 | API caixa-preta | **REST Assured** | `api/*IT` | Contrato HTTP, códigos de status, autorização, validação, erros seguros | Sim |
@@ -38,11 +38,13 @@ flowchart TB
   (`StatusReservaTest.matrizDeTransicoes`).
 - **Casos de sobreposição:** parcial, contido, idêntico, adjacente (fim = início) e separado (`IntervaloTest`).
 - **Testes negativos de segurança:** sem token, token adulterado ou forjado, perfil errado, JSON malformado,
-  injeção NoSQL/regex, atribuição em massa.
+  injeção de SQL e curingas do LIKE, atribuição em massa.
 
 ## 3.4 Ambiente
 
-- Testes de integração sobem um **MongoDB real em container** (Testcontainers), configurado como replica set.
+- Testes de integração sobem um **MySQL 8.4 real em container** (Testcontainers), com o esquema criado pelas
+  mesmas migrações Flyway da produção. Sem Docker, usam um MySQL local informado em `MYSQL_URL_TESTE`.
+  Cada teste começa com as tabelas vazias.
 - A API externa de notificação é simulada pelo **WireMock** em porta aleatória.
 - Um **relógio controlável** (`RelogioTeste`) fixa "agora" em 11/03/2030 08:00. Isso torna determinísticos os
   testes de "iniciar uso", "não comparecimento" e "reserva no passado".

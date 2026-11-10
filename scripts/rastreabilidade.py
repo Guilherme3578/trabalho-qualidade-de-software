@@ -14,7 +14,7 @@ ID = re.compile(r"\b(RNF\d{2}|RF\d{2}|RN\d{2})\b")
 NIVEIS = {
     "/regras/": "Unitário", "StatusReservaTest": "Unitário", "ProtecaoConcorrenciaTest": "Unitário",
     "LimitadorTentativasLoginTest": "Unitário", "UtilitariosTest": "Unitário",
-    "/integracao/": "Integração", "/concorrencia/": "Concorrência", "/api/": "API caixa-preta",
+    "/integracao/": "Integração", "/banco/": "Integração (banco)", "/concorrencia/": "Concorrência", "/api/": "API caixa-preta",
     "/e2e/": "End-to-end", "/bdd/": "BDD", ".feature": "BDD",
 }
 

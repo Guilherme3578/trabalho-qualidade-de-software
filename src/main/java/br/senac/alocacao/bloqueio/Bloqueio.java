@@ -1,20 +1,32 @@
 package br.senac.alocacao.bloqueio;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
-@Document("bloqueios")
-@CompoundIndex(name = "bloqueio_recurso_periodo", def = "{'tipoRecurso': 1, 'recursoId': 1, 'inicio': 1}")
+@Entity
+@Table(name = "bloqueios")
 public class Bloqueio {
     @Id
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
     private String id;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private TipoRecurso tipoRecurso;
 
-    private String recursoId;
+    private String salaId;
+
+    private String professorId;
+
+    private String materialId;
 
     private LocalDateTime inicio;
 
@@ -32,7 +44,11 @@ public class Bloqueio {
     public Bloqueio(TipoRecurso tipoRecurso, String recursoId, LocalDateTime inicio, LocalDateTime fim,
                     String motivo, String criadoPorId, LocalDateTime criadoEm) {
         this.tipoRecurso = tipoRecurso;
-        this.recursoId = recursoId;
+        switch (tipoRecurso) {
+            case SALA -> this.salaId = recursoId;
+            case PROFESSOR -> this.professorId = recursoId;
+            case MATERIAL -> this.materialId = recursoId;
+        }
         this.inicio = inicio;
         this.fim = fim;
         this.motivo = motivo;
@@ -49,7 +65,11 @@ public class Bloqueio {
     }
 
     public String getRecursoId() {
-        return recursoId;
+        return switch (tipoRecurso) {
+            case SALA -> salaId;
+            case PROFESSOR -> professorId;
+            case MATERIAL -> materialId;
+        };
     }
 
     public LocalDateTime getInicio() {

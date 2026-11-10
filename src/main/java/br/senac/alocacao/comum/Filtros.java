@@ -4,18 +4,24 @@ import br.senac.alocacao.reserva.regras.Intervalo;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 public final class Filtros {
     private Filtros() {
     }
 
-    public static Pattern contem(String texto) {
-        return Pattern.compile(Pattern.quote(texto.trim()), Pattern.CASE_INSENSITIVE);
+    public static String contem(String texto) {
+        if (!preenchido(texto)) {
+            return null;
+        }
+        String escapado = texto.trim()
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_");
+        return "%" + escapado + "%";
     }
 
-    public static Pattern igual(String texto) {
-        return Pattern.compile("^" + Pattern.quote(texto.trim()) + "$", Pattern.CASE_INSENSITIVE);
+    public static String igual(String texto) {
+        return preenchido(texto) ? texto.trim() : null;
     }
 
     public static Optional<Intervalo> intervaloOpcional(LocalDateTime inicio, LocalDateTime fim) {

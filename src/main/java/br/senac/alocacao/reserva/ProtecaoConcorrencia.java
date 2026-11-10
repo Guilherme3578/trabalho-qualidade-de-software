@@ -2,13 +2,16 @@ package br.senac.alocacao.reserva;
 
 import br.senac.alocacao.comum.CodigoErro;
 import br.senac.alocacao.comum.NegocioException;
-import com.mongodb.MongoException;
+import jakarta.persistence.LockTimeoutException;
+import jakarta.persistence.PessimisticLockException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.sql.SQLTransientException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 
@@ -16,7 +19,6 @@ import java.util.function.Supplier;
 public class ProtecaoConcorrencia {
     private static final Logger log = LoggerFactory.getLogger(ProtecaoConcorrencia.class);
     static final int MAX_TENTATIVAS = 15;
-    private static final int CODIGO_WRITE_CONFLICT = 112;
 
     private final TransactionTemplate transacao;
 
@@ -33,11 +35,11 @@ public class ProtecaoConcorrencia {
                     throw e;
                 }
                 if (tentativa >= MAX_TENTATIVAS) {
-                    log.warn("Desistindo após {} tentativas por conflito de escrita", tentativa);
+                    log.warn("Desistindo após {} tentativas por disputa de travas no banco", tentativa);
                     throw new NegocioException(HttpStatus.CONFLICT, CodigoErro.CONCORRENCIA,
                             "Há muitas solicitações simultâneas para este recurso. Tente novamente em instantes.");
                 }
-                log.debug("Conflito de escrita na tentativa {}; repetindo", tentativa);
+                log.debug("Deadlock ou espera de trava esgotada na tentativa {}; repetindo", tentativa);
                 pausar(tentativa);
             }
         }
@@ -45,9 +47,9 @@ public class ProtecaoConcorrencia {
 
     static boolean transitorio(Throwable e) {
         for (Throwable t = e; t != null; t = t.getCause()) {
-            if (t instanceof MongoException me
-                    && (me.hasErrorLabel(MongoException.TRANSIENT_TRANSACTION_ERROR_LABEL)
-                    || me.getCode() == CODIGO_WRITE_CONFLICT)) {
+            if (t instanceof PessimisticLockingFailureException || t instanceof SQLTransientException
+                    || t instanceof PessimisticLockException
+                    || t instanceof LockTimeoutException) {
                 return true;
             }
             if (t.getCause() == t) {

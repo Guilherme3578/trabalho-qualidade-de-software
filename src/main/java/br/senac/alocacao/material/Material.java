@@ -1,20 +1,21 @@
 package br.senac.alocacao.material;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.UuidGenerator;
 
-@Document("materiais")
+@Entity
+@Table(name = "materiais")
 public class Material {
     @Id
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
     private String id;
 
     private String nome;
 
-    @Indexed
     private String categoria;
 
-    @Indexed(unique = true, sparse = true)
     private String patrimonio;
 
     private int quantidadeTotal;
@@ -24,8 +25,6 @@ public class Material {
     private boolean restrito;
 
     private boolean ativo = true;
-
-    private long versaoAgenda;
 
     protected Material() {
     }
@@ -79,9 +78,5 @@ public class Material {
 
     public void setAtivo(boolean ativo) {
         this.ativo = ativo;
-    }
-
-    public long getVersaoAgenda() {
-        return versaoAgenda;
     }
 }

@@ -1,32 +1,41 @@
 package br.senac.alocacao.professor;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.SortNatural;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.Locale;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-@Document("professores")
+@Entity
+@Table(name = "professores")
 public class Professor {
     @Id
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
     private String id;
 
     private String nome;
 
-    @Indexed(unique = true)
     private String email;
 
     private String departamento;
 
-    @Indexed
-    private Set<String> competencias = new TreeSet<>();
+    @ElementCollection
+    @CollectionTable(name = "professor_competencias", joinColumns = @JoinColumn(name = "professor_id"))
+    @Column(name = "competencia")
+    @SortNatural
+    private SortedSet<String> competencias = new TreeSet<>();
 
     private boolean ativo = true;
-
-    private long versaoAgenda;
 
     protected Professor() {
     }
@@ -39,8 +48,11 @@ public class Professor {
         this.nome = nome;
         this.email = email.toLowerCase(Locale.ROOT);
         this.departamento = departamento;
-        this.competencias = competencias == null ? new TreeSet<>()
-                : competencias.stream().map(String::trim).collect(Collectors.toCollection(TreeSet::new));
+        this.competencias.clear();
+        if (competencias != null) {
+            this.competencias.addAll(competencias.stream().map(String::trim)
+                    .collect(Collectors.toCollection(TreeSet::new)));
+        }
     }
 
     public boolean possuiCompetencia(String disciplina) {
@@ -77,9 +89,5 @@ public class Professor {
 
     public void setAtivo(boolean ativo) {
         this.ativo = ativo;
-    }
-
-    public long getVersaoAgenda() {
-        return versaoAgenda;
     }
 }

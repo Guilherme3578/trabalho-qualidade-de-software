@@ -10,9 +10,6 @@ import br.senac.alocacao.professor.Professor;
 import br.senac.alocacao.reserva.regras.CalculadoraOcupacao;
 import br.senac.alocacao.reserva.regras.Intervalo;
 import br.senac.alocacao.sala.Sala;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
@@ -21,47 +18,47 @@ import java.util.Map;
 
 @Service
 public class DisponibilidadeService {
-    private final MongoTemplate mongo;
+    private final ReservaRepository reservas;
     private final BloqueioRepository bloqueios;
 
-    public DisponibilidadeService(MongoTemplate mongo, BloqueioRepository bloqueios) {
-        this.mongo = mongo;
+    public DisponibilidadeService(ReservaRepository reservas, BloqueioRepository bloqueios) {
+        this.reservas = reservas;
         this.bloqueios = bloqueios;
     }
 
-    public List<Reserva> reservasSobrepostas(String campo, String valor, Intervalo intervalo, String ignorarId) {
-        Criteria c = Criteria.where(campo).is(valor)
-                .and("status").in(StatusReserva.OCUPAM_AGENDA)
-                .and("inicio").lt(intervalo.fim())
-                .and("fim").gt(intervalo.inicio());
-        if (ignorarId != null) {
-            c = c.and("id").ne(ignorarId);
-        }
-        return mongo.find(Query.query(c), Reserva.class);
+    public List<Reserva> reservasSobrepostas(TipoRecurso tipo, String recursoId, Intervalo intervalo,
+                                             String ignorarId) {
+        return switch (tipo) {
+            case SALA -> reservas.sobrepostasPorSala(recursoId, StatusReserva.OCUPAM_AGENDA, intervalo.inicio(),
+                    intervalo.fim(), ignorarId);
+            case PROFESSOR -> reservas.sobrepostasPorProfessor(recursoId, StatusReserva.OCUPAM_AGENDA,
+                    intervalo.inicio(), intervalo.fim(), ignorarId);
+            case MATERIAL -> reservas.sobrepostasPorMaterial(recursoId, StatusReserva.OCUPAM_AGENDA,
+                    intervalo.inicio(), intervalo.fim(), ignorarId);
+        };
     }
 
     public List<Bloqueio> bloqueiosSobrepostos(TipoRecurso tipo, String recursoId, Intervalo intervalo) {
-        return bloqueios.findByTipoRecursoAndRecursoIdAndInicioLessThanAndFimGreaterThan(
-                tipo, recursoId, intervalo.fim(), intervalo.inicio());
+        return bloqueios.sobrepostos(tipo, recursoId, intervalo.inicio(), intervalo.fim());
     }
 
     public boolean salaLivre(Sala sala, Intervalo intervalo) {
         return sala.isAtiva()
                 && bloqueiosSobrepostos(TipoRecurso.SALA, sala.getId(), intervalo).isEmpty()
-                && reservasSobrepostas("salaId", sala.getId(), intervalo, null).isEmpty();
+                && reservasSobrepostas(TipoRecurso.SALA, sala.getId(), intervalo, null).isEmpty();
     }
 
     public boolean professorLivre(Professor professor, Intervalo intervalo) {
         return professor.isAtivo()
                 && bloqueiosSobrepostos(TipoRecurso.PROFESSOR, professor.getId(), intervalo).isEmpty()
-                && reservasSobrepostas("professorId", professor.getId(), intervalo, null).isEmpty();
+                && reservasSobrepostas(TipoRecurso.PROFESSOR, professor.getId(), intervalo, null).isEmpty();
     }
 
     public int quantidadeDisponivel(Material material, Intervalo intervalo, String ignorarReservaId) {
         if (!material.isAtivo() || !bloqueiosSobrepostos(TipoRecurso.MATERIAL, material.getId(), intervalo).isEmpty()) {
             return 0;
         }
-        List<CalculadoraOcupacao.Uso> usos = reservasSobrepostas("itens.materialId", material.getId(), intervalo,
+        List<CalculadoraOcupacao.Uso> usos = reservasSobrepostas(TipoRecurso.MATERIAL, material.getId(), intervalo,
                 ignorarReservaId).stream()
                 .map(r -> new CalculadoraOcupacao.Uso(r.getInicio(), r.getFim(),
                         r.item(material.getId()).map(ItemReserva::quantidade).orElse(0)))
@@ -75,7 +72,7 @@ public class DisponibilidadeService {
                     "A sala " + sala.getCodigo() + " está desativada e não pode ser reservada.");
         }
         garantirSemBloqueio(TipoRecurso.SALA, sala.getId(), "A sala " + sala.getCodigo(), intervalo);
-        reservasSobrepostas("salaId", sala.getId(), intervalo, ignorarId).stream().findFirst().ifPresent(r -> {
+        reservasSobrepostas(TipoRecurso.SALA, sala.getId(), intervalo, ignorarId).stream().findFirst().ifPresent(r -> {
             throw NegocioException.conflito(CodigoErro.CONFLITO_SALA,
                     "A sala " + sala.getCodigo() + " já está reservada das " + hora(r.getInicio()) + " às "
                             + hora(r.getFim()) + " neste dia.",
@@ -89,7 +86,7 @@ public class DisponibilidadeService {
                     "O professor " + professor.getNome() + " está inativo.");
         }
         garantirSemBloqueio(TipoRecurso.PROFESSOR, professor.getId(), "O professor " + professor.getNome(), intervalo);
-        reservasSobrepostas("professorId", professor.getId(), intervalo, ignorarId).stream().findFirst()
+        reservasSobrepostas(TipoRecurso.PROFESSOR, professor.getId(), intervalo, ignorarId).stream().findFirst()
                 .ifPresent(r -> {
                     throw NegocioException.conflito(CodigoErro.CONFLITO_PROFESSOR,
                             "O professor " + professor.getNome() + " já tem aula na sala " + r.getSalaCodigo()

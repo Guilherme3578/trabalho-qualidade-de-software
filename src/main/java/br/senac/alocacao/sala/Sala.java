@@ -1,20 +1,27 @@
 package br.senac.alocacao.sala;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
-@Document("salas")
+@Entity
+@Table(name = "salas")
 public class Sala {
     @Id
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
     private String id;
 
-    @Indexed(unique = true)
     private String codigo;
 
     private String nome;
 
-    @Indexed
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private TipoSala tipo;
 
     private int capacidade;
@@ -24,8 +31,6 @@ public class Sala {
     private boolean restrita;
 
     private boolean ativa = true;
-
-    private long versaoAgenda;
 
     protected Sala() {
     }
@@ -78,9 +83,5 @@ public class Sala {
 
     public void setAtiva(boolean ativa) {
         this.ativa = ativa;
-    }
-
-    public long getVersaoAgenda() {
-        return versaoAgenda;
     }
 }

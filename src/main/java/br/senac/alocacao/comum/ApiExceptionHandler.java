@@ -4,6 +4,7 @@ import br.senac.alocacao.config.CorrelationIdFilter;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class ApiExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
+    private static final int MYSQL_CHAVE_DUPLICADA = 1062;
 
     @ExceptionHandler(NegocioException.class)
     public ProblemDetail negocio(NegocioException ex) {
@@ -95,6 +98,29 @@ public class ApiExceptionHandler {
         log.warn("Chave duplicada: {}", ex.getMostSpecificCause().getMessage());
         return problema(HttpStatus.CONFLICT, CodigoErro.REGISTRO_DUPLICADO,
                 "Já existe um registro com estes dados (e-mail, código ou patrimônio repetido).");
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail integridade(DataIntegrityViolationException ex) {
+        if (chaveDuplicada(ex)) {
+            return duplicado(new DuplicateKeyException(ex.getMessage(), ex));
+        }
+        log.warn("Violação de integridade: {}", ex.getMostSpecificCause().getMessage());
+        return problema(HttpStatus.CONFLICT, CodigoErro.INTEGRIDADE_VIOLADA,
+                "A operação viola a integridade dos dados (registro relacionado inexistente ou em uso).");
+    }
+
+    static boolean chaveDuplicada(Throwable ex) {
+        for (Throwable t = ex; t != null; t = t.getCause()) {
+            if (t instanceof DuplicateKeyException
+                    || t instanceof SQLException sql && sql.getErrorCode() == MYSQL_CHAVE_DUPLICADA) {
+                return true;
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+        }
+        return false;
     }
 
     @ExceptionHandler(AccessDeniedException.class)
