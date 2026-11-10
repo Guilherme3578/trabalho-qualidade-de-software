@@ -79,6 +79,18 @@ class CadastroPesquisaApiIT extends IntegracaoBase {
     }
 
     @Test
+    @DisplayName("[RNF03] Curingas e SQL na pesquisa são tratados como texto literal")
+    void pesquisaComCuringasLiterais() {
+        salas.save(new Sala("A1", "A1", TipoSala.SALA_AULA, 40, "Bloco A", false));
+        salas.save(new Sala("P1", "P1", TipoSala.SALA_AULA, 40, "Prédio 100% acessível", false));
+
+        como(coord).get("/api/salas?localizacao=%").then().statusCode(200).body("codigo", equalTo(List.of("P1")));
+        como(coord).get("/api/salas?localizacao=_").then().statusCode(200).body("", hasSize(0));
+        como(coord).get("/api/salas?localizacao=' OR '1'='1").then().statusCode(200).body("", hasSize(0));
+        como(coord).get("/api/salas").then().statusCode(200).body("", hasSize(2));
+    }
+
+    @Test
     @DisplayName("[RF03] Pesquisa por disponibilidade exclui salas ocupadas e em manutenção")
     void pesquisaDisponibilidade() {
         Sala ocupada = sala("OCUP", 40, false);
