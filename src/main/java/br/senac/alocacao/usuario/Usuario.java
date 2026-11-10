@@ -1,24 +1,32 @@
 package br.senac.alocacao.usuario;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.Locale;
 
-@Document("usuarios")
+@Entity
+@Table(name = "usuarios")
 public class Usuario {
     @Id
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
     private String id;
 
     private String nome;
 
-    @Indexed(unique = true)
     private String email;
 
     private String senhaHash;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private Perfil perfil;
 
     private String professorId;

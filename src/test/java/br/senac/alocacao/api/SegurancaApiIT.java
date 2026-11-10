@@ -64,9 +64,7 @@ class SegurancaApiIT extends IntegracaoBase {
     void perfilAtualizadoValeImediatamente() {
         Usuario u = usuario(Perfil.ADMIN);
         String token = token(u);
-        mongo.updateFirst(org.springframework.data.mongodb.core.query.Query.query(
-                        org.springframework.data.mongodb.core.query.Criteria.where("id").is(u.getId())),
-                new org.springframework.data.mongodb.core.query.Update().set("perfil", Perfil.PROFESSOR), Usuario.class);
+        jdbc.update("UPDATE usuarios SET perfil = ? WHERE id = ?", Perfil.PROFESSOR.name(), u.getId());
 
         given().auth().oauth2(token).get("/api/usuarios").then().statusCode(403);
     }

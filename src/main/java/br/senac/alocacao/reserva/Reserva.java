@@ -6,10 +6,25 @@ import br.senac.alocacao.professor.Professor;
 import br.senac.alocacao.reserva.regras.Intervalo;
 import br.senac.alocacao.sala.Sala;
 import br.senac.alocacao.usuario.Usuario;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.OrderColumn;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
@@ -18,28 +33,38 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Document("reservas")
-@CompoundIndex(name = "reserva_sala_periodo", def = "{'salaId': 1, 'status': 1, 'inicio': 1}")
-@CompoundIndex(name = "reserva_professor_periodo", def = "{'professorId': 1, 'status': 1, 'inicio': 1}")
-@CompoundIndex(name = "reserva_material_periodo", def = "{'itens.materialId': 1, 'status': 1, 'inicio': 1}")
+@Entity
+@Table(name = "reservas")
 public class Reserva {
     @Id
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
     private String id;
 
-    private String salaId;
-    private String salaCodigo;
-    private String professorId;
-    private String professorNome;
-    private String solicitanteId;
-    private String solicitanteNome;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "sala_id")
+    private Sala sala;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "professor_id")
+    private Professor professor;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "solicitante_id")
+    private Usuario solicitante;
 
     private String disciplina;
     private LocalDateTime inicio;
     private LocalDateTime fim;
     private int quantidadeAlunos;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private StatusReserva status = StatusReserva.SOLICITADA;
 
+    @ElementCollection
+    @CollectionTable(name = "reserva_motivos_aprovacao", joinColumns = @JoinColumn(name = "reserva_id"))
+    @OrderColumn(name = "ordem")
+    @Column(name = "motivo")
     private List<String> motivosAprovacao = new ArrayList<>();
 
     private String observacao;
@@ -50,31 +75,35 @@ public class Reserva {
     private LocalDateTime criadoEm;
     private LocalDateTime atualizadoEm;
 
+    @ElementCollection
+    @CollectionTable(name = "reserva_itens", joinColumns = @JoinColumn(name = "reserva_id"))
     private List<ItemReserva> itens = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "reserva_id", nullable = false, updatable = false)
+    @OrderBy("registradoEm ASC, id ASC")
     private List<MovimentacaoMaterial> movimentacoes = new ArrayList<>();
 
     protected Reserva() {
     }
 
     public Reserva(Usuario solicitante, LocalDateTime agora) {
-        this.solicitanteId = solicitante.getId();
-        this.solicitanteNome = solicitante.getNome();
+        this.solicitante = solicitante;
         this.criadoEm = agora;
         this.atualizadoEm = agora;
     }
 
     public void definirAgenda(Sala sala, Professor professor, String disciplina, Intervalo intervalo,
                               int quantidadeAlunos, String observacao, List<ItemReserva> itens) {
-        this.salaId = sala.getId();
-        this.salaCodigo = sala.getCodigo();
-        this.professorId = professor.getId();
-        this.professorNome = professor.getNome();
+        this.sala = sala;
+        this.professor = professor;
         this.disciplina = disciplina.trim();
         this.inicio = intervalo.inicio();
         this.fim = intervalo.fim();
         this.quantidadeAlunos = quantidadeAlunos;
         this.observacao = observacao;
-        this.itens = new ArrayList<>(itens);
+        this.itens.clear();
+        this.itens.addAll(itens);
     }
 
     public void transicionar(StatusReserva destino, LocalDateTime agora) {
@@ -115,40 +144,49 @@ public class Reserva {
         String mats = itens.stream()
                 .map(i -> i.materialNome() + " x" + i.quantidade())
                 .collect(Collectors.joining(", ", "[", "]"));
-        return "sala=" + salaCodigo + "; professor=" + professorNome + "; disciplina=" + disciplina
+        return "sala=" + getSalaCodigo() + "; professor=" + getProfessorNome() + "; disciplina=" + disciplina
                 + "; inicio=" + inicio + "; fim=" + fim + "; alunos=" + quantidadeAlunos + "; materiais=" + mats;
     }
 
     public void setMotivosAprovacao(List<String> motivosAprovacao) {
-        this.motivosAprovacao = new ArrayList<>(motivosAprovacao);
+        this.motivosAprovacao.clear();
+        this.motivosAprovacao.addAll(motivosAprovacao);
     }
 
     public String getId() {
         return id;
     }
 
+    public Sala getSala() {
+        return sala;
+    }
+
+    public Professor getProfessor() {
+        return professor;
+    }
+
     public String getSalaId() {
-        return salaId;
+        return sala.getId();
     }
 
     public String getSalaCodigo() {
-        return salaCodigo;
+        return sala.getCodigo();
     }
 
     public String getProfessorId() {
-        return professorId;
+        return professor.getId();
     }
 
     public String getProfessorNome() {
-        return professorNome;
+        return professor.getNome();
     }
 
     public String getSolicitanteId() {
-        return solicitanteId;
+        return solicitante.getId();
     }
 
     public String getSolicitanteNome() {
-        return solicitanteNome;
+        return solicitante.getNome();
     }
 
     public String getDisciplina() {

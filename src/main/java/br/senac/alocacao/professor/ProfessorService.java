@@ -7,10 +7,6 @@ import br.senac.alocacao.comum.NegocioException;
 import br.senac.alocacao.reserva.DisponibilidadeService;
 import br.senac.alocacao.reserva.regras.Intervalo;
 import br.senac.alocacao.usuario.Usuario;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,37 +19,28 @@ public class ProfessorService {
     private static final String ENTIDADE = "Professor";
 
     private final ProfessorRepository professores;
-    private final MongoTemplate mongo;
     private final DisponibilidadeService disponibilidade;
     private final AuditoriaService auditoria;
 
-    public ProfessorService(ProfessorRepository professores, MongoTemplate mongo,
+    public ProfessorService(ProfessorRepository professores,
                             DisponibilidadeService disponibilidade, AuditoriaService auditoria) {
         this.professores = professores;
-        this.mongo = mongo;
         this.disponibilidade = disponibilidade;
         this.auditoria = auditoria;
     }
 
+    @Transactional(readOnly = true)
     public List<ProfessorResponse> pesquisar(String competencia, String departamento, String nome,
                                              LocalDateTime inicio, LocalDateTime fim) {
         Optional<Intervalo> intervalo = Filtros.intervaloOpcional(inicio, fim);
-        Criteria c = Criteria.where("ativo").is(true);
-        if (Filtros.preenchido(competencia)) {
-            c = c.and("competencias").regex(Filtros.igual(competencia));
-        }
-        if (Filtros.preenchido(departamento)) {
-            c = c.and("departamento").regex(Filtros.contem(departamento));
-        }
-        if (Filtros.preenchido(nome)) {
-            c = c.and("nome").regex(Filtros.contem(nome));
-        }
-        return mongo.find(Query.query(c).with(Sort.by("nome")), Professor.class).stream()
+        return professores.pesquisar(Filtros.igual(competencia), Filtros.contem(departamento), Filtros.contem(nome))
+                .stream()
                 .filter(p -> intervalo.map(i -> disponibilidade.professorLivre(p, i)).orElse(true))
                 .map(ProfessorResponse::de)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public ProfessorResponse obter(String id) {
         return ProfessorResponse.de(buscar(id));
     }

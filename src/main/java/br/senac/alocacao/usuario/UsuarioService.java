@@ -33,6 +33,7 @@ public class UsuarioService {
         this.clock = clock;
     }
 
+    @Transactional(readOnly = true)
     public List<UsuarioResponse> listar() {
         return usuarios.findAll(Sort.by("nome")).stream().map(UsuarioResponse::de).toList();
     }

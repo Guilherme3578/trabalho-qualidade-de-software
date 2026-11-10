@@ -17,11 +17,7 @@ import br.senac.alocacao.sala.SalaRepository;
 import br.senac.alocacao.usuario.Perfil;
 import br.senac.alocacao.usuario.Usuario;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,18 +25,22 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservaService {
     static final String ENTIDADE = "Reserva";
     private static final Duration ANTECEDENCIA_INICIO = Duration.ofMinutes(30);
     private static final Duration TOLERANCIA_NAO_COMPARECIMENTO = Duration.ofMinutes(15);
+    private static final int LIMITE_PESQUISA = 1000;
 
     private final ReservaRepository reservas;
     private final SalaRepository salas;
@@ -52,7 +52,6 @@ public class ReservaService {
     private final AuditoriaService auditoria;
     private final ConflitoEvitadoService conflitosEvitados;
     private final ApplicationEventPublisher eventos;
-    private final MongoTemplate mongo;
     private final Clock clock;
 
     @SuppressWarnings("java:S107")
@@ -60,7 +59,7 @@ public class ReservaService {
                           MaterialRepository materiais, DisponibilidadeService disponibilidade,
                           PoliticaHorario politicaHorario, ProtecaoConcorrencia protecao,
                           AuditoriaService auditoria, ConflitoEvitadoService conflitosEvitados,
-                          ApplicationEventPublisher eventos, MongoTemplate mongo, Clock clock) {
+                          ApplicationEventPublisher eventos, Clock clock) {
         this.reservas = reservas;
         this.salas = salas;
         this.professores = professores;
@@ -71,7 +70,6 @@ public class ReservaService {
         this.auditoria = auditoria;
         this.conflitosEvitados = conflitosEvitados;
         this.eventos = eventos;
-        this.mongo = mongo;
         this.clock = clock;
     }
 
@@ -90,7 +88,7 @@ public class ReservaService {
                     null, StatusReserva.SOLICITADA.name(), reserva.resumo());
 
             aplicarPoliticaDeAprovacao(reserva, agenda, ator);
-            return ReservaResponse.de(reservas.save(reserva));
+            return ReservaResponse.de(salvar(reserva));
         });
     }
 
@@ -120,7 +118,7 @@ public class ReservaService {
                     antes, reserva.resumo(), null);
 
             aplicarPoliticaDeAprovacao(reserva, agenda, ator);
-            return ReservaResponse.de(reservas.save(reserva));
+            return ReservaResponse.de(salvar(reserva));
         });
     }
 
@@ -138,8 +136,8 @@ public class ReservaService {
     }
 
     private Agenda carregarEValidar(ReservaRequest req, Intervalo intervalo, String ignorarId) {
-        Sala sala = salas.findById(req.salaId()).orElseThrow(() -> NegocioException.naoEncontrado("Sala", req.salaId()));
-        Professor professor = professores.findById(req.professorId())
+        Sala sala = salas.travar(req.salaId()).orElseThrow(() -> NegocioException.naoEncontrado("Sala", req.salaId()));
+        Professor professor = professores.travar(req.professorId())
                 .orElseThrow(() -> NegocioException.naoEncontrado("Professor", req.professorId()));
 
         if (req.quantidadeAlunos() > sala.getCapacidade()) {
@@ -148,17 +146,22 @@ public class ReservaService {
                             + req.quantidadeAlunos() + " alunos.");
         }
 
-        var ids = new HashSet<String>();
-        List<Material> listaMateriais = new ArrayList<>();
-        List<ItemReserva> itens = new ArrayList<>();
+        Set<String> ids = new LinkedHashSet<>();
         for (ReservaRequest.ItemRequest item : req.materiaisOuVazio()) {
             if (!ids.add(item.materialId())) {
                 throw NegocioException.regra(CodigoErro.VALIDACAO, "O mesmo material foi informado mais de uma vez.");
             }
-            Material m = materiais.findById(item.materialId())
-                    .orElseThrow(() -> NegocioException.naoEncontrado("Material", item.materialId()));
+        }
+        Map<String, Material> travados = travarMateriais(ids);
+        List<Material> listaMateriais = new ArrayList<>();
+        List<ItemReserva> itens = new ArrayList<>();
+        for (ReservaRequest.ItemRequest item : req.materiaisOuVazio()) {
+            Material m = travados.get(item.materialId());
+            if (m == null) {
+                throw NegocioException.naoEncontrado("Material", item.materialId());
+            }
             listaMateriais.add(m);
-            itens.add(new ItemReserva(m.getId(), m.getNome(), item.quantidade()));
+            itens.add(new ItemReserva(m, item.quantidade()));
         }
 
         disponibilidade.garantirSala(sala, intervalo, ignorarId);
@@ -167,23 +170,25 @@ public class ReservaService {
             disponibilidade.garantirMaterial(listaMateriais.get(i), itens.get(i).quantidade(), intervalo, ignorarId);
         }
 
-        tocarAgenda(sala.getId(), professor.getId(), listaMateriais.stream().map(Material::getId).toList());
-
         return new Agenda(sala, professor, listaMateriais, itens);
     }
 
-    private void tocarAgendaDa(Reserva r) {
-        tocarAgenda(r.getSalaId(), r.getProfessorId(), r.getItens().stream().map(ItemReserva::materialId).toList());
+    private Map<String, Material> travarMateriais(Set<String> ids) {
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+        return materiais.travarTodos(new TreeSet<>(ids)).stream()
+                .collect(Collectors.toMap(Material::getId, Function.identity()));
     }
 
-    private void tocarAgenda(String salaId, String professorId, List<String> materialIds) {
-        tocarAgenda(Sala.class, salaId);
-        tocarAgenda(Professor.class, professorId);
-        materialIds.stream().sorted(Comparator.naturalOrder()).forEach(mid -> tocarAgenda(Material.class, mid));
+    private void travarAgendaDa(Reserva r) {
+        salas.travar(r.getSalaId());
+        professores.travar(r.getProfessorId());
+        travarMateriais(r.getItens().stream().map(ItemReserva::materialId).collect(Collectors.toSet()));
     }
 
-    private void tocarAgenda(Class<?> tipo, String id) {
-        mongo.updateFirst(Query.query(Criteria.where("id").is(id)), new Update().inc("versaoAgenda", 1), tipo);
+    private Reserva salvar(Reserva r) {
+        return reservas.saveAndFlush(r);
     }
 
     private void aplicarPoliticaDeAprovacao(Reserva reserva, Agenda agenda, Usuario ator) {
@@ -207,16 +212,16 @@ public class ReservaService {
         Reserva r = buscar(id);
         garantirDono(r, ator);
         mudarStatus(r, StatusReserva.CANCELADA, ator, motivo);
-        return ReservaResponse.de(reservas.save(r));
+        return ReservaResponse.de(salvar(r));
     }
 
     public ReservaResponse aprovar(String id, String observacao, Usuario responsavel) {
         return protecao.executar(() -> {
             Reserva r = buscar(id);
+            travarAgendaDa(r);
             disponibilidade.garantirSemManutencao(r);
-            tocarAgendaDa(r);
             mudarStatus(r, StatusReserva.APROVADA, responsavel, observacao);
-            return ReservaResponse.de(reservas.save(r));
+            return ReservaResponse.de(salvar(r));
         });
     }
 
@@ -224,7 +229,7 @@ public class ReservaService {
     public ReservaResponse rejeitar(String id, String observacao, Usuario responsavel) {
         Reserva r = buscar(id);
         mudarStatus(r, StatusReserva.REJEITADA, responsavel, observacao);
-        return ReservaResponse.de(reservas.save(r));
+        return ReservaResponse.de(salvar(r));
     }
 
     @Transactional
@@ -237,7 +242,7 @@ public class ReservaService {
                     "O uso só pode ser iniciado a partir de 30 minutos antes do início e antes do término da reserva.");
         }
         mudarStatus(r, StatusReserva.EM_USO, ator, null);
-        return ReservaResponse.de(reservas.save(r));
+        return ReservaResponse.de(salvar(r));
     }
 
     @Transactional
@@ -250,7 +255,7 @@ public class ReservaService {
                     Map.of());
         }
         mudarStatus(r, StatusReserva.CONCLUIDA, ator, null);
-        return ReservaResponse.de(reservas.save(r));
+        return ReservaResponse.de(salvar(r));
     }
 
     @Transactional
@@ -261,7 +266,7 @@ public class ReservaService {
                     "O não comparecimento só pode ser registrado 15 minutos após o início da reserva.");
         }
         mudarStatus(r, StatusReserva.NAO_COMPARECEU, responsavel, null);
-        return ReservaResponse.de(reservas.save(r));
+        return ReservaResponse.de(salvar(r));
     }
 
     @Transactional
@@ -329,39 +334,23 @@ public class ReservaService {
 
     private ReservaResponse movimentar(Reserva r, ItemReserva item, TipoMovimentacao tipo, MovimentacaoRequest req,
                                        Usuario responsavel, AcaoAuditoria acao) {
-        r.registrarMovimentacao(new MovimentacaoMaterial(item.materialId(), tipo, req.quantidade(),
-                responsavel.getId(), responsavel.getNome(), agora(), req.observacao()));
+        r.registrarMovimentacao(new MovimentacaoMaterial(item.material(), tipo, req.quantidade(),
+                responsavel, agora(), req.observacao()));
         auditoria.registrar(ENTIDADE, r.getId(), acao, responsavel, null, null,
                 item.materialNome() + " x" + req.quantidade());
-        return ReservaResponse.de(reservas.save(r));
+        return ReservaResponse.de(salvar(r));
     }
 
+    @Transactional(readOnly = true)
     public ReservaResponse obter(String id) {
         return ReservaResponse.de(buscar(id));
     }
 
+    @Transactional(readOnly = true)
     public List<ReservaResponse> pesquisar(LocalDateTime inicio, LocalDateTime fim, String salaId, String professorId,
                                            StatusReserva status, String solicitanteId) {
-        Criteria c = new Criteria();
-        if (inicio != null) {
-            c = c.and("fim").gt(inicio);
-        }
-        if (fim != null) {
-            c = c.and("inicio").lt(fim);
-        }
-        if (salaId != null) {
-            c = c.and("salaId").is(salaId);
-        }
-        if (professorId != null) {
-            c = c.and("professorId").is(professorId);
-        }
-        if (status != null) {
-            c = c.and("status").is(status);
-        }
-        if (solicitanteId != null) {
-            c = c.and("solicitanteId").is(solicitanteId);
-        }
-        return mongo.find(Query.query(c).with(Sort.by("inicio")).limit(1000), Reserva.class)
+        return reservas.pesquisar(inicio, fim, salaId, professorId, status, solicitanteId,
+                        PageRequest.of(0, LIMITE_PESQUISA))
                 .stream().map(ReservaResponse::de).toList();
     }
 
