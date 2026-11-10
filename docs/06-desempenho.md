@@ -31,28 +31,51 @@ Parâmetros ajustáveis: `-Jusuarios=50 -Jloops=40 -Jhost=... -Jport=...`
 
 ## 6.4 Resultados
 
-> Executar: `docker compose up -d mongo wiremock`, iniciar a aplicação com o perfil `dev` e rodar
-> `./mvnw verify -Pdesempenho`. O relatório HTML fica em `target/jmeter/reports/carga-reservas/index.html`.
+> Executar: suba o MySQL (`docker compose up -d mysql wiremock` ou um MySQL local), inicie a aplicação com o
+> perfil `dev` e rode `./mvnw verify -Pdesempenho` (porta diferente: `-Djmeter.port=8081`). Apague
+> `target/jmeter` antes de repetir, porque o JMeter não sobrescreve o relatório HTML. O relatório fica em
+> `target/jmeter/reports/carga-reservas/index.html`.
 
-Execução de 08/11/2026: 20 usuários × 25 iterações, **2.004 amostras, 0 erros (0,00%)**, vazão total de 177 req/s.
+### Execução atual, com MySQL (10/11/2026)
+
+20 usuários × 25 iterações, **2.004 amostras, 0 erros (0,00%)**, vazão total de 149 req/s.
 
 | Requisição | Amostras | Média (ms) | p95 (ms) | p99 (ms) | Erros (%) | Vazão (req/s) |
 |---|---|---|---|---|---|---|
-| 01 Pesquisar salas disponíveis | 500 | 16 | 26 | 36 | 0,00 | 48,7 |
-| 02 Agenda do dia | 500 | 6 | 9 | 13 | 0,00 | 48,9 |
-| 03 Reserva conflitante (409) | 500 | 14 | 22 | 29 | 0,00 | 48,9 |
-| 04 Relatório de utilização | 500 | 8 | 13 | 19 | 0,00 | 49,1 |
-| **Total** (inclui 4 requisições de preparação) | 2.004 | 11 | 21 | 31 | 0,00 | 177,4 |
+| 01 Pesquisar salas disponíveis | 500 | 38 | 62 | 75 | 0,00 | 42,4 |
+| 02 Agenda do dia | 500 | 21 | 37 | 48 | 0,00 | 42,6 |
+| 03 Reserva conflitante (409) | 500 | 32 | 57 | 69 | 0,00 | 42,8 |
+| 04 Relatório de utilização | 500 | 22 | 37 | 49 | 0,00 | 43,1 |
+| **Total** (inclui 4 requisições de preparação) | 2.004 | 29 | 52 | 69 | 0,00 | 148,7 |
 
 Todas as metas da seção 6.3 foram atingidas: erro < 1%, nenhuma requisição acima de 1000 ms
-(máximo de 347 ms, no login com BCrypt) e nenhuma das 500 tentativas conflitantes foi aceita.
+(máximo de 475 ms, no login com BCrypt) e nenhuma das 500 tentativas conflitantes foi aceita.
 
 **Ambiente da medição:** Intel Core i5-1335U (12 threads), 6 GB de RAM, Ubuntu 26.04.1 LTS,
-Java 21, MongoDB 8.0.32 em replica set local, aplicação e JMeter na mesma máquina.
+Java 21, MySQL 8.4.11 local com configuração padrão (buffer pool de 128 MB), aplicação e JMeter na mesma
+máquina.
+
+### Comparação com a versão anterior (MongoDB, 08/11/2026)
+
+| Métrica | MongoDB 8.0 | MySQL 8.4 |
+|---|---|---|
+| Tempo médio (total) | 11 ms | 29 ms |
+| p95 (total) | 21 ms | 52 ms |
+| Vazão total | 177 req/s | 149 req/s |
+| Erros / duplas reservas aceitas | 0 / 0 | 0 / 0 |
+
+O tempo médio aumentou porque cada verificação de conflito agora faz junções (reserva × sala × professor
+× itens) e trava as linhas dos recursos com `SELECT ... FOR UPDATE`. Mesmo assim, o p95 fica cerca de 10
+vezes abaixo da meta de 500 ms.
 
 ## 6.5 Otimizações aplicadas
 
-- Índices compostos `(salaId, status, inicio)`, `(professorId, status, inicio)` e
-  `(itens.materialId, status, inicio)`: a verificação de conflito consulta apenas reservas ativas do recurso.
-- A detecção de conflito lê do banco somente as reservas sobrepostas ao intervalo, e não a agenda inteira.
-- O "toque" no recurso é feito **depois** das leituras, o que reduz a janela de disputa entre transações.
+- Índices compostos `(sala_id, status, inicio)` e `(professor_id, status, inicio)` em `reservas`, e
+  `material_id` em `reserva_itens`: a verificação de conflito lê apenas reservas ativas do recurso.
+- A detecção de conflito busca no banco somente as reservas sobrepostas ao intervalo, e não a agenda inteira.
+- As travas pessimistas são pegas sempre na mesma ordem (sala → professor → materiais), o que evita
+  deadlocks e as repetições que eles causariam sob carga.
+- Isolamento `READ COMMITTED`: uma transação que esperou a trava enxerga imediatamente a reserva que
+  acabou de ser confirmada, sem precisar ser repetida.
+- `hibernate.default_batch_fetch_size=100`: listas de reservas carregam itens, salas e professores em
+  lotes, evitando o problema de N+1 consultas.
