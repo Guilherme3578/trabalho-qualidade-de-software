@@ -156,8 +156,9 @@ class SegurancaApiIT extends IntegracaoBase {
     }
 
     @ParameterizedTest(name = "[RNF03] busca com \"{0}\" é tratada como texto")
-    @ValueSource(strings = {".*", "{\"$ne\":null}", "$where", "A|B", "(a+)+$"})
-    @DisplayName("[RNF03] Injeção NoSQL / regex em filtros não retorna dados indevidos")
+    @ValueSource(strings = {"%", "_", "' OR '1'='1", "Bloco A' -- ", "'; DROP TABLE salas; --",
+            "\\", ".*", "{\"$ne\":null}"})
+    @DisplayName("[RNF03] Injeção de SQL e curingas em filtros não retornam dados indevidos")
     void injecaoNoFiltro(String malicioso) {
         sala("A101", 40, false);
         como(usuario(Perfil.COORDENADOR)).queryParam("localizacao", malicioso).get("/api/salas").then()
