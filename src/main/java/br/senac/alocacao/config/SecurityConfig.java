@@ -2,6 +2,7 @@ package br.senac.alocacao.config;
 
 import br.senac.alocacao.usuario.Usuario;
 import br.senac.alocacao.usuario.UsuarioRepository;
+import br.senac.alocacao.web.FrontendConfig;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,7 +46,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/favicon.ico").permitAll()
+                        .requestMatchers(HttpMethod.GET, FrontendConfig.ARQUIVOS).permitAll()
+                        .requestMatchers(HttpMethod.GET, FrontendConfig.ROTAS).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()

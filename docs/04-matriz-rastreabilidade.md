@@ -3,7 +3,7 @@
 > Arquivo **gerado automaticamente** por `scripts/rastreabilidade.py` — não edite à mão.
 > Cada teste cita os requisitos que verifica no próprio nome (ex.: `[RF05][RN02]`).
 
-Última execução encontrada em `target/`: **262 testes, 0 falha(s).**
+Última execução encontrada em `target/`: **267 testes, 0 falha(s).**
 
 ## Resumo
 
@@ -11,7 +11,7 @@
 |---|---|---|---|
 | RF01 | Autenticação e autorização por perfil | 5 | API caixa-preta |
 | RF02 | Cadastro e consulta de salas, professores e materiais | 4 | API caixa-preta |
-| RF03 | Pesquisa por tipo, capacidade, localização, competência e disponibilidade | 9 | API caixa-preta, Unitário |
+| RF03 | Pesquisa por tipo, capacidade, localização, competência e disponibilidade | 10 | API caixa-preta, End-to-end, Unitário |
 | RF04 | Criação, alteração e cancelamento de reservas | 7 | API caixa-preta, End-to-end, Integração |
 | RF05 | Detecção de sobreposição de horários, inclusive na agenda do professor | 6 | API caixa-preta, End-to-end, Integração |
 | RF06 | Proteção contra dupla reserva em solicitações simultâneas | 11 | Concorrência, Unitário |
@@ -21,7 +21,7 @@
 | RF10 | Histórico auditável de mudanças | 2 | API caixa-preta |
 | RF11 | Notificação simulada / integração com API externa | 6 | Integração |
 | RF12 | Relatório de utilização por recurso, carga horária alocada e conflitos evitados | 5 | API caixa-preta, Integração |
-| RF13 | Interface responsiva e mensagens de erro compreensíveis | 7 | API caixa-preta, End-to-end |
+| RF13 | Interface responsiva e mensagens de erro compreensíveis | 11 | API caixa-preta, End-to-end |
 | RF14 | Documentação de API ou dos fluxos públicos | 3 | API caixa-preta |
 | RN01 | O término deve ser posterior ao início | 4 | API caixa-preta, Unitário |
 | RN02 | Reservas do mesmo recurso não podem se sobrepor — sala, material ou professor | 15 | Integração, Unitário |
@@ -34,7 +34,7 @@
 | RN09 | Quantidade de alunos não pode exceder a capacidade da sala | 1 | Integração |
 | RN10 | Reservas no futuro, no mesmo dia, entre 07:00 e 23:00, com duração entre 30 min e 6 h | 4 | Integração, Unitário |
 | RNF01 | Desempenho sob carga | 1 | JMeter |
-| RNF02 | Autorização e proteção de acesso | 20 | API caixa-preta, Unitário |
+| RNF02 | Autorização e proteção de acesso | 21 | API caixa-preta, Unitário |
 | RNF03 | Validação de entrada | 11 | API caixa-preta, Unitário |
 | RNF04 | Tratamento seguro de erros | 5 | API caixa-preta, Unitário |
 | RNF05 | Cobertura de testes | 1 | JaCoCo |
@@ -75,6 +75,7 @@
 | Unitário | `UtilitariosTest` | Filtros vazios não restringem a pesquisa |
 | Unitário | `UtilitariosTest` | Igualdade remove espaços nas pontas (comparação sem maiúsculas é feita na consulta) |
 | Unitário | `UtilitariosTest` | Disponibilidade exige início e término juntos |
+| End-to-end | `FluxoReservaE2EIT` | Sala já reservada não aparece entre as livres do horário |
 
 ### RF04 — Criação, alteração e cancelamento de reservas
 
@@ -94,7 +95,7 @@
 |---|---|---|
 | API caixa-preta | `ReservaApiIT` | API caixa-preta: reservas |
 | API caixa-preta | `ReservaApiIT` | Conflito devolve 409 com mensagem compreensível e dados do conflito |
-| End-to-end | `FluxoReservaE2EIT` | Segunda reserva no mesmo horário mostra mensagem de conflito compreensível |
+| End-to-end | `FluxoReservaE2EIT` | Sala reservada por outra pessoa durante o preenchimento mostra mensagem de conflito compreensível |
 | Integração | `ReservaServiceIT` | Mesma sala em horário sobreposto é recusada com CONFLITO_SALA |
 | Integração | `ReservaServiceIT` | Mesmo professor em salas diferentes no mesmo horário é recusado |
 | Integração | `ReservaServiceIT` | Material: soma no pico não pode passar do estoque |
@@ -190,10 +191,14 @@
 |---|---|---|
 | API caixa-preta | `ReservaApiIT` | Conflito devolve 409 com mensagem compreensível e dados do conflito |
 | API caixa-preta | `SegurancaApiIT` | Campos inválidos devolvem 400 com a lista de mensagens em português |
+| API caixa-preta | `SegurancaApiIT` | Rotas internas do Angular devolvem a página da aplicação sem exigir token |
 | End-to-end | `FluxoReservaE2EIT` | End-to-end: fluxo de reserva pela interface web |
 | End-to-end | `FluxoReservaE2EIT` | Professor entra, cria reserva e vê confirmação |
-| End-to-end | `FluxoReservaE2EIT` | Segunda reserva no mesmo horário mostra mensagem de conflito compreensível |
+| End-to-end | `FluxoReservaE2EIT` | Sala reservada por outra pessoa durante o preenchimento mostra mensagem de conflito compreensível |
+| End-to-end | `FluxoReservaE2EIT` | Sala já reservada não aparece entre as livres do horário |
 | End-to-end | `FluxoReservaE2EIT` | Credenciais inválidas exibem mensagem de erro |
+| End-to-end | `FluxoReservaE2EIT` | Recarregar uma rota interna do Angular abre a mesma tela, sem erro 404 |
+| End-to-end | `FluxoReservaE2EIT` | Estilos do Angular carregam com a política de segurança de conteúdo ativa |
 | End-to-end | `FluxoReservaE2EIT` | Interface responsiva: sem rolagem horizontal em tela de celular (390px) |
 
 ### RF14 — Documentação de API ou dos fluxos públicos
@@ -332,6 +337,7 @@
 | API caixa-preta | `SegurancaApiIT` | Professor não pode reservar na agenda de outro professor |
 | API caixa-preta | `SegurancaApiIT` | Usuário não pode cancelar reserva de outro usuário |
 | API caixa-preta | `SegurancaApiIT` | Cabeçalhos de segurança presentes nas respostas |
+| API caixa-preta | `SegurancaApiIT` | Liberar as rotas do front não abre a API: sem token continua 401 |
 | API caixa-preta | `SegurancaApiIT` | Lista de usuários (ADMIN) nunca devolve o hash da senha |
 | Unitário | `LimitadorTentativasLoginTest` | Proteção contra força bruta no login |
 | Unitário | `LimitadorTentativasLoginTest` | Bloqueia após o número máximo de falhas |

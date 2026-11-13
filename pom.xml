@@ -29,6 +29,10 @@
         <selenium.version>4.50.0</selenium.version>
         <jacoco.version>0.8.14</jacoco.version>
         <jmeter-plugin.version>3.8.0</jmeter-plugin.version>
+        <frontend-plugin.version>1.15.1</frontend-plugin.version>
+        <node.version>v22.22.1</node.version>
+        <npm.version>11.6.2</npm.version>
+        <frontend.pular>false</frontend.pular>
 
         <cobertura.minima.linhas>0.80</cobertura.minima.linhas>
         <cobertura.minima.branches>0.70</cobertura.minima.branches>
@@ -168,6 +172,73 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend-plugin.version}</version>
+                <configuration>
+                    <workingDirectory>frontend</workingDirectory>
+                    <installDirectory>${project.build.directory}/node</installDirectory>
+                    <skip>${frontend.pular}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>instalar-node-e-npm</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <configuration>
+                            <nodeVersion>${node.version}</nodeVersion>
+                            <npmVersion>${npm.version}</npmVersion>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>instalar-dependencias-front</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install --no-audit --no-fund</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-front</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run build</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copiar-front-para-static</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${frontend.pular}</skip>
+                            <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>frontend/dist/alocacao-web/browser</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
