@@ -208,6 +208,21 @@ class SegurancaApiIT extends IntegracaoBase {
     }
 
     @Test
+    @DisplayName("[RF13] Rotas internas do Angular devolvem a página da aplicação sem exigir token")
+    void rotasDoFront() {
+        given().get("/reservas/nova").then()
+                .statusCode(200)
+                .contentType(containsString("text/html"))
+                .body(containsString("<app-root"));
+    }
+
+    @Test
+    @DisplayName("[RNF02] Liberar as rotas do front não abre a API: sem token continua 401")
+    void rotasDoFrontNaoAbremApi() {
+        given().get("/api/reservas").then().statusCode(401);
+    }
+
+    @Test
     @DisplayName("[RNF02] Lista de usuários (ADMIN) nunca devolve o hash da senha")
     void semHash() {
         Usuario admin = usuario(Perfil.ADMIN);
