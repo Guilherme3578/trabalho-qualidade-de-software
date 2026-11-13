@@ -10,7 +10,7 @@ desenvolvido para a disciplina de **Qualidade de Software**. O foco é apresenta
 |---|---|
 | Back-end / API REST | Java 21, Spring Boot 4 (Web MVC, Security, Validation, Data JPA / Hibernate) |
 | Banco de dados | MySQL 8.4 (relacional, com FKs e CHECK), esquema versionado com Flyway |
-| Interface web | HTML + CSS + JavaScript (responsiva, servida pelo Spring Boot) |
+| Interface web | Angular 21 + TypeScript (pasta `frontend/`), compilada pelo Maven e servida pelo Spring Boot |
 | Documentação da API | OpenAPI 3 / Swagger UI (springdoc) |
 | Testes | JUnit 5, Mockito, AssertJ, Testcontainers, WireMock, REST Assured, Cucumber, Selenium, JMeter |
 | Qualidade | JaCoCo, SonarCloud, GitHub Actions |
@@ -19,6 +19,12 @@ desenvolvido para a disciplina de **Qualidade de Software**. O foco é apresenta
 
 **Pré-requisitos:** Java 21 e MySQL 8 (instalado na máquina ou via Docker). O Maven não é obrigatório,
 porque o projeto inclui o wrapper `./mvnw`.
+
+**Node.js e Angular CLI não são necessários.** Durante o build, o Maven baixa uma cópia própria do
+Node 22.22.1 e do npm 11.6.2 em `target/node`, compila o Angular e coloca o resultado dentro do `.jar`.
+A versão de Node instalada no computador é ignorada (o Angular 21 exige Node 20.19+ ou 22.12+, e uma
+versão mais antiga, como a 22.11, impede o `npm start`). Só a primeira execução precisa de internet
+para esse download.
 
 ### Banco de dados (MySQL)
 
@@ -50,7 +56,7 @@ Outra conexão pode ser configurada pelas variáveis `DB_URL`, `DB_USUARIO` e `D
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-- Interface web: <http://localhost:8080>
+- Interface web (Angular): <http://localhost:8080>
 - Documentação da API (Swagger): <http://localhost:8080/swagger-ui.html>
 - Requisições recebidas pelo simulador de notificações: <http://localhost:8089/__admin/requests>
 
@@ -68,7 +74,16 @@ Alternativa, tudo em containers: `docker compose --profile app up -d --build`
 ### IntelliJ IDEA
 
 *File → Open* → selecione a pasta do projeto (o IntelliJ importa o `pom.xml` automaticamente).
-Para rodar: classe `AlocacaoApplication` com *Active profiles* = `dev`.
+Para rodar, use a configuração **AlocacaoApplication (dev)**, que já vem no projeto (pasta `.run/`).
+Antes de iniciar, ela executa `mvn process-resources`, que compila o Angular. Sem essa etapa, o build
+do próprio IntelliJ não gera o front-end e a página inicial fica em branco.
+
+### Desenvolvendo o front-end
+
+Para editar telas com recarga automática, rode a API (`./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`)
+e, em outro terminal, `cd frontend && npm install && npm start` (exige Node 22.12+ instalado). Acesse
+<http://localhost:4200>; as chamadas a `/api` são repassadas para `:8080`. Para compilar só o back-end,
+sem o front, use `-Dfrontend.pular=true`.
 
 ## Testes
 
@@ -111,7 +126,7 @@ src/main/java/br/senac/alocacao/
 ├── reserva/       núcleo: serviço, estados, disponibilidade, concorrência
 │   └── regras/    regras puras (horário, sobreposição, pico de materiais, aprovação)
 ├── auditoria/ notificacao/ relatorio/
-src/main/resources/static/   interface web
+frontend/                    interface web em Angular (compilada para o .jar pelo Maven)
 src/test/java/.../           unitários (*Test) e integração (*IT)
 src/test/resources/features/ cenários BDD
 src/test/jmeter/             plano de carga

@@ -103,11 +103,36 @@ Observações que não são defeitos do código:
 
 | Pendência | Onde está |
 |---|---|
-| O front antigo (`src/main/resources/static/`) ainda é o servido em `:8080`; o Angular roda à parte em `:4200` e não entra no `.jar` nem no Docker | Integração a fazer |
-| O teste E2E com Selenium (`FluxoReservaE2EIT`) cobre o front antigo, não o Angular | Adaptar após a integração |
 | O front-end não mede cobertura (falta `@vitest/coverage-v8`) | Front-end |
-| README, `02-arquitetura.md` e o RF13 em `01-requisitos.md` ainda descrevem o front sem framework | Documentação |
 | Regras de negócio P1–P5 aguardando decisão | [11 — revisão de código](11-revisao-de-codigo.md) |
+
+### Resolvido: front antigo exibido na apresentação em sala
+
+**Defeito.** Na apresentação em sala, a aplicação abriu com a interface antiga, e não com a interface
+em Angular. **Causas:**
+
+1. O Angular rodava à parte (`npm start`, porta 4200) e não entrava no `.jar`. Por isso
+   `./mvnw spring-boot:run`, o `.jar` e o Docker serviam o front antigo de `src/main/resources/static/`.
+2. Os computadores da sala têm Node 22.11.0, e o Angular 21 exige 22.12 ou mais novo. Com isso, o
+   `npm start` não roda nessas máquinas.
+3. Um defeito latente: o build de produção do Angular carrega o CSS com um atributo `onload` inline,
+   que o Content-Security-Policy da API bloqueia. A interface apareceria sem estilos.
+
+**Correção.**
+
+- O `frontend-maven-plugin` instala um Node 22.22.1 próprio e compila o Angular no build. O
+  resultado vai para `static/` dentro do `.jar`.
+- `FrontendConfig` encaminha as rotas do Angular para o `index.html`.
+- `inlineCritical` foi desligado no `angular.json`.
+- O front antigo foi removido.
+
+**Evidências.**
+
+- `FluxoReservaE2EIT` (7 testes, Selenium sobre o Angular servido pelo Spring) cobre: criar reserva,
+  conflito, sala ocupada escondida, login inválido, recarregar rota interna, estilos carregados com
+  CSP e layout em 390px.
+- `SegurancaApiIT` comprova que as rotas do front abrem sem token e que `/api` continua exigindo
+  autenticação.
 
 ## 12.7 Como reproduzir
 

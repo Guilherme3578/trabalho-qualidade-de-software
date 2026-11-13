@@ -4,14 +4,16 @@
 
 ## 2.1 Visão geral
 
-Aplicação única **Java 21 + Spring Boot 4**, que expõe uma API REST e serve a interface web estática.
+Aplicação única **Java 21 + Spring Boot 4**, que expõe uma API REST e serve a interface web em **Angular 21**. O Maven compila o Angular
+(`frontend/`) durante o build e copia o resultado para `static/` dentro do `.jar`, então API e
+interface são entregues juntas, na mesma porta.
 Persistência em **MySQL 8.4** (banco relacional), acessado com **Spring Data JPA / Hibernate 7**. O
 esquema é versionado com **Flyway** (`src/main/resources/db/migration`) e o Hibernate só valida o
 mapeamento (`ddl-auto=validate`), nunca altera tabelas sozinho.
 
 ```mermaid
 flowchart LR
-    U[Navegador<br/>HTML/CSS/JS] -->|HTTPS + JWT| API
+    U[Navegador<br/>Angular 21] -->|HTTPS + JWT| API
     subgraph Spring Boot
       API[Controllers REST<br/>+ Spring Security] --> S[Serviços<br/>regras de negócio]
       S --> R[(Repositórios<br/>Spring Data JPA)]
@@ -25,6 +27,7 @@ flowchart LR
 
 | Pacote | Responsabilidade |
 |---|---|
+| `web` | Encaminha as rotas do Angular (`/reservas`, `/login`...) para o `index.html`, permitindo recarregar a página em qualquer tela |
 | `config` | Segurança (JWT, perfis, cabeçalhos), OpenAPI, relógio, correlationId, dados de demonstração |
 | `comum` | Tratamento centralizado de erros (`ApiExceptionHandler`), códigos de erro, utilitários de filtro |
 | `auth`, `usuario` | Login, emissão do token, limite de tentativas, gestão de usuários |
@@ -214,4 +217,4 @@ Alterações simultâneas da mesma reserva são protegidas por **bloqueio otimis
 | JWT stateless | Sessão com cookie | API consumida por front-end e ferramentas (JMeter); dispensa CSRF |
 | Notificação após o commit | Notificar dentro da transação | Nunca notificar algo que foi desfeito; falha externa não desfaz a reserva |
 | Relógio injetado (`Clock`) | `LocalDateTime.now()` direto | Regras de tempo testáveis de forma determinística |
-| Front-end sem framework | React/Angular | Escopo da disciplina é qualidade; menos dependências |
+| Angular compilado pelo Maven e servido pelo Spring | Servir o Angular à parte (`ng serve` em :4200) | Uma única aplicação para rodar; não depende do Node instalado na máquina; mesma origem, então não precisa de CORS |

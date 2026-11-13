@@ -28,7 +28,7 @@
 | RF10 | Histórico auditável de mudanças | `auditoria/*` |
 | RF11 | Notificação simulada / integração com API externa | `notificacao/*` (HTTP + WireMock) |
 | RF12 | Relatório de utilização por recurso, carga horária alocada e conflitos evitados | `relatorio/*` |
-| RF13 | Interface responsiva e mensagens de erro compreensíveis | `src/main/resources/static/*`, `ApiExceptionHandler` |
+| RF13 | Interface responsiva e mensagens de erro compreensíveis | `frontend/` (Angular), `FrontendConfig`, `ApiExceptionHandler` |
 | RF14 | Documentação de API ou dos fluxos públicos | Swagger UI em `/swagger-ui.html` (springdoc), `docs/` |
 
 ## 1.3 Regras de negócio
