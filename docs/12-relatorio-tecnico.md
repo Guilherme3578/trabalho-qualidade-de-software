@@ -31,7 +31,7 @@
 |---|---|---|
 | Back-end | Java 21, Spring Boot 4.0.9, Spring Security (JWT HS256), springdoc | API REST em `/api/*`, erros em Problem Details (RFC 9457) |
 | Banco | MySQL 8.4 (JPA/Hibernate 7, esquema versionado com Flyway) | FKs, chaves únicas e CHECK; travas `SELECT ... FOR UPDATE` contra dupla reserva (RF06) |
-| Front-end | Angular 21 (standalone, signals, lazy loading), TypeScript 5.9, lucide-angular | Pasta `frontend/`, 13 páginas e 6 componentes reutilizáveis |
+| Front-end | Angular 21 (standalone, signals, lazy loading), TypeScript 5.9, lucide-angular | Pasta `frontend/`, 15 páginas e 6 componentes reutilizáveis |
 | Notificações | Cliente HTTP para API externa | Simulada com WireMock nos testes (RF11) |
 | CI | GitHub Actions | Jobs de back-end (build, testes, JaCoCo, SonarCloud), front-end e JMeter em todo PR |
 
