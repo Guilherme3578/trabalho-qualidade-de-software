@@ -28,7 +28,8 @@ jobs:
           JWT_SEGREDO: segredo-de-ci-com-mais-de-32-caracteres-0123
         run: |
           ./mvnw -B -q package -DskipTests
-          nohup java -jar target/alocacao-salas-*.jar --spring.profiles.active=dev > app.log 2>&1 &
+          cp target/alocacao-salas-*.jar "$RUNNER_TEMP/app.jar"
+          nohup java -jar "$RUNNER_TEMP/app.jar" --spring.profiles.active=dev > app.log 2>&1 &
           for i in $(seq 1 60); do
             curl -sf http://localhost:8080/actuator/health && break
             sleep 2
