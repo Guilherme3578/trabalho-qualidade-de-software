@@ -20,6 +20,15 @@ desenvolvido para a disciplina de **Qualidade de Software**. O foco é apresenta
 **Pré-requisitos:** Java 21 e MySQL 8 (instalado na máquina ou via Docker). O Maven não é obrigatório,
 porque o projeto inclui o wrapper `./mvnw`.
 
+| Para | Precisa de |
+|---|---|
+| Rodar a aplicação (`spring-boot:run`) | Java 21 + MySQL (Opção A ou B abaixo) |
+| Opção B e `docker compose --profile app` | Docker com o plugin **Compose v2** (comando `docker compose`, com espaço) |
+| `./mvnw verify` sem variáveis | **Docker em execução**, acessível pelo usuário (os testes de integração sobem o MySQL com Testcontainers). Sem Docker, use `MYSQL_URL_TESTE` (seção Testes) |
+| Testes E2E (Selenium), incluídos no `verify` | Google Chrome instalado. Sem Chrome, use `./mvnw verify -Psem-e2e` |
+| Primeira execução | Internet (dependências do Maven, Node e pacotes npm) |
+| Portas livres | 8080 (aplicação), 3306 (MySQL) e 8089 (simulador de notificações) |
+
 **Node.js e Angular CLI não são necessários.** Durante o build, o Maven baixa uma cópia própria do
 Node 22.22.1 e do npm 11.6.2 em `target/node`, compila o Angular e coloca o resultado dentro do `.jar`.
 A versão de Node instalada no computador é ignorada (o Angular 21 exige Node 20.19+ ou 22.12+, e uma
@@ -89,7 +98,7 @@ sem o front, use `-Dfrontend.pular=true`.
 
 ```bash
 ./mvnw test                  # unitários (não precisa de banco)
-./mvnw verify                # todos: integração, API, concorrência, BDD, E2E + cobertura (MySQL via Testcontainers)
+./mvnw verify                # todos: integração, API, concorrência, BDD, E2E + cobertura (exige Docker: MySQL via Testcontainers)
 MYSQL_URL_TESTE='jdbc:mysql://localhost:3306/alocacao_teste' ./mvnw verify   # sem Docker, usando o MySQL local
 ./mvnw verify -Psem-e2e      # todos, exceto o navegador (Selenium)
 ./mvnw verify -Pdesempenho   # JMeter (com a aplicação rodando)
