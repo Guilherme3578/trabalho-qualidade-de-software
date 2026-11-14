@@ -67,6 +67,13 @@ class AvaliadorAprovacaoTest {
         void normalizacao(String disciplina) {
             assertThat(AvaliadorAprovacao.motivos(salaComum, List.of(), ana, disciplina)).isEmpty();
         }
+
+        @Test
+        @DisplayName("[RF07] Disciplina não informada exige validação do responsável em vez de falhar")
+        void disciplinaNula() {
+            assertThat(AvaliadorAprovacao.motivos(salaComum, List.of(), ana, null))
+                    .containsExactly("Professor sem competência cadastrada em ''");
+        }
     }
 
     @Test
