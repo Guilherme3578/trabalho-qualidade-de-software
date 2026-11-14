@@ -32,24 +32,24 @@ passar), visível no histórico do Git.
 | [DEF-007](DEF-007.md) | Testes de integração falham no CI: container do banco não iniciado antes do contexto Spring | Alta | Fechado | — (todos os testes de integração) | — | [`7602908`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/7602908), [`da449c3`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/da449c3) | #1 |
 | [DEF-008](DEF-008.md) | A aplicação serve o front antigo em vez do Angular | Alta | Fechado | RF13 | [`86ef026`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/86ef026) | [`ad92b2c`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/ad92b2c) | #4 |
 | [DEF-009](DEF-009.md) | Teste de carga no CI roda a aplicação a partir do `.jar` que o build sobrescreve | Média | Fechado | RNF01 | — | [`1cbdc13`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/1cbdc13) | #4 |
-| [DEF-010](DEF-010.md) | Reduzir a capacidade da sala abaixo dos alunos de reservas futuras é aceito | Média | Corrigido | RN09, RF02 | [`1d2ebbb`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/1d2ebbb) | [`6ea8766`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/6ea8766) | #12 |
-| [DEF-011](DEF-011.md) | Reduzir a quantidade total de um material abaixo do já reservado é aceito | Média | Corrigido | RF09, RN02 | [`e9cfbb5`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/e9cfbb5) | [`d9043f9`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/d9043f9) | #12 |
-| [DEF-012](DEF-012.md) | Desativar sala, professor ou material não informa as reservas futuras afetadas | Média | Corrigido | RF02, RF04 | [`68eabf9`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/68eabf9) | [`9ac5838`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/9ac5838) | #12 |
-| [DEF-013](DEF-013.md) | O emissor (`iss`) do JWT não é verificado na leitura do token | Baixa | Corrigido | RNF02 | [`599ee88`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/599ee88) | [`5a1bdd0`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/5a1bdd0) | #12 |
-| [DEF-014](DEF-014.md) | A CSP permite `style-src 'unsafe-inline'` | Baixa | Corrigido | RNF02 | [`45b3e67`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/45b3e67) | [`3730196`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/3730196) | #12 |
+| [DEF-010](DEF-010.md) | Reduzir a capacidade da sala abaixo dos alunos de reservas futuras é aceito | Média | Fechado | RN09, RF02 | [`1d2ebbb`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/1d2ebbb) | [`6ea8766`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/6ea8766) | #12 |
+| [DEF-011](DEF-011.md) | Reduzir a quantidade total de um material abaixo do já reservado é aceito | Média | Fechado | RF09, RN02 | [`e9cfbb5`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/e9cfbb5) | [`d9043f9`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/d9043f9) | #12 |
+| [DEF-012](DEF-012.md) | Desativar sala, professor ou material não informa as reservas futuras afetadas | Média | Fechado | RF02, RF04 | [`68eabf9`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/68eabf9) | [`9ac5838`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/9ac5838) | #12 |
+| [DEF-013](DEF-013.md) | O emissor (`iss`) do JWT não é verificado na leitura do token | Baixa | Fechado | RNF02 | [`599ee88`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/599ee88) | [`5a1bdd0`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/5a1bdd0) | #12 |
+| [DEF-014](DEF-014.md) | A CSP permite `style-src 'unsafe-inline'` | Baixa | Fechado | RNF02 | [`45b3e67`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/45b3e67) | [`3730196`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/commit/3730196) | #12 |
 
 DEF-010 a DEF-014 são as pendências P1–P5 de [11 — revisão de código](../11-revisao-de-codigo.md) §11.4.
-O autor decidiu as regras em 13/11/2026, e as correções estão no PR #12. Passam a "Fechado" quando ele entrar na `main` com o CI verde.
+O autor decidiu as regras em 13/11/2026. As correções entraram na `main` pelo PR #12 e foram fechadas em 14/11/2026, com o CI 43556658613 verde em `0d4a652`.
 
 ## Resumo
 
-| Severidade | Fechados | Corrigidos (aguardando merge) | Abertos | Total |
+| Severidade | Fechados | Corrigidos | Abertos | Total |
 |---|---|---|---|---|
 | Crítica | 0 | 0 | 0 | 0 |
 | Alta | 6 | 0 | 0 | 6 |
-| Média | 3 | 3 | 0 | 6 |
-| Baixa | 0 | 2 | 0 | 2 |
-| **Total** | **9** | **5** | **0** | **14** |
+| Média | 6 | 0 | 0 | 6 |
+| Baixa | 2 | 0 | 0 | 2 |
+| **Total** | **14** | **0** | **0** | **14** |
 
 ## Como registrar um defeito novo
 

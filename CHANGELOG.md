@@ -4,6 +4,48 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 [SemVer](https://semver.org/lang/pt-BR/). Uma tag publicada nunca é movida: qualquer correção depois de
 `v1.0.0-rc1` sai como `v1.0.0-rc2`.
 
+## [1.0.0-rc2] — 2026-11-14
+
+Segundo release candidate, também liberado **só para avaliação acadêmica e homologação**. A `v1.0.0-rc1`
+continua publicada e não foi movida. Pacote de evidências em
+[docs/evidencias/README.md](docs/evidencias/README.md).
+
+### Adicionado
+
+- Cobertura do front Angular medida com `@vitest/coverage-v8`: 200 testes, 84,3% de linhas e 90,1% de
+  desvios. `npm run test:ci` falha abaixo de 80% em qualquer métrica, e o CI publica o relatório no
+  artifact `cobertura-frontend` (PR #11).
+- Reduzir a capacidade de uma sala ou o estoque de um material abaixo de reservas futuras agora responde
+  `409 RESERVAS_AFETADAS`, e desativar um recurso lista as reservas futuras afetadas (PR #12).
+
+### Alterado
+
+- Workflows do GitHub Actions com permissões mínimas por job, actions fixadas por SHA e
+  `npm ci --ignore-scripts` (PR #10).
+- A senha de demonstração saiu do código (PR #10).
+
+### Corrigido
+
+| Defeito | Teste | Correção |
+|---|---|---|
+| DEF-010 Reduzir a capacidade da sala abaixo dos alunos de reservas futuras era aceito | `1d2ebbb` | `6ea8766` |
+| DEF-011 Reduzir a quantidade de um material abaixo do já reservado era aceito | `e9cfbb5` | `d9043f9` |
+| DEF-012 Desativar sala, professor ou material não informava as reservas futuras afetadas | `68eabf9` | `9ac5838` |
+| DEF-013 O emissor (`iss`) do JWT não era verificado | `599ee88` | `5a1bdd0` |
+| DEF-014 A CSP permitia `style-src 'unsafe-inline'` | `45b3e67` | `3730196` |
+
+- Os 12 apontamentos da primeira análise completa do SonarCloud na `main` (bugs, vulnerabilidades e
+  endurecimento dos workflows), com testes antes das correções de código: `b9bdaee` → `4af1bad`,
+  `ad42709`, `f538759`, `e7ee266` (PR #10). O Quality Gate da `main` em `0d4a652` está aprovado.
+- O índice de evidências da rc1 apontava para `/commit/v1.0.0-rc1`, que o GitHub não resolve para tag
+  anotada (404). O índice da rc2 usa `/commits/v1.0.0-rc2`.
+
+### Pendências conhecidas
+
+- **Sem revisão por pares.** O projeto tem um único autor. O risco foi aceito e está registrado no
+  relatório final de qualidade (C8).
+- Carga medida só em máquina de desenvolvimento (C5) e sem SAST completo nem DAST (C12).
+
 ## [1.0.0-rc1] — 2026-11-13
 
 Primeiro release candidate, liberado **só para avaliação acadêmica e homologação**. A recomendação está no
