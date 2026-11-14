@@ -41,10 +41,14 @@ public class Professor {
     }
 
     public Professor(String nome, String email, String departamento, Set<String> competencias) {
-        atualizar(nome, email, departamento, competencias);
+        preencher(nome, email, departamento, competencias);
     }
 
-    public final void atualizar(String nome, String email, String departamento, Set<String> competencias) {
+    public void atualizar(String nome, String email, String departamento, Set<String> competencias) {
+        preencher(nome, email, departamento, competencias);
+    }
+
+    private void preencher(String nome, String email, String departamento, Set<String> competencias) {
         this.nome = nome;
         this.email = email.toLowerCase(Locale.ROOT);
         this.departamento = departamento;

@@ -31,11 +31,16 @@ public class Material {
 
     public Material(String nome, String categoria, String patrimonio, int quantidadeTotal,
                     String localizacao, boolean restrito) {
-        atualizar(nome, categoria, patrimonio, quantidadeTotal, localizacao, restrito);
+        preencher(nome, categoria, patrimonio, quantidadeTotal, localizacao, restrito);
     }
 
-    public final void atualizar(String nome, String categoria, String patrimonio, int quantidadeTotal,
-                                String localizacao, boolean restrito) {
+    public void atualizar(String nome, String categoria, String patrimonio, int quantidadeTotal,
+                          String localizacao, boolean restrito) {
+        preencher(nome, categoria, patrimonio, quantidadeTotal, localizacao, restrito);
+    }
+
+    private void preencher(String nome, String categoria, String patrimonio, int quantidadeTotal,
+                           String localizacao, boolean restrito) {
         this.nome = nome;
         this.categoria = categoria;
         this.patrimonio = patrimonio == null || patrimonio.isBlank() ? null : patrimonio;
