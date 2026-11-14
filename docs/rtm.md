@@ -3,8 +3,6 @@
 > Arquivo **gerado automaticamente** por `scripts/rastreabilidade.py` — não edite à mão.
 > Cada teste cita os requisitos que verifica no próprio nome (ex.: `[RF05][RN02]`).
 
-Última execução encontrada em `target/`: **277 testes, 0 falha(s).**
-
 ## Resumo
 
 | Requisito | Descrição | Qtde. de testes | Níveis |
@@ -15,7 +13,7 @@
 | RF04 | Criação, alteração e cancelamento de reservas | 8 | API caixa-preta, End-to-end, Integração |
 | RF05 | Detecção de sobreposição de horários, inclusive na agenda do professor | 6 | API caixa-preta, End-to-end, Integração |
 | RF06 | Proteção contra dupla reserva em solicitações simultâneas | 11 | Concorrência, Unitário |
-| RF07 | Aprovação obrigatória para recursos restritos | 13 | API caixa-preta, Integração, Unitário |
+| RF07 | Aprovação obrigatória para recursos restritos | 14 | API caixa-preta, Integração, Unitário |
 | RF08 | Bloqueio de recursos em manutenção | 5 | Concorrência, Integração |
 | RF09 | Registro de retirada e devolução de materiais e equipamentos | 10 | API caixa-preta, BDD, Integração |
 | RF10 | Histórico auditável de mudanças | 2 | API caixa-preta |
@@ -39,7 +37,7 @@
 | RNF04 | Tratamento seguro de erros | 5 | API caixa-preta, Unitário |
 | RNF05 | Cobertura de testes | 1 | JaCoCo |
 | RNF06 | Qualidade estática | 1 | SonarCloud |
-| RNF07 | Integridade dos dados no banco relacional | 7 | Integração (banco) |
+| RNF07 | Integridade dos dados no banco relacional | 11 | Integração (banco) |
 
 ## Detalhamento
 
@@ -139,6 +137,7 @@
 | Unitário | `AvaliadorAprovacaoTest` | Professor sem a competência da disciplina exige validação do responsável |
 | Unitário | `AvaliadorAprovacaoTest` | \ |
 | Unitário | `AvaliadorAprovacaoTest` | Comparação ignora maiúsculas e espaços (refatoração do ciclo 3) |
+| Unitário | `AvaliadorAprovacaoTest` | Disciplina não informada exige validação do responsável em vez de falhar |
 | Unitário | `AvaliadorAprovacaoTest` | Todos os motivos são acumulados |
 
 ### RF08 — Bloqueio de recursos em manutenção
@@ -406,6 +405,10 @@
 
 | Nível | Classe / arquivo | Caso de teste |
 |---|---|---|
+| Integração (banco) | `AtualizacaoViaProxyIT` | Entidades JPA atualizadas por meio de proxy do Hibernate |
+| Integração (banco) | `AtualizacaoViaProxyIT` | Sala carregada como proxy grava a atualização no banco |
+| Integração (banco) | `AtualizacaoViaProxyIT` | Professor carregado como proxy grava a atualização no banco |
+| Integração (banco) | `AtualizacaoViaProxyIT` | Material carregado como proxy grava a atualização no banco |
 | Integração (banco) | `IntegridadeRelacionalIT` | Banco relacional: integridade garantida pelo MySQL |
 | Integração (banco) | `IntegridadeRelacionalIT` | O esquema é criado pelas migrações versionadas do Flyway |
 | Integração (banco) | `IntegridadeRelacionalIT` | Chave estrangeira impede reserva apontando para sala inexistente |
