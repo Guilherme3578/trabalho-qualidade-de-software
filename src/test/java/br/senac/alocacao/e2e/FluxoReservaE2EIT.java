@@ -38,6 +38,7 @@ class FluxoReservaE2EIT extends IntegracaoBase {
     void abrirNavegador() {
         ChromeOptions opcoes = new ChromeOptions();
         opcoes.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--window-size=1280,900");
+        opcoes.setCapability("goog:loggingPrefs", java.util.Map.of("browser", "ALL"));
         navegador = new ChromeDriver(opcoes);
         espera = new WebDriverWait(navegador, Duration.ofSeconds(10));
 
@@ -156,6 +157,29 @@ class FluxoReservaE2EIT extends IntegracaoBase {
         Object fonte = ((JavascriptExecutor) navegador)
                 .executeScript("return getComputedStyle(document.body).fontFamily;");
         assertThat(String.valueOf(fonte)).contains("Inter");
+    }
+
+    @Test
+    @DisplayName("[RNF02][RF13] Sem 'unsafe-inline' na CSP: estilos dos componentes aplicados e nenhuma violação no console")
+    void politicaDeConteudoSemViolacoes() {
+        navegador.get(url("/login"));
+        espera.until(ExpectedConditions.visibilityOfElementLocated(By.id("email")));
+        Object exibicao = ((JavascriptExecutor) navegador)
+                .executeScript("return getComputedStyle(document.querySelector('.tela')).display;");
+        assertThat(String.valueOf(exibicao)).isEqualTo("grid");
+
+        entrar();
+        for (String rota : java.util.List.of("/inicio", "/disponibilidade", "/reservas", "/notificacoes")) {
+            navegador.get(url(rota));
+            espera.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("main")));
+        }
+
+        java.util.List<String> violacoes = navegador.manage().logs().get(org.openqa.selenium.logging.LogType.BROWSER)
+                .getAll().stream()
+                .map(org.openqa.selenium.logging.LogEntry::getMessage)
+                .filter(m -> m.contains("Content Security Policy"))
+                .toList();
+        assertThat(violacoes).isEmpty();
     }
 
     @Test

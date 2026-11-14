@@ -237,7 +237,28 @@ class SegurancaApiIT extends IntegracaoBase {
                 .statusCode(200)
                 .header("X-Content-Type-Options", "nosniff")
                 .header("X-Frame-Options", "DENY")
-                .header("Content-Security-Policy", containsString("default-src 'self'"));
+                .header("Content-Security-Policy", containsString("default-src 'self'"))
+                .header("Content-Security-Policy", not(containsString("unsafe-inline")));
+    }
+
+    @Test
+    @DisplayName("[RNF02] A página do front leva um nonce de CSP novo a cada requisição, igual ao do cabeçalho")
+    void nonceDaPolitica() {
+        java.util.function.Function<String, String[]> nonces = rota -> {
+            var resposta = given().get(rota).then().statusCode(200).extract();
+            java.util.regex.Matcher noCabecalho = java.util.regex.Pattern.compile("'nonce-([A-Za-z0-9+/=_-]+)'")
+                    .matcher(resposta.header("Content-Security-Policy"));
+            java.util.regex.Matcher naPagina = java.util.regex.Pattern.compile("ngCspNonce=\"([^\"]+)\"")
+                    .matcher(resposta.asString());
+            return new String[]{noCabecalho.find() ? noCabecalho.group(1) : null,
+                    naPagina.find() ? naPagina.group(1) : null};
+        };
+        String[] primeira = nonces.apply("/");
+        String[] segunda = nonces.apply("/reservas/nova");
+
+        org.assertj.core.api.Assertions.assertThat(primeira[0]).isNotBlank().isEqualTo(primeira[1]);
+        org.assertj.core.api.Assertions.assertThat(segunda[0]).isNotBlank().isEqualTo(segunda[1]);
+        org.assertj.core.api.Assertions.assertThat(primeira[0]).isNotEqualTo(segunda[0]);
     }
 
     @Test
