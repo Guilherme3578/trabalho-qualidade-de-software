@@ -12,7 +12,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
@@ -75,6 +83,31 @@ class SegurancaApiIT extends IntegracaoBase {
         String forjado = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4IiwicGVyZmlsIjoiQURNSU4iLCJ1aWQiOiIxIn0."
                 + "c2lnbmF0dXJhLWZhbHNh";
         given().auth().oauth2(forjado).get("/api/usuarios").then().statusCode(401);
+    }
+
+    @Autowired JwtEncoder jwtEncoder;
+
+    private String tokenComEmissor(Usuario u, String emissor) {
+        JwtClaimsSet.Builder claims = JwtClaimsSet.builder()
+                .subject(u.getEmail())
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plus(1, ChronoUnit.HOURS))
+                .claim("uid", u.getId())
+                .claim("perfil", u.getPerfil().name());
+        if (emissor != null) {
+            claims.issuer(emissor);
+        }
+        return jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(),
+                claims.build())).getTokenValue();
+    }
+
+    @Test
+    @DisplayName("[RNF02] Token assinado com a chave certa, mas emitido por outro sistema ou sem emissor, é recusado")
+    void emissorDoToken() {
+        Usuario u = usuario(Perfil.ADMIN);
+        given().auth().oauth2(tokenComEmissor(u, "alocacao-salas")).get("/api/salas").then().statusCode(200);
+        given().auth().oauth2(tokenComEmissor(u, "outro-sistema")).get("/api/salas").then().statusCode(401);
+        given().auth().oauth2(tokenComEmissor(u, null)).get("/api/salas").then().statusCode(401);
     }
 
     @ParameterizedTest(name = "[RNF02] {0} não pode {1} {2} → 403")
