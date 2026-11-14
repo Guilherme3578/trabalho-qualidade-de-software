@@ -67,12 +67,16 @@ public class DisponibilidadeService {
         if (!material.isAtivo() || !bloqueiosSobrepostos(TipoRecurso.MATERIAL, material.getId(), intervalo).isEmpty()) {
             return 0;
         }
-        List<CalculadoraOcupacao.Uso> usos = reservasSobrepostas(TipoRecurso.MATERIAL, material.getId(), intervalo,
+        return Math.max(0, material.getQuantidadeTotal() - picoDeUso(material.getId(), intervalo, ignorarReservaId));
+    }
+
+    public int picoDeUso(String materialId, Intervalo intervalo, String ignorarReservaId) {
+        List<CalculadoraOcupacao.Uso> usos = reservasSobrepostas(TipoRecurso.MATERIAL, materialId, intervalo,
                 ignorarReservaId).stream()
                 .map(r -> new CalculadoraOcupacao.Uso(r.getInicio(), r.getFim(),
-                        r.item(material.getId()).map(ItemReserva::quantidade).orElse(0)))
+                        r.item(materialId).map(ItemReserva::quantidade).orElse(0)))
                 .toList();
-        return Math.max(0, material.getQuantidadeTotal() - CalculadoraOcupacao.picoDeUso(usos, intervalo));
+        return CalculadoraOcupacao.picoDeUso(usos, intervalo);
     }
 
     public void garantirSala(Sala sala, Intervalo intervalo, String ignorarId) {
