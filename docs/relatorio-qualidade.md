@@ -88,13 +88,13 @@ A [matriz](rtm.md) é gerada a partir dos próprios testes, que citam os requisi
 
 ## 5. Defeitos
 
-| Severidade | Encontrados | Fechados | Abertos |
-|---|---|---|---|
-| Crítica | 0 | 0 | 0 |
-| Alta | 6 | 6 | 0 |
-| Média | 6 | 3 | 3 |
-| Baixa | 2 | 0 | 2 |
-| **Total** | **14** | **9** | **5** |
+| Severidade | Encontrados | Fechados | Corrigidos (aguardando merge) | Abertos |
+|---|---|---|---|---|
+| Crítica | 0 | 0 | 0 | 0 |
+| Alta | 6 | 6 | 0 | 0 |
+| Média | 6 | 3 | 3 | 0 |
+| Baixa | 2 | 0 | 2 | 0 |
+| **Total** | **14** | **9** | **5** | **0** |
 
 - Os 5 defeitos de código (DEF-001 a DEF-005) seguiram a ordem `test:` → `fix:`: primeiro um commit com
   o teste que falha, depois a correção.
@@ -103,8 +103,9 @@ A [matriz](rtm.md) é gerada a partir dos próprios testes, que citam os requisi
   evidência de desempenho só vale a partir do PR #2.
 - O DEF-008 foi encontrado na apresentação em sala, fora dos testes automatizados. Depois dele entrou um
   teste E2E que impede a regressão.
-- Os 5 abertos (DEF-010 a DEF-014) dependem de decisão de regra de negócio e estão descritos em
-  [11 — revisão de código](11-revisao-de-codigo.md) §11.4.
+- DEF-010 a DEF-014 eram as pendências P1–P5 da revisão de código. Depois da decisão das regras
+  ([11](11-revisao-de-codigo.md) §11.4), cada uma ganhou um teste que falhava e a correção, também na
+  ordem `test:` → `fix:`. Ficam como "Corrigido" até entrarem na `main` com o CI verde.
 
 Registro completo: [docs/defeitos](defeitos/README.md).
 
@@ -149,7 +150,6 @@ Atualização dos critérios C1–C13 da [decisão de qualidade](decisao-qualida
 | Sem revisão por pares (C8) | Médio: defeitos de lógica e de design podem passar sem uma segunda opinião | **Aceito**, porque o projeto tem um único autor. Controles compensatórios: CI obrigatório na `main`, Quality Gate do SonarCloud, ordem `test:` → `fix:` e auto-revisão em [11-revisao-de-codigo.md](11-revisao-de-codigo.md). Não equivalem a uma revisão independente |
 | SonarCloud só no código novo (C7) | Médio: o código anterior ainda não passou pela análise | Fazer merge do PR #8 e conferir o Quality Gate da `main` |
 | Cobertura do front não medida (C2) | Baixo: as regras de negócio estão no back-end | Adicionar `@vitest/coverage-v8` |
-| Regras P1–P5 (DEF-010 a DEF-014) | Médio para P1–P3 (reservas podem ficar inválidas) | Decisão do autor sobre a regra de negócio |
 | Carga só em máquina local (C5) | Desconhecido em produção | Repetir em ambiente parecido com produção e com mais usuários |
 
 ## 9. Recomendação

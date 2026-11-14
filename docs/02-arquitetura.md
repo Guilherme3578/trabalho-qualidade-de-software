@@ -237,7 +237,7 @@ sequenceDiagram
     end
     Note over C,SEC: Requisições seguintes
     C->>SEC: GET /api/... Authorization: Bearer token
-    SEC->>SEC: valida assinatura e expiração
+    SEC->>SEC: valida assinatura, expiração e emissor (iss)
     SEC->>DB: carrega o usuário pelo uid (perfil atual)
     alt token inválido, usuário inativo ou removido
         SEC-->>C: 401
