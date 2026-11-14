@@ -84,3 +84,7 @@ O que **não foi medido** (análise estática, revisão independente, comportame
 | `NOME_2` | | |
 | `NOME_3` | | |
 | `NOME_4` | | |
+
+---
+
+> **Nota de 2026-11-13 (acréscimo, texto original preservado):** o SonarCloud passou a rodar no CI desde o merge do PR #8 (`pom.xml` com a organização `guilherme3578`, secret `SONAR_TOKEN` cadastrado). O Quality Gate foi aprovado. Os apontamentos e o tratamento de cada um estão em [08 §8.5](08-ci-analise-estatica.md#85-apontamentos-do-sonarcloud-e-tratamento).

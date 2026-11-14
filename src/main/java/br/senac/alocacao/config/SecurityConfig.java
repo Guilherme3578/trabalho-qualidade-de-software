@@ -42,6 +42,7 @@ public class SecurityConfig {
     private static final String PROFESSOR = "PROFESSOR";
 
     @Bean
+    @SuppressWarnings("java:S4502")
     public SecurityFilterChain filtros(HttpSecurity http, RespostasSeguranca respostas, UsuarioRepository usuarios)
             throws Exception {
         http

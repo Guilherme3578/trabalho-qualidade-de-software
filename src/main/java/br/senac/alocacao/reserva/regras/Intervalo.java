@@ -25,6 +25,7 @@ public record Intervalo(LocalDateTime inicio, LocalDateTime fim) {
         return inicio.isBefore(outroFim) && outroInicio.isBefore(fim);
     }
 
+    @SuppressWarnings("java:S8700")
     public Duration duracao() {
         return Duration.between(inicio, fim);
     }

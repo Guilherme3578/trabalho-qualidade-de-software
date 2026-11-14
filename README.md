@@ -77,7 +77,7 @@ Outra conexão pode ser configurada pelas variáveis `DB_URL`, `DB_USUARIO` e `D
 
 Alternativa, tudo em containers: `docker compose --profile app up -d --build`
 
-### Usuários de demonstração (perfil `dev`), senha `Senha123`
+### Usuários de demonstração (perfil `dev`), senha `Senha123` (pode ser trocada pela variável `SENHA_DEMO`)
 
 | E-mail | Perfil |
 |---|---|

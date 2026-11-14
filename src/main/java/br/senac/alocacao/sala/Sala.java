@@ -36,11 +36,16 @@ public class Sala {
     }
 
     public Sala(String codigo, String nome, TipoSala tipo, int capacidade, String localizacao, boolean restrita) {
-        atualizar(codigo, nome, tipo, capacidade, localizacao, restrita);
+        preencher(codigo, nome, tipo, capacidade, localizacao, restrita);
     }
 
-    public final void atualizar(String codigo, String nome, TipoSala tipo, int capacidade,
-                                String localizacao, boolean restrita) {
+    public void atualizar(String codigo, String nome, TipoSala tipo, int capacidade,
+                          String localizacao, boolean restrita) {
+        preencher(codigo, nome, tipo, capacidade, localizacao, restrita);
+    }
+
+    private void preencher(String codigo, String nome, TipoSala tipo, int capacidade,
+                           String localizacao, boolean restrita) {
         this.codigo = codigo;
         this.nome = nome;
         this.tipo = tipo;

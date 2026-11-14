@@ -22,7 +22,8 @@ public final class AvaliadorAprovacao {
                 .filter(Material::isRestrito)
                 .forEach(m -> motivos.add("Material restrito: " + m.getNome()));
         if (!professor.possuiCompetencia(disciplina)) {
-            motivos.add("Professor sem competência cadastrada em '" + disciplina.trim() + "'");
+            String informada = disciplina == null ? "" : disciplina.trim();
+            motivos.add("Professor sem competência cadastrada em '" + informada + "'");
         }
         return motivos;
     }

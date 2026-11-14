@@ -12,6 +12,7 @@ import br.senac.alocacao.usuario.Usuario;
 import br.senac.alocacao.usuario.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,23 +26,24 @@ import java.util.Set;
 @Profile("dev")
 public class DadosIniciais implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(DadosIniciais.class);
-    static final String SENHA_DEMO = "Senha123";
-
     private final UsuarioRepository usuarios;
     private final ProfessorRepository professores;
     private final SalaRepository salas;
     private final MaterialRepository materiais;
     private final PasswordEncoder encoder;
     private final Clock clock;
+    private final String senhaDemo;
 
     public DadosIniciais(UsuarioRepository usuarios, ProfessorRepository professores, SalaRepository salas,
-                         MaterialRepository materiais, PasswordEncoder encoder, Clock clock) {
+                         MaterialRepository materiais, PasswordEncoder encoder, Clock clock,
+                         @Value("${app.dados-iniciais.senha}") String senhaDemo) {
         this.usuarios = usuarios;
         this.professores = professores;
         this.salas = salas;
         this.materiais = materiais;
         this.encoder = encoder;
         this.clock = clock;
+        this.senhaDemo = senhaDemo;
     }
 
     @Override
@@ -67,13 +69,13 @@ public class DadosIniciais implements CommandLineRunner {
         materiais.save(new Material("Kit de robótica", "Laboratório", null, 4, "Almoxarifado B", true));
 
         LocalDateTime agora = LocalDateTime.now(clock);
-        String hash = encoder.encode(SENHA_DEMO);
+        String hash = encoder.encode(senhaDemo);
         usuarios.save(new Usuario("Administrador", "admin@senac.br", hash, Perfil.ADMIN, null, agora));
         usuarios.save(new Usuario("Rita Responsável", "responsavel@senac.br", hash, Perfil.RESPONSAVEL, null, agora));
         usuarios.save(new Usuario("Carlos Coordenador", "coordenador@senac.br", hash, Perfil.COORDENADOR, null, agora));
         usuarios.save(new Usuario("Ana Souza", "ana.souza@senac.br", hash, Perfil.PROFESSOR, ana.getId(), agora));
 
         log.info("Dados de demonstração criados. Usuários: admin@, responsavel@, coordenador@, ana.souza@senac.br "
-                + "(senha {})", SENHA_DEMO);
+                + "(senha definida em app.dados-iniciais.senha)");
     }
 }

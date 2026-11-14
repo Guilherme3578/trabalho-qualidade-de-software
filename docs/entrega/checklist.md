@@ -73,3 +73,7 @@ Legenda: ✅ sim · ⚠️ parcial · ❌ não
 7. **`docs/rtm.md` não existe** no caminho pedido. O conteúdo está em `docs/04-matriz-rastreabilidade.md`.
 8. **O README não leva sozinho a um `verify` verde:** faltam Docker (obrigatório), Compose v2, Chrome e Node/Angular nos pré-requisitos, e a stack está desatualizada.
 9. **Documentos ainda marcados como rascunho** (8 arquivos) e evidências de §8.4 sem marcar (prints do CI, SonarCloud e JaCoCo).
+
+---
+
+> **Nota de 2026-11-13 (acréscimo, texto original preservado):** o SonarCloud passou a rodar no CI desde o merge do PR #8 (`pom.xml` com a organização `guilherme3578`, secret `SONAR_TOKEN` cadastrado). O Quality Gate foi aprovado. Os apontamentos e o tratamento de cada um estão em [08 §8.5](../08-ci-analise-estatica.md#85-apontamentos-do-sonarcloud-e-tratamento).
