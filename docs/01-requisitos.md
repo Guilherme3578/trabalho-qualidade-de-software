@@ -1,6 +1,6 @@
 # 1. Requisitos
 
-> 📝 **Rascunho para revisão.** Os IDs abaixo são usados nos nomes dos testes e na matriz de rastreabilidade.
+> Os IDs abaixo são usados nos nomes dos testes e na matriz de rastreabilidade.
 > Ao alterar um requisito, mantenha o ID.
 
 ## 1.1 Perfis de acesso

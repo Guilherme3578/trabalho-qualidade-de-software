@@ -1,7 +1,5 @@
 # 2. Arquitetura
 
-> 📝 **Rascunho para revisão.**
-
 ## 2.0 Diagrama de contexto
 
 Mostra o sistema como uma caixa só, com quem o usa e com que ele se comunica.

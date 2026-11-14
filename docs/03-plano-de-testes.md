@@ -1,7 +1,5 @@
 # 3. Plano de testes
 
-> 📝 **Rascunho para revisão.**
-
 ## 3.1 Objetivo
 
 Produzir **evidências objetivas** de que o sistema atende aos requisitos funcionais, às regras críticas

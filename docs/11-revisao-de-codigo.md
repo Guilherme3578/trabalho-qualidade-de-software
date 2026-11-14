@@ -1,6 +1,6 @@
 # 11. Revisão de código antes do front-end
 
-> 📝 **Rascunho para revisão.** Varredura feita em 08/11/2026 sobre o back-end inteiro (serviços, segurança,
+> Varredura feita em 08/11/2026 sobre o back-end inteiro (serviços, segurança,
 > concorrência, configuração) e o JavaScript atual da interface.
 
 ## 11.1 Como a revisão foi feita
@@ -51,9 +51,13 @@ Estes pontos são decisões de regra de negócio, por isso não foram mudados se
 | P4 | O `issuer` do token não é verificado na leitura (só a assinatura e a validade). | Baixo, porque a chave é exclusiva da aplicação | Validar `iss = alocacao-salas` no `JwtDecoder` |
 | P5 | A CSP permite `style-src 'unsafe-inline'`. | Baixo | Rever na reconstrução do front-end |
 
-## 11.5 Pendências de ambiente
+## 11.5 Pendências de ambiente (resolvidas)
 
-- Docker: o usuário do Linux ainda não está no grupo `docker`. Até lá, os testes de integração rodam com o
-  MySQL local (`MYSQL_URL_TESTE`, ver [10-relatorio-testes-backend.md](10-relatorio-testes-backend.md)).
-- SonarCloud: trocar `sonar.organization` e `sonar.projectKey` no `pom.xml` pelos do projeto criado.
-- Repositório no GitHub: necessário para o GitHub Actions e o SonarCloud rodarem nos pull requests.
+- Docker: sem acesso ao Docker na máquina de desenvolvimento, os testes de integração rodam com um MySQL
+  local (`MYSQL_URL_TESTE`, ver [10-relatorio-testes-backend.md](10-relatorio-testes-backend.md)). No CI
+  eles rodam com Testcontainers.
+- SonarCloud: organização e chave do projeto configuradas no `pom.xml` (PR #8).
+- Repositório no GitHub: publicado, com CI em todo pull request.
+
+Os defeitos desta revisão estão no [registro de defeitos](defeitos/README.md) como DEF-001 a DEF-005, e
+as pendências P1–P5 como DEF-010 a DEF-014.

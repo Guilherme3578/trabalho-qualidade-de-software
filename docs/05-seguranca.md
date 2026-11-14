@@ -1,6 +1,6 @@
 # 5. Segurança
 
-> 📝 **Rascunho para revisão.** Referências: OWASP Top 10 (2021) e OWASP API Security Top 10 (2023).
+> Referências: OWASP Top 10 (2021) e OWASP API Security Top 10 (2023).
 
 | Ameaça | Controle implementado | Evidência (teste) |
 |---|---|---|

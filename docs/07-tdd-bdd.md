@@ -1,6 +1,6 @@
 # 7. TDD e BDD
 
-> 📝 **Rascunho para revisão.** Para a evidência ficar completa, os commits devem mostrar a ordem
+> Para a evidência ficar completa, os commits devem mostrar a ordem
 > teste → implementação (ver 7.3).
 
 ## 7.1 BDD — Retirada e devolução de materiais (RF09)
