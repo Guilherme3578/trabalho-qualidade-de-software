@@ -1,90 +1,128 @@
-# Decisão de qualidade
+# Decisão de qualidade — v1.0.0-rc2
 
-> **Data:** 13/11/2026 · **Relator:** Claude Code, escrevendo a pedido do grupo. A decisão só vale depois que os integrantes revisarem e assinarem a seção 7.
-> **Objeto avaliado:** `https://github.com/Guilherme3578/trabalho-qualidade-de-software`, branch `main`, commit `c7992e9` (merge do PR #3).
-> **Tag avaliada:** `TAG_A_DEFINIR`. Nenhuma tag existe no repositório hoje (`git ls-remote --tags origin` não devolve nada). A tag precisa ser criada **neste commit** antes da entrega, para que a avaliação e o código entregue sejam a mesma coisa.
-> **Pacote de evidências:** `docs/entrega/checklist.md` (execução externa num clone limpo, 13/11), `docs/10-relatorio-testes-backend.md`, `docs/09-relatorio-testes-api.md`, `docs/06-desempenho.md`, `docs/12-relatorio-tecnico.md`, `docs/04-matriz-rastreabilidade.md`, runs do GitHub Actions (`gh run list`) e o histórico do Git.
-
-> **Atualização de 13/11/2026:** C6, C10 e C11 foram resolvidos depois desta análise. O PR #4 entrou
-> na `main` (`fd027c8`) com o CI e o JMeter verdes, a `main` serve o front Angular, e o README lista os
-> pré-requisitos. O risco R3 deixa de existir, e R6 fica reduzido. C7, C8 e C13 continuam ❌.
+| Item | Valor |
+|---|---|
+| Data | 14/11/2026 |
+| Repositório | https://github.com/Guilherme3578/trabalho-qualidade-de-software (público) |
+| Tag avaliada | `v1.0.0-rc2` (anotada), no commit da tag (`git rev-list -n 1 v1.0.0-rc2`) |
+| Código avaliado | `0d4a652` (merge do PR #10 na `main`). Os commits entre ele e a tag alteram só `docs/`, `CHANGELOG.md` e o upload de artefatos no `ci.yml`. Nenhum arquivo Java ou TypeScript muda, então o produto da tag é o mesmo que foi avaliado |
+| Relator | Claude Code (assistente de IA), a pedido do autor. A decisão passa a valer quando o responsável assina a [seção 7](#7-declaração-do-integrante) |
+| Avaliação anterior | Rc1, com a `main` em `c7992e9`: texto preservado na tag [`v1.0.0-rc1`](https://github.com/Guilherme3578/trabalho-qualidade-de-software/blob/v1.0.0-rc1/docs/decisao-qualidade.md) |
 
 ## 1. Decisão
 
-**LIBERAR COM RESSALVAS, só para avaliação acadêmica e homologação. Produção está BLOQUEADA.**
+**LIBERAR COM RESSALVAS para avaliação acadêmica e homologação. A evidência não sustenta liberar para produção.**
 
-A evidência funcional é forte e pode ser reproduzida: a suíte automatizada passa num clone limpo e no CI, a cobertura fica acima das metas e a carga nominal roda sem erros. Isso permite entregar a versão para avaliação e demonstração.
+Toda a evidência foi produzida em **ambiente de teste**:
 
-Essa evidência **não sustenta "pronto para produção"**:
+- runners do GitHub Actions;
+- banco MySQL descartável, criado pelo Testcontainers;
+- carga de 20 usuários virtuais;
+- uma máquina de desenvolvimento.
 
-- Ela vem de testes em ambiente local ou de CI, com base de dados descartável e carga de 20 usuários. O sistema nunca rodou num ambiente real, com dados, usuários e tráfego reais.
-- Dois controles que a própria estratégia de qualidade exige **não têm evidência nenhuma**: a análise estática (SonarCloud/Quality Gate) e a revisão por pares.
-- A `main` avaliada ainda serve o front antigo. O front Angular está no PR #4, que não foi mergeado.
+Essa evidência mostra que o sistema **faz o que a especificação pede nas condições testadas**. Ela não mostra como ele se comporta com usuários, dados, rede e infraestrutura reais. Esse ambiente nunca existiu para este projeto.
+
+Bloquear não seria proporcional. Todos os critérios de produto têm evidência objetiva, reproduzível e ligada a um commit:
+
+- testes;
+- cobertura;
+- análise estática;
+- concorrência;
+- carga nominal;
+- rastreabilidade.
+
+E não há defeito aberto.
 
 ## 2. Critérios e evidência
 
-Legenda: ✅ atendido com evidência · ⚠️ atendido em parte · ❌ sem evidência
+Legenda: ✅ atendido, com evidência · ⚠️ atendido em parte ou com limitação registrada · ❌ sem evidência
 
-| # | Critério | Meta | Evidência | Situação |
+| # | Critério | Meta | Evidência (commit `0d4a652`, salvo indicação) | Situação |
 |---|---|---|---|---|
-| C1 | Suíte automatizada do back-end passa | 0 falhas | Clone limpo, 13/11: 262 testes (136 unitários e 126 de integração), 0 falhas, 2 min 57 s (`checklist.md` §1, passo 6). CI verde na `main` (run 42804045729). | ✅ |
-| C2 | Cobertura de código (JaCoCo) | ≥ 80% linhas / ≥ 70% desvios | 86,4% / 73,2%, com `All coverage checks have been met` (clone limpo e `10-relatorio-testes-backend.md` §10.5). Só cobre o back-end: o front Angular não tem medição de cobertura. | ⚠️ |
-| C3 | Contrato da API (caixa-preta) | 0 falhas | Newman: 59 requisições, 124 asserções, 0 falhas (`09-relatorio-testes-api.md`, 09/11). Testes REST Assured incluídos em C1. | ✅ |
-| C4 | Integridade e concorrência (dupla reserva, RF06) | Nenhuma reserva duplicada | Testes de concorrência e de integridade do banco contra MySQL real via Testcontainers (incluídos em C1). `SELECT ... FOR UPDATE`, FKs e CHECK (`02-arquitetura.md`). | ✅ |
-| C5 | Desempenho | p95 ≤ 500 ms, erro 0% | Clone limpo: 2.004 requisições, 0% de erro, média de 38 ms, p95 de 64 ms (`checklist.md` §1, passo 10). Cenário de 20 usuários em máquina local; nada foi medido em ambiente de produção. | ⚠️ |
-| C6 | CI em todo PR | Verde | CI verde no PR #4 (run 43350817240). **O JMeter falhou no PR #4** (run 43350817027). A correção `1cbdc13` está só na máquina local. | ⚠️ |
-| C7 | Análise estática / Quality Gate (SonarCloud) | Quality Gate aprovado | **Nunca rodou.** O passo aparece como `skipped` em todos os runs (sem o secret `SONAR_TOKEN`), e o `pom.xml` ainda tem `sonar.organization=SUA_ORGANIZACAO`. | ❌ |
-| C8 | Revisão por pares | ≥ 1 aprovação de outro integrante por PR | **Nenhuma.** Os PRs #1–#4 foram abertos e mergeados pela mesma conta, com 0 aprovações. Não há proteção de branch, e 18 commits entraram direto na `main`. Os commits de `K1byl_` usam o mesmo e-mail do autor principal. | ❌ |
-| C9 | Rastreabilidade requisito → teste | Matriz em dia | Rodar `scripts/rastreabilidade.py` de novo não alterou nada (`checklist.md` §1, passo 11). O arquivo está em `docs/04-matriz-rastreabilidade.md`, não no caminho pedido (`docs/rtm.md`). | ⚠️ |
-| C10 | Reprodutibilidade pelo README | Um avaliador externo chega ao `verify` verde | Chega, mas só sabendo o que o README não diz: Docker é obrigatório e é preciso Compose v2, Chrome e Node (`checklist.md` §1, passos 2, 3 e 7). | ⚠️ |
-| C11 | Entrega do front-end atual | `main` serve o Angular | A `main` serve o front antigo em HTML/JS. A correção está no PR #4, aberto. | ❌ |
-| C12 | Segurança | Ameaças mapeadas e testadas | Testes de 401/403 por perfil, token adulterado, força bruta (429) e injeção de SQL (`05-seguranca.md`, incluídos em C1). O documento é curto (27 linhas) e ainda está marcado como rascunho. Não houve análise SAST/DAST, porque depende de C7. | ⚠️ |
-| C13 | Registro de defeitos | Defeitos com ID, severidade e status | Não existe como documento próprio. Os defeitos estão espalhados por `11-revisao-de-codigo.md`, `12-relatorio-tecnico.md` e mensagens de commit. | ❌ |
+| C1 | Suíte automatizada do back-end passa | 0 falhas | CI da `main`, [run 43556658613](https://github.com/Guilherme3578/trabalho-qualidade-de-software/actions/runs/43556658613): **281 testes** (137 no Surefire e 144 no Failsafe), 0 falhas, 0 erros e 0 ignorados. Inclui integração com MySQL 8.4 real, concorrência, BDD (Cucumber) e E2E (Selenium) | ✅ |
+| C2 | Cobertura de código | Back ≥ 80% de linhas e ≥ 70% de desvios; front ≥ 80% | Back (JaCoCo, artefato `relatorios-de-teste` do mesmo run): **89,7% de linhas e 75,3% de desvios**, com `All coverage checks have been met`. Front (Vitest, mesmo run): **200 testes em 17 arquivos**, 84,31% de linhas, 90,13% de desvios e 85,85% de instruções. Desde o PR #11, o build falha abaixo de 80% | ✅ |
+| C3 | Análise estática (SonarCloud) | Quality Gate aprovado na análise completa | Análise da `main` na revisão `0d4a652` (14/11, 04:29 UTC): **Quality Gate OK**. 0 bugs, 0 vulnerabilidades, 0 code smells, 0 security hotspots, 0,0% de duplicação. Nota A em confiabilidade, segurança e manutenibilidade. 4.728 linhas de código. Os 12 apontamentos anteriores foram tratados no PR #10 ([08 §8.5](08-ci-analise-estatica.md)) | ✅ |
+| C4 | Integridade e concorrência (dupla reserva) | Nenhuma reserva duplicada | Testes de concorrência com 20 pedidos simultâneos, mais FKs e CHECK testados contra MySQL real (incluídos em C1). Na carga, 500 de 500 tentativas conflitantes foram recusadas com `409` ([resultado-01](performance/resultado-01.md)) | ✅ |
+| C5 | Desempenho | Erro < 1%, p95 ≤ 500 ms, máximo ≤ 1000 ms | JMeter no CI, 20 usuários × 25 iterações. No [PR #10](https://github.com/Guilherme3578/trabalho-qualidade-de-software/actions/runs/43546188572): 2.004 requisições, 0 erros, p95 de 41 ms, máximo de 274 ms. No [PR #12](https://github.com/Guilherme3578/trabalho-qualidade-de-software/actions/runs/43546777831): 2.004 requisições, 0 erros, p95 de 34 ms, máximo de 255 ms. **Limitações:** a carga é pequena e roda num runner compartilhado. Ela não rodou em `0d4a652` (o workflow roda em PRs e no push de tag), então a medição do commit da tag sai no push de `v1.0.0-rc2` | ⚠️ |
+| C6 | CI em todo PR e na `main` | Verde | Os PRs #10, #11 e #12 passaram em CI, front, SonarCloud e JMeter. Os três merges na `main` têm CI verde (runs 43556604553, 43556636213 e 43556658613) | ✅ |
+| C7 | Registro de defeitos | Todo defeito com ID, severidade, status e correção | [docs/defeitos](defeitos/README.md): 14 defeitos. Os 6 de severidade alta foram fechados. DEF-010 a DEF-014 estão corrigidos e entraram na `main` com CI verde; a mudança do status para "Fechado" está no PR do release. 0 abertos. Os defeitos de código seguiram a ordem `test:` (teste que falha) → `fix:` (correção) | ✅ |
+| C8 | Rastreabilidade requisito → teste | Matriz em dia, 31 de 31 requisitos com teste | 31 de 31 requisitos têm teste. Rodar `scripts/rastreabilidade.py` de novo em `0d4a652` **altera** `docs/rtm.md`: faltam os testes do PR #10 (RF07 passa de 13 para 14 testes, RNF07 de 7 para 11). A cobertura dos requisitos continua completa; só a contagem está defasada | ⚠️ |
+| C9 | Segurança | Ameaças mapeadas, cada uma com controle e teste | 15 ameaças com controle e teste ([05](05-seguranca.md)), com base no OWASP Top 10 e no OWASP API Top 10. Quatro defeitos de segurança foram corrigidos (DEF-002, 005, 013 e 014). A CSP não tem `unsafe-inline`, e o E2E verifica isso no navegador. SAST coberto por C3. **Não houve DAST nem teste de invasão** | ⚠️ |
+| C10 | Revisão por pares | ≥ 1 revisão independente por PR | **Nenhuma.** O projeto é individual, e os 12 PRs foram abertos e mergeados pela mesma pessoa. Hoje a `main` **não tem proteção de branch** (a API do GitHub devolve `Branch not protected`). Isso contradiz a seção 6 de [relatorio-qualidade.md](relatorio-qualidade.md), que diz que a proteção existe | ❌ |
+| C11 | Reprodutibilidade | Avaliador externo chega ao build verde pelo README | Um avaliador externo chegou ao build verde num clone limpo em 13/11 ([checklist](entrega/checklist.md)), e os pré-requisitos foram acrescentados ao README depois disso. O CI repete o build do zero a cada push. Ninguém de fora refez o clone limpo depois do rc1 | ⚠️ |
+| C12 | Operação em produção | Implantação, HTTPS, backup, monitoramento e gestão de segredos verificados | **Não há ambiente de produção nem de homologação real.** Nada disso foi implantado nem testado | ❌ |
 
-**Resumo:** 4 critérios ✅, 5 ⚠️ e 4 ❌. Os ❌ são de **processo e de entrega** (C7, C8, C11, C13), não de comportamento funcional. Por isso a liberação vale só para avaliação. Para produção, C7, C8 e C11 são impeditivos.
+**Resumo:** 7 ✅, 3 ⚠️ e 2 ❌. Os dois ❌ (C10 e C12) são de **processo e operação**, não de comportamento do produto. Eles não impedem o uso acadêmico, mas impedem afirmar que o sistema está pronto para produção.
 
-## 3. Riscos aceitos para a liberação em avaliação/homologação
+## 3. Riscos aceitos
 
-Os riscos abaixo só valem para o escopo da seção 1. Nenhum deles foi aceito para produção.
+Os riscos valem **apenas** para o escopo da decisão (avaliação e homologação). Nenhum foi aceito para produção.
 
 | # | Risco | Impacto | Justificativa da aceitação | Responsável |
 |---|---|---|---|---|
-| R1 | Sem análise estática (C7): podem existir code smells, vulnerabilidades ou duplicações que ninguém detectou | **Alto** em produção; **baixo** em avaliação, porque não há dados reais nem exposição pública da aplicação | Os testes de segurança cobrem os ataques principais (autorização, JWT, força bruta, injeção de SQL). Rodar o Sonar depende de configurar a conta e o secret, o que não cabe no prazo de entrega | `INTEGRANTE_A_DEFINIR` |
-| R2 | Sem revisão por pares (C8): defeitos de lógica e de design passam sem uma segunda opinião | **Médio**: a evidência de qualidade depende de uma única pessoa | Parte do risco é compensada pela suíte automatizada (262 testes) e pela revisão de código registrada em `11-revisao-de-codigo.md`. **Não é um controle equivalente** | `INTEGRANTE_A_DEFINIR` |
-| R3 | A `main` serve o front antigo (C11) e o JMeter falhou no PR #4 (C6) | **Médio**: quem avaliar pela interface vê uma versão desatualizada (o problema já aconteceu na apresentação em sala) | A API, que é o objeto principal dos testes, é a mesma nos dois fronts. A correção está pronta no PR #4 | `INTEGRANTE_A_DEFINIR` |
-| R4 | Desempenho medido só com 20 usuários em máquina local (C5) | **Baixo** em avaliação; **desconhecido** em produção | A meta de p95 foi atingida com folga (64 ms contra 500 ms) no cenário definido em `06-desempenho.md` | `INTEGRANTE_A_DEFINIR` |
-| R5 | O front Angular não tem cobertura medida (C2) | **Baixo**: há 40 testes Vitest passando, mas não se sabe quanto do código eles cobrem | O back-end, onde estão as regras de negócio, tem cobertura acima da meta | `INTEGRANTE_A_DEFINIR` |
-| R6 | O README está incompleto (C10) | **Baixo**: o avaliador perde tempo, mas consegue executar | Os passos que faltam estão documentados em `docs/entrega/checklist.md` | `INTEGRANTE_A_DEFINIR` |
+| R1 | Sem revisão independente (C10): defeitos de lógica e de design podem passar sem uma segunda opinião | **Médio** | Num projeto de um único autor, não há outro revisor. Compensações: CI em todo PR, Quality Gate do SonarCloud, ordem `test:` → `fix:` e auto-revisão em [11](11-revisao-de-codigo.md). **Nada disso equivale a uma revisão independente.** A avaliação do professor é a primeira revisão externa | Guilherme Israel |
+| R2 | `main` sem proteção de branch (C10): um push direto pode pular o CI | **Médio** no processo; **baixo** no produto avaliado, porque os três merges desta versão têm CI verde | A ausência é verificável, e a evidência desta versão não depende dela. O relatório de qualidade precisa ser corrigido, ou a proteção recriada (*Settings → Branches*: PR obrigatório e check `Build, testes e cobertura`) | Guilherme Israel |
+| R3 | Desempenho medido só com 20 usuários em runner compartilhado, e não no commit da tag (C5) | **Baixo** em avaliação; **desconhecido** em produção | A meta tem folga grande (p95 de 34–41 ms contra 500 ms) nos dois PRs que mais mudaram o código. O push da tag roda o JMeter no commit exato, e o resultado vai para as notas do release | Guilherme Israel |
+| R4 | Sem DAST nem teste de invasão (C9) | **Baixo** em avaliação, porque não há dados reais nem exposição pública; **alto** em produção | SAST limpo (C3) e testes automatizados dos ataques mapeados (401, 403, BOLA, força bruta, injeção de SQL, JWT adulterado ou de outro emissor) | Guilherme Israel |
+| R5 | Nunca implantado (C12): HTTPS, backup, monitoramento e rotação do segredo do JWT não verificados | **Nenhum** para avaliação; **impeditivo** para produção | Fora do escopo da disciplina. Registrado para não ser confundido com evidência | Guilherme Israel |
+| R6 | Matriz de rastreabilidade defasada em 5 testes (C8) | **Baixo**: nenhum requisito fica sem teste | Basta regenerar com `scripts/rastreabilidade.py` depois de um `verify` | Guilherme Israel |
+| R7 | Instabilidade intermitente em E2E: uma falha local em 13/11 (tempo esgotado em `header.topo` e e-mail duplicado), que não se repetiu em 3 execuções locais nem no CI | **Baixo**: pode gerar um vermelho falso | Os testes estão verdes em todas as execuções do CI desta versão. Se voltar a acontecer, registrar como defeito | Guilherme Israel |
+| R8 | Actions com Node 20 e `setup-java@v4`, ambos descontinuados (avisos do CI) | **Baixo**: o CI pode quebrar sem nenhuma mudança no código | Ainda funcionam; trocar pelas versões novas no próximo ciclo | Guilherme Israel |
 
-## 4. O que precisa acontecer antes de considerar produção
+## 4. Justificativa
 
-1. Rodar o SonarCloud com Quality Gate aprovado (C7).
-2. Proteger a `main`, exigindo uma aprovação de outro integrante e o CI verde, e revisar o PR #4 com essas regras (C8).
-3. Fazer merge do PR #4 com o JMeter verde (C6 e C11). Para isso, a branch local divergente precisa ser publicada, o que exige push forçado.
-4. Criar o registro de defeitos (C13).
-5. Rodar um teste de carga num ambiente parecido com o de produção, com volume realista (C5).
+A decisão segue o que foi **medido**, não o que se espera. O que foi medido e está ligado a um commit e a um run:
 
-## 5. Justificativa
+- testes;
+- cobertura do back e do front;
+- análise estática completa;
+- concorrência;
+- carga nominal;
+- rastreabilidade;
+- defeitos.
 
-A decisão segue a evidência. O que foi **medido e reproduzido por terceiros** (testes, cobertura do back-end, contrato da API, concorrência e carga nominal) sustenta que o sistema **funciona como especificado no ambiente de teste**. Por isso ele pode ser liberado para avaliação.
+Isso sustenta a conclusão de que o produto se comporta como especificado no ambiente de teste. Com essa base, ele pode ser entregue para avaliação e homologação.
 
-O que **não foi medido** (análise estática, revisão independente, comportamento em ambiente real, cobertura do front) não pode virar conclusão positiva. Testes locais e de CI mostram que o sistema funciona nas condições testadas. Eles não mostram que ele aguenta produção. Bloquear tudo ignoraria a evidência funcional que existe. Liberar para produção afirmaria mais do que a evidência mostra.
+Testes locais e de CI não demonstram prontidão para produção. Eles não medem:
+
+- carga realista;
+- infraestrutura;
+- segurança dinâmica;
+- operação;
+- revisão por outra pessoa.
+
+Por isso a palavra "produção" não aparece como conclusão positiva neste documento. Bloquear também não se justifica, porque todos os critérios de produto têm evidência e não há defeito aberto.
+
+Em relação ao rc1, cinco critérios passaram a ter evidência completa:
+
+- análise estática (SonarCloud);
+- cobertura do front;
+- registro de defeitos;
+- front atual servido na `main`;
+- CI em todo PR.
+
+Apareceram dois achados novos. A `main` está sem proteção de branch. A matriz de rastreabilidade está defasada.
+
+## 5. Condições para considerar produção
+
+1. Implantar num ambiente de homologação real, com HTTPS, backup, monitoramento e o segredo do JWT gerenciado fora do repositório.
+2. Repetir a carga nesse ambiente, com volume realista e buscando o ponto de saturação.
+3. Rodar um DAST (por exemplo, OWASP ZAP) contra esse ambiente.
+4. Ter revisão independente, de outra pessoa, das partes críticas: reserva, concorrência e segurança.
+5. Recriar a proteção da `main` e regenerar a matriz de rastreabilidade.
 
 ## 6. Responsável pela decisão
 
-`INTEGRANTE_A_DEFINIR` (responsável pela qualidade no grupo). O relator só redigiu este documento. A decisão passa a valer quando esse integrante assinar.
+**Guilherme Israel**, único autor e responsável pela qualidade do projeto. O relator só reuniu a evidência e redigiu este documento.
 
-## 7. Declaração dos integrantes
+## 7. Declaração do integrante
 
-> Cada integrante preenche a própria linha. O Git registra um único autor (as contas "Guilherme Israel" e "K1byl_" usam o mesmo e-mail), então o relator **não** atribuiu tarefas a ninguém para não registrar contribuições que não aconteceram.
+O projeto tem **um único integrante**. As contas Git "Guilherme Israel" (autor de 91 commits na `main`) e "K1byl_" (os 12 merges de PR) são da mesma pessoa e usam o mesmo e-mail.
 
-| Integrante | O que fez (declaração própria) | Evidência (commits, PRs, documentos) |
-|---|---|---|
-| `NOME_1` | | |
-| `NOME_2` | | |
-| `NOME_3` | | |
-| `NOME_4` | | |
+O texto abaixo foi redigido pelo relator **a partir do histórico do Git**. O integrante deve conferir, corrigir o que for preciso e assinar.
 
----
-
-> **Nota de 2026-11-13 (acréscimo, texto original preservado):** o SonarCloud passou a rodar no CI desde o merge do PR #8 (`pom.xml` com a organização `guilherme3578`, secret `SONAR_TOKEN` cadastrado). O Quality Gate foi aprovado. Os apontamentos e o tratamento de cada um estão em [08 §8.5](08-ci-analise-estatica.md#85-apontamentos-do-sonarcloud-e-tratamento).
+> **Guilherme Israel** declara que foi o único integrante do projeto. Foi responsável pelo escopo, pelos requisitos e pelas regras de negócio, incluindo as decisões das pendências P1–P5 em 13/11/2026. Também foi responsável pela arquitetura (Spring Boot, MySQL e Angular), pela abertura e pelo merge de todos os PRs (#1 a #12), pela configuração do SonarCloud e do repositório, e pela apresentação em sala.
+>
+> Declara ainda que usou o assistente de IA **Claude Code** em grande parte da implementação, dos testes e da documentação, e que isso está registrado no próprio Git: 90 commits da `main` trazem `Co-Authored-By: Claude`. O integrante revisou e aceitou cada PR antes do merge, e responde pelo conteúdo entregue.
+>
+> Assinatura: ____________________ · Data: ___/___/2026
