@@ -1,6 +1,6 @@
 # 6. Desempenho (JMeter)
 
-> 📝 **Rascunho para revisão.** Seção 6.4 preenchida com a execução de 08/11/2026.
+> Resultado detalhado da execução oficial: [performance/resultado-01.md](performance/resultado-01.md).
 
 ## 6.1 Objetivo (RNF01)
 
@@ -36,7 +36,7 @@ Parâmetros ajustáveis: `-Jusuarios=50 -Jloops=40 -Jhost=... -Jport=...`
 > `target/jmeter` antes de repetir, porque o JMeter não sobrescreve o relatório HTML. O relatório fica em
 > `target/jmeter/reports/carga-reservas/index.html`.
 
-### Execução atual, com MySQL (10/11/2026)
+### Execução atual, com MySQL (09/11/2026, 23h31)
 
 20 usuários × 25 iterações, **2.004 amostras, 0 erros (0,00%)**, vazão total de 149 req/s.
 
