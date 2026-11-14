@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -33,6 +34,7 @@ import java.util.List;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+    public static final String EMISSOR_JWT = "alocacao-salas";
     private static final int TAMANHO_MINIMO_SEGREDO = 32;
     private static final String ADMIN = "ADMIN";
     private static final String RESPONSAVEL = "RESPONSAVEL";
@@ -94,7 +96,9 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder(AppProperties props) {
-        return NimbusJwtDecoder.withSecretKey(chave(props)).macAlgorithm(MacAlgorithm.HS256).build();
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(chave(props)).macAlgorithm(MacAlgorithm.HS256).build();
+        decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(EMISSOR_JWT));
+        return decoder;
     }
 
     @Bean
