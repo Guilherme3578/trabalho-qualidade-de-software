@@ -114,7 +114,7 @@ Postman: importe `postman/alocacao-salas.postman_collection.json` e `postman/loc
 | [01 — Requisitos](docs/01-requisitos.md) | Perfis, RF, RN, RNF com IDs e ciclo de vida da reserva |
 | [02 — Arquitetura](docs/02-arquitetura.md) | Componentes, modelo de dados, fluxo de reserva, proteção contra dupla reserva |
 | [03 — Plano de testes](docs/03-plano-de-testes.md) | Estratégia, níveis, técnicas, ambiente, critérios |
-| [04 — Matriz de rastreabilidade](docs/04-matriz-rastreabilidade.md) | Requisito → testes (gerada automaticamente) |
+| [RTM — Matriz de rastreabilidade](docs/rtm.md) | Requisito → testes (gerada automaticamente) |
 | [05 — Segurança](docs/05-seguranca.md) | Ameaças × controles × evidências |
 | [06 — Desempenho](docs/06-desempenho.md) | Cenário JMeter, metas e resultados |
 | [07 — TDD e BDD](docs/07-tdd-bdd.md) | Funcionalidades desenvolvidas com cada técnica |
