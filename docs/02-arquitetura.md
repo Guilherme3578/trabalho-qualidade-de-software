@@ -2,6 +2,29 @@
 
 > 📝 **Rascunho para revisão.**
 
+## 2.0 Diagrama de contexto
+
+Mostra o sistema como uma caixa só, com quem o usa e com que ele se comunica.
+
+```mermaid
+flowchart LR
+    PROF([Professor]) -->|solicita, altera e cancela<br/>as próprias reservas| SIS
+    COORD([Coordenador]) -->|reserva para professores,<br/>consulta relatórios| SIS
+    RESP([Responsável pelos recursos]) -->|aprova ou rejeita reservas,<br/>registra retirada e devolução| SIS
+    ADM([Administrador]) -->|cadastra salas, professores,<br/>materiais, usuários e bloqueios| SIS
+    SIS[["Sistema de Alocação de Salas,<br/>Professores e Materiais<br/>(Spring Boot + Angular)"]]
+    SIS -->|lê e grava reservas,<br/>cadastros e auditoria| DB[(MySQL 8.4)]
+    SIS -->|HTTP POST JSON<br/>timeout de 2 s| NOT[API externa de notificação<br/>WireMock nos testes e no perfil dev]
+    SIS -.->|aviso de aprovação pendente<br/>ou mudança de status| PROF
+    SIS -.-> RESP
+```
+
+| Elemento | Tipo | Interação |
+|---|---|---|
+| Professor, Coordenador, Responsável, Administrador | Atores humanos (perfis do RF01) | Usam a interface Angular ou a API REST com token JWT |
+| MySQL 8.4 | Sistema externo (banco) | Única fonte de dados; esquema criado pelo Flyway |
+| API de notificação | Sistema externo (HTTP) | Recebe as notificações (RF11). Se falhar ou demorar, a reserva continua válida e a falha fica registrada |
+
 ## 2.1 Visão geral
 
 Aplicação única **Java 21 + Spring Boot 4**, que expõe uma API REST e serve a interface web em **Angular 21**. O Maven compila o Angular
@@ -186,6 +209,150 @@ sequenceDiagram
     N->>N: grava notificação e chama API externa
     RS-->>C: 201 Created (APROVADA ou SOLICITADA)
 ```
+
+## 2.4.1 Login e uso do token JWT (RF01, RNF02)
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente (Angular)
+    participant AC as AuthController
+    participant AS as AuthService
+    participant L as LimitadorTentativasLogin
+    participant DB as MySQL
+    participant SEC as Spring Security
+    C->>AC: POST /api/auth/login {email, senha}
+    AC->>AS: login(req)
+    AS->>L: verificar(email)
+    alt 5 falhas nos últimos 15 min
+        L-->>C: 429 Too Many Requests
+    end
+    AS->>DB: busca usuário por e-mail
+    AS->>AS: BCrypt.matches (hash fictício se o e-mail não existe)
+    alt e-mail inexistente, senha errada ou usuário inativo
+        AS->>L: registrarFalha(email)
+        AS->>DB: auditoria LOGIN_FALHA
+        AS-->>C: 401 "E-mail ou senha inválidos."
+    else credenciais válidas
+        AS->>L: limpar(email)
+        AS->>DB: auditoria LOGIN_SUCESSO
+        AS-->>C: 200 {token HS256 (uid, perfil, exp = 2 h)}
+    end
+    Note over C,SEC: Requisições seguintes
+    C->>SEC: GET /api/... Authorization: Bearer token
+    SEC->>SEC: valida assinatura e expiração
+    SEC->>DB: carrega o usuário pelo uid (perfil atual)
+    alt token inválido, usuário inativo ou removido
+        SEC-->>C: 401
+    else perfil sem permissão na rota
+        SEC-->>C: 403
+    else autorizado
+        SEC-->>C: resposta do controller
+    end
+```
+
+O perfil vem do banco a cada requisição, e não do token. Assim, desativar um usuário ou mudar o perfil
+vale na hora (defeito [DEF-002](defeitos/DEF-002.md)).
+
+## 2.4.2 Aprovação de reserva com recurso restrito (RF07, RN04, RN05)
+
+```mermaid
+sequenceDiagram
+    participant R as Responsável
+    participant RC as ReservaController
+    participant RS as ReservaService
+    participant PC as ProtecaoConcorrencia
+    participant DB as MySQL
+    participant N as NotificacaoService
+    R->>RC: POST /api/reservas/{id}/aprovar {observacao}
+    RC->>RC: Spring Security exige perfil RESPONSAVEL (senão 403)
+    RC->>RS: aprovar(id, observacao, responsável)
+    RS->>PC: executar(operação)
+    PC->>DB: inicia transação
+    RS->>DB: busca a reserva (404 se não existir)
+    RS->>DB: SELECT ... FOR UPDATE em sala, professor e materiais
+    RS->>DB: há bloqueio de manutenção no período?
+    alt recurso em manutenção
+        RS-->>R: 409 RECURSO_EM_MANUTENCAO
+    else status atual não é SOLICITADA
+        RS-->>R: 409 transição inválida (máquina de estados)
+    else ok
+        RS->>DB: status = APROVADA + auditoria TRANSICAO_ESTADO
+        RS->>RS: publica ReservaStatusAlteradoEvent
+        DB-->>PC: commit
+        DB-->>N: evento após commit
+        N->>N: notifica o solicitante (RESERVA_APROVADA)
+        RS-->>R: 200 reserva APROVADA
+    end
+```
+
+A revalidação da manutenção na aprovação corrige o defeito [DEF-003](defeitos/DEF-003.md).
+
+## 2.4.3 Dupla reserva em solicitações simultâneas (RF06, RN03)
+
+```mermaid
+sequenceDiagram
+    participant A as Usuário A
+    participant B as Usuário B
+    participant RS as ReservaService
+    participant DB as MySQL (READ COMMITTED)
+    par mesmo horário, mesma sala
+        A->>RS: POST /api/reservas (sala 101, 08h–10h)
+    and
+        B->>RS: POST /api/reservas (sala 101, 08h–10h)
+    end
+    RS->>DB: [A] SELECT sala 101 FOR UPDATE
+    DB-->>RS: [A] trava obtida
+    RS->>DB: [B] SELECT sala 101 FOR UPDATE
+    Note over DB: B fica esperando a trava de A
+    RS->>DB: [A] consulta sobreposição → nenhuma
+    RS->>DB: [A] INSERT reserva + COMMIT (libera a trava)
+    RS-->>A: 201 Created
+    DB-->>RS: [B] trava obtida
+    RS->>DB: [B] consulta sobreposição → enxerga a reserva de A
+    RS->>DB: [B] ROLLBACK
+    RS->>DB: [B] grava em conflitos_evitados (fora da transação desfeita, RF12)
+    RS-->>B: 409 CONFLITO_SALA
+    Note over RS,DB: Em deadlock ou espera esgotada, ProtecaoConcorrencia repete a transação (até 15 vezes)
+```
+
+Evidência: `ConcorrenciaReservaIT` (20 pedidos simultâneos → 1 aceito; 10 requisições HTTP → um 201 e
+nove 409; estoque de 3 projetores → exatamente 3 aceitos).
+
+## 2.4.4 Notificação para a API externa (RF11)
+
+```mermaid
+sequenceDiagram
+    participant RS as ReservaService
+    participant DB as MySQL
+    participant N as NotificacaoService
+    participant G as HttpNotificacaoGateway
+    participant EXT as API externa
+    RS->>DB: commit da reserva (status mudou)
+    DB-->>N: ReservaStatusAlteradoEvent (AFTER_COMMIT, nova transação)
+    alt novo status = SOLICITADA
+        N->>DB: busca os usuários RESPONSAVEL ativos
+    else outro status
+        N->>DB: busca o solicitante
+    end
+    loop para cada destinatário
+        N->>G: enviar(notificação)
+        alt notificação desabilitada (padrão)
+            G-->>N: SIMULADA (só registra em log)
+        else habilitada
+            G->>EXT: POST {destinatario, tipo, mensagem, reservaId}
+            alt HTTP 2xx
+                EXT-->>G: ok
+                G-->>N: ENVIADA
+            else erro HTTP, rede ou timeout (2 s)
+                G-->>N: exceção → FALHA (com o motivo)
+            end
+        end
+        N->>DB: grava a notificação com o status
+    end
+```
+
+A notificação roda **depois** do commit e numa transação própria: uma falha externa nunca desfaz a
+reserva. Evidência: `NotificacaoWireMockIT` (contrato JSON, erro 500 e resposta acima do timeout).
 
 ## 2.5 Proteção contra dupla reserva (RF06 / RN03)
 
