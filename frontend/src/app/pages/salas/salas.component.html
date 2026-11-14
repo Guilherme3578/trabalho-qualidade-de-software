@@ -2,7 +2,7 @@
   <button type="button" class="btn btn-primario" (click)="novo()"><lucide-icon name="plus" /> Nova sala</button>
 </app-cabecalho-pagina>
 
-<div class="barra-busca animar" style="--i: 1">
+<div class="barra-busca animar" [style.--i]="1">
   <lucide-icon name="search" />
   <input type="search" placeholder="Buscar por código, nome ou localização" [ngModel]="busca()" (ngModelChange)="busca.set($event)" />
 </div>
@@ -12,7 +12,7 @@
 } @else if (filtradas().length === 0) {
   <app-estado-vazio titulo="Nenhuma sala encontrada" icone="door-open" />
 } @else {
-  <div class="tabela-container animar" style="--i: 2">
+  <div class="tabela-container animar" [style.--i]="2">
     <table>
       <thead>
         <tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Capacidade</th><th>Localização</th><th>Situação</th><th></th></tr>

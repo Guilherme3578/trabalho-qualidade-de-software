@@ -8,7 +8,7 @@
 
 <form class="grade" [formGroup]="formulario" (ngSubmit)="salvar()" novalidate>
   <div class="pilha">
-    <section class="cartao etapa animar" style="--i: 1">
+    <section class="cartao etapa animar" [style.--i]="1">
       <header class="titulo-etapa">
         <span class="numero">1</span>
         <div>
@@ -46,7 +46,7 @@
       </div>
     </section>
 
-    <section class="cartao etapa animar" style="--i: 2" [class.bloqueada]="!horarioConsultado()">
+    <section class="cartao etapa animar" [style.--i]="2" [class.bloqueada]="!horarioConsultado()">
       <header class="titulo-etapa">
         <span class="numero">2</span>
         <div>
@@ -87,7 +87,7 @@
       }
     </section>
 
-    <section class="cartao etapa animar" style="--i: 3" [class.bloqueada]="!horarioConsultado()">
+    <section class="cartao etapa animar" [style.--i]="3" [class.bloqueada]="!horarioConsultado()">
       <header class="titulo-etapa">
         <span class="numero">3</span>
         <div>
@@ -145,7 +145,7 @@
       </div>
     </section>
 
-    <section class="cartao etapa animar" style="--i: 4" [class.bloqueada]="!horarioConsultado()">
+    <section class="cartao etapa animar" [style.--i]="4" [class.bloqueada]="!horarioConsultado()">
       <header class="titulo-etapa">
         <span class="numero">4</span>
         <div>
@@ -186,7 +186,7 @@
     </section>
   </div>
 
-  <aside class="resumo cartao animar" style="--i: 5">
+  <aside class="resumo cartao animar" [style.--i]="5">
     <h2>Resumo</h2>
     <dl>
       <div>

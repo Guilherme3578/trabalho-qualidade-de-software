@@ -74,11 +74,7 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(respostas.naoAutenticado())
                         .accessDeniedHandler(respostas.acessoNegado()))
-                .headers(h -> h
-                        .contentSecurityPolicy(csp -> csp.policyDirectives(
-                                "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
-                                        + "script-src 'self'; frame-ancestors 'none'; form-action 'self'"))
-                        .frameOptions(f -> f.deny()));
+                .headers(h -> h.frameOptions(f -> f.deny()));
         return http.build();
     }
 

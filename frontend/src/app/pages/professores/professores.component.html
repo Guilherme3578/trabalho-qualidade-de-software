@@ -2,7 +2,7 @@
   <button type="button" class="btn btn-primario" (click)="novo()"><lucide-icon name="plus" /> Novo professor</button>
 </app-cabecalho-pagina>
 
-<div class="barra-busca animar" style="--i: 1">
+<div class="barra-busca animar" [style.--i]="1">
   <lucide-icon name="search" />
   <input type="search" placeholder="Buscar por nome, e-mail ou competência" [ngModel]="busca()" (ngModelChange)="busca.set($event)" />
 </div>
@@ -12,7 +12,7 @@
 } @else if (filtrados().length === 0) {
   <app-estado-vazio titulo="Nenhum professor encontrado" icone="graduation-cap" />
 } @else {
-  <div class="tabela-container animar" style="--i: 2">
+  <div class="tabela-container animar" [style.--i]="2">
     <table>
       <thead>
         <tr><th>Nome</th><th>E-mail</th><th>Departamento</th><th>Competências</th><th>Situação</th><th></th></tr>

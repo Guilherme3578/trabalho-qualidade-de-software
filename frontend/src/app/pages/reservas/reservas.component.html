@@ -4,7 +4,7 @@
   }
 </app-cabecalho-pagina>
 
-<section class="cartao filtros animar" style="--i: 1">
+<section class="cartao filtros animar" [style.--i]="1">
   <label class="campo busca">
     <span>Buscar</span>
     <div class="com-icone">
@@ -46,7 +46,7 @@
 } @else if (filtradas().length === 0) {
   <app-estado-vazio titulo="Nenhuma reserva encontrada" texto="Ajuste os filtros ou o período para ver outras reservas." icone="calendar-days" />
 } @else {
-  <div class="tabela-container animar" style="--i: 2">
+  <div class="tabela-container animar" [style.--i]="2">
     <table>
       <thead>
         <tr>

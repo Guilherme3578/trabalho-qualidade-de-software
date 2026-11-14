@@ -7,7 +7,7 @@
 @if (carregando()) {
   <div class="grade-cartoes">
     @for (n of [1, 2, 3]; track n) {
-      <div class="skeleton" style="height: 240px"></div>
+      <div class="skeleton" [style.height.px]="240"></div>
     }
   </div>
 } @else if (pendentes().length === 0) {
