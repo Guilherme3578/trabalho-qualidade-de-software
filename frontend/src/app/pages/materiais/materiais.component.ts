@@ -91,7 +91,11 @@ export class MateriaisComponent implements OnInit {
     this.servico.definirAtivo(material.id, !material.ativo).subscribe({
       next: atualizado => {
         this.materiais.update(lista => lista.map(m => (m.id === atualizado.id ? atualizado : m)));
-        this.mensagens.sucesso(atualizado.ativo ? 'Material reativado.' : 'Material desativado.');
+        if (atualizado.ativo) {
+          this.mensagens.sucesso('Material reativado.');
+        } else {
+          this.mensagens.desativacao('Material desativado.', atualizado.reservasAfetadas);
+        }
       },
       error: falha => this.mensagens.erro(falha)
     });

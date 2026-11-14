@@ -5,6 +5,7 @@ export interface Professor {
   departamento: string;
   competencias: string[];
   ativo: boolean;
+  reservasAfetadas?: string[];
 }
 
 export interface ProfessorRequest {

@@ -57,4 +57,16 @@ describe('MensagemService', () => {
     servico.fechar(servico.mensagens()[0].id);
     expect(servico.mensagens().map(m => m.texto)).toEqual(['Atenção']);
   });
+
+  it('desativação sem reservas afetadas é um sucesso simples', () => {
+    servico.desativacao('Sala desativada.', []);
+    expect(servico.mensagens()[0].tipo).toBe('sucesso');
+  });
+
+  it('desativação com reservas afetadas vira aviso com a quantidade', () => {
+    servico.desativacao('Sala desativada.', ['a', 'b']);
+    const m = servico.mensagens()[0];
+    expect(m.tipo).toBe('aviso');
+    expect(m.texto).toContain('2 reservas futuras continuam marcadas');
+  });
 });

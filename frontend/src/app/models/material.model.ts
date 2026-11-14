@@ -8,6 +8,7 @@ export interface Material {
   localizacao: string;
   restrito: boolean;
   ativo: boolean;
+  reservasAfetadas?: string[];
 }
 
 export interface MaterialRequest {

@@ -77,12 +77,13 @@ public class MaterialService {
 
     @Transactional
     public MaterialResponse definirAtivo(String id, boolean ativo, Usuario ator) {
-        Material m = buscar(id);
+        Material m = materiais.travar(id).orElseThrow(() -> NegocioException.naoEncontrado("Material", id));
         m.setAtivo(ativo);
         materiais.save(m);
         auditoria.registrar(ENTIDADE, id, ativo ? AcaoAuditoria.ATIVACAO : AcaoAuditoria.DESATIVACAO, ator,
                 null, null, null);
-        return MaterialResponse.de(m, null);
+        return MaterialResponse.de(m, null, ativo ? null
+                : disponibilidade.idsReservasFuturas(TipoRecurso.MATERIAL, id, LocalDateTime.now(clock)));
     }
 
     private void garantirEstoqueParaReservasFuturas(Material m, int novaQuantidade) {

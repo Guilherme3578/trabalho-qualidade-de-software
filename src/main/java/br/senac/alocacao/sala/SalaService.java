@@ -76,12 +76,13 @@ public class SalaService {
 
     @Transactional
     public SalaResponse definirAtiva(String id, boolean ativa, Usuario ator) {
-        Sala sala = buscar(id);
+        Sala sala = salas.travar(id).orElseThrow(() -> NegocioException.naoEncontrado("Sala", id));
         sala.setAtiva(ativa);
         salas.save(sala);
         auditoria.registrar(ENTIDADE, id, ativa ? AcaoAuditoria.ATIVACAO : AcaoAuditoria.DESATIVACAO, ator,
                 null, null, null);
-        return SalaResponse.de(sala);
+        return SalaResponse.de(sala, ativa ? null
+                : disponibilidade.idsReservasFuturas(TipoRecurso.SALA, id, LocalDateTime.now(clock)));
     }
 
     private void garantirCapacidadeParaReservasFuturas(Sala sala, int novaCapacidade) {

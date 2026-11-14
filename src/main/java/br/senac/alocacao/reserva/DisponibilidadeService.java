@@ -47,6 +47,10 @@ public class DisponibilidadeService {
         };
     }
 
+    public List<String> idsReservasFuturas(TipoRecurso tipo, String recursoId, LocalDateTime agora) {
+        return reservasFuturas(tipo, recursoId, agora).stream().map(Reserva::getId).toList();
+    }
+
     public List<Bloqueio> bloqueiosSobrepostos(TipoRecurso tipo, String recursoId, Intervalo intervalo) {
         return bloqueios.sobrepostos(tipo, recursoId, intervalo.inicio(), intervalo.fim());
     }
