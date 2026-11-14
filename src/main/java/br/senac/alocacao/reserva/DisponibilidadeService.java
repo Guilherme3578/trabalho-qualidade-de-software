@@ -12,6 +12,7 @@ import br.senac.alocacao.reserva.regras.Intervalo;
 import br.senac.alocacao.sala.Sala;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,14 @@ public class DisponibilidadeService {
                     intervalo.inicio(), intervalo.fim(), ignorarId);
             case MATERIAL -> reservas.sobrepostasPorMaterial(recursoId, StatusReserva.OCUPAM_AGENDA,
                     intervalo.inicio(), intervalo.fim(), ignorarId);
+        };
+    }
+
+    public List<Reserva> reservasFuturas(TipoRecurso tipo, String recursoId, LocalDateTime agora) {
+        return switch (tipo) {
+            case SALA -> reservas.futurasPorSala(recursoId, StatusReserva.OCUPAM_AGENDA, agora);
+            case PROFESSOR -> reservas.futurasPorProfessor(recursoId, StatusReserva.OCUPAM_AGENDA, agora);
+            case MATERIAL -> reservas.futurasPorMaterial(recursoId, StatusReserva.OCUPAM_AGENDA, agora);
         };
     }
 
