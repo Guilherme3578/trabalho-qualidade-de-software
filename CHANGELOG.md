@@ -45,6 +45,7 @@ continua publicada e não foi movida. Pacote de evidências em
 - **Sem revisão por pares.** O projeto tem um único autor. O risco foi aceito e está registrado no
   relatório final de qualidade (C8).
 - Carga medida só em máquina de desenvolvimento (C5) e sem SAST completo nem DAST (C12).
+- A `main` está sem proteção de branch desde 14/11/2026: o CI roda em todo PR, mas não bloqueia o merge.
 
 ## [1.0.0-rc1] — 2026-11-13
 

@@ -17,7 +17,7 @@ reproduzível. A versão está apta para avaliação acadêmica e homologação,
   dupla reserva foi aceita nos testes de concorrência e de carga, e todos os 31 requisitos rastreados
   têm pelo menos um teste. Os 14 defeitos registrados estão fechados; todos
   tiveram a correção registrada no Git, e os de código seguiram a ordem teste → correção.
-- **Processo:** o CI roda em todo PR e a `main` está protegida. O trabalho foi feito por **uma única
+- **Processo:** o CI roda em todo PR, mas a `main` **está sem proteção de branch** desde 14/11/2026 (a API devolve 404): o merge não é bloqueado se o CI falhar. O trabalho foi feito por **uma única
   pessoa**, então não existe revisão por pares: esse risco foi aceito e compensado em parte pelo CI
   obrigatório, pelo Quality Gate do SonarCloud e pela auto-revisão registrada em
   [11-revisao-de-codigo.md](11-revisao-de-codigo.md). A análise completa do SonarCloud na `main` (`0d4a652`)
@@ -127,7 +127,7 @@ Registro completo: [docs/defeitos](defeitos/README.md).
 | Prática | Situação | Evidência |
 |---|---|---|
 | CI em todo PR | ✅ | Workflows `CI` e `Desempenho (JMeter)` em todo PR; o CI também roda a cada push na `main` |
-| Proteção da `main` | ✅ | Exige PR e o check `Build, testes e cobertura` verde. A exigência de aprovação foi retirada porque o projeto tem um único autor, e o GitHub não deixa o autor aprovar o próprio PR |
+| Proteção da `main` | ❌ | Em 14/11/2026, `GET /branches/main/protection` devolve 404 e não há ruleset. Até a rc1 ela exigia PR e o check `Build, testes e cobertura` verde. Os PRs #10 a #13 tiveram o CI verde antes do merge, mas nada impede um merge com o CI vermelho |
 | Revisão por pares | ❌ (risco aceito) | Projeto individual: todos os PRs foram abertos e mergeados pelo único autor, e houve commits direto na `main` antes da proteção. Não há revisão independente para registrar |
 | TDD / BDD | ✅ | Pares `test:` → `fix:` no histórico; cenários Cucumber em `src/test/resources/features/` |
 | Commits rastreáveis | ✅ | Conventional Commits em português, com o porquê no corpo |
@@ -135,7 +135,7 @@ Registro completo: [docs/defeitos](defeitos/README.md).
 
 ## 7. Situação dos critérios de qualidade
 
-Atualização dos critérios C1–C13 da [decisão de qualidade](decisao-qualidade.md), que foi escrita com a
+Atualização dos critérios C1–C13 da [decisão de qualidade da rc1](https://github.com/Guilherme3578/trabalho-qualidade-de-software/blob/v1.0.0-rc1/docs/decisao-qualidade.md) (a numeração da decisão da rc2 é outra), que foi escrita com a
 `main` em `c7992e9`.
 
 | # | Critério | Antes | Agora | O que mudou |
@@ -161,6 +161,7 @@ Atualização dos critérios C1–C13 da [decisão de qualidade](decisao-qualida
 | Pendência | Impacto | Próximo passo |
 |---|---|---|
 | Sem revisão por pares (C8) | Médio: defeitos de lógica e de design podem passar sem uma segunda opinião | **Aceito**, porque o projeto tem um único autor. Controles compensatórios: CI obrigatório na `main`, Quality Gate do SonarCloud, ordem `test:` → `fix:` e auto-revisão em [11-revisao-de-codigo.md](11-revisao-de-codigo.md). Não equivalem a uma revisão independente |
+| `main` sem proteção de branch | Médio: um merge com o CI vermelho não seria bloqueado | Restaurar a proteção (PR obrigatório e check `Build, testes e cobertura`) nas configurações do repositório |
 | Carga só em máquina local (C5) | Desconhecido em produção | Repetir em ambiente parecido com produção e com mais usuários |
 
 ## 9. Recomendação
