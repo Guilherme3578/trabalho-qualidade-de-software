@@ -17,6 +17,7 @@ import java.util.Map;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItems;
 
 @DisplayName("[RF02] API caixa-preta: alterações de cadastro que afetam reservas futuras")
@@ -113,5 +114,26 @@ class ReservasAfetadasApiIT extends IntegracaoBase {
 
         como(admin).body(materialJson(2)).put("/api/materiais/" + projetor.getId()).then()
                 .statusCode(200).body("quantidadeTotal", equalTo(2));
+    }
+
+    @Test
+    @DisplayName("[RF02][RF04] Desativar sala, professor ou material é aceito e a resposta lista as reservas futuras afetadas")
+    void desativarListaReservasAfetadas() {
+        Material projetor = material("Projetor", 3, false);
+        String reserva = reservar(a101, "09:00", "11:00", 20, itens(projetor, 1));
+
+        como(admin).patch("/api/salas/" + a101.getId() + "/ativa?valor=false").then()
+                .statusCode(200).body("ativa", equalTo(false)).body("reservasAfetadas", hasItem(reserva));
+        como(admin).patch("/api/professores/" + ana.getId() + "/ativo?valor=false").then()
+                .statusCode(200).body("ativo", equalTo(false)).body("reservasAfetadas", hasItem(reserva));
+        como(admin).patch("/api/materiais/" + projetor.getId() + "/ativo?valor=false").then()
+                .statusCode(200).body("ativo", equalTo(false)).body("reservasAfetadas", hasItem(reserva));
+    }
+
+    @Test
+    @DisplayName("[RF02] Desativar recurso sem reservas futuras devolve a lista de afetadas vazia")
+    void desativarSemReservas() {
+        como(admin).patch("/api/salas/" + a101.getId() + "/ativa?valor=false").then()
+                .statusCode(200).body("reservasAfetadas", empty());
     }
 }
