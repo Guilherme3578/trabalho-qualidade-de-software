@@ -3,38 +3,38 @@
 > Arquivo **gerado automaticamente** por `scripts/rastreabilidade.py` — não edite à mão.
 > Cada teste cita os requisitos que verifica no próprio nome (ex.: `[RF05][RN02]`).
 
-Última execução encontrada em `target/`: **267 testes, 0 falha(s).**
+Última execução encontrada em `target/`: **277 testes, 0 falha(s).**
 
 ## Resumo
 
 | Requisito | Descrição | Qtde. de testes | Níveis |
 |---|---|---|---|
 | RF01 | Autenticação e autorização por perfil | 5 | API caixa-preta |
-| RF02 | Cadastro e consulta de salas, professores e materiais | 4 | API caixa-preta |
+| RF02 | Cadastro e consulta de salas, professores e materiais | 10 | API caixa-preta |
 | RF03 | Pesquisa por tipo, capacidade, localização, competência e disponibilidade | 10 | API caixa-preta, End-to-end, Unitário |
-| RF04 | Criação, alteração e cancelamento de reservas | 7 | API caixa-preta, End-to-end, Integração |
+| RF04 | Criação, alteração e cancelamento de reservas | 8 | API caixa-preta, End-to-end, Integração |
 | RF05 | Detecção de sobreposição de horários, inclusive na agenda do professor | 6 | API caixa-preta, End-to-end, Integração |
 | RF06 | Proteção contra dupla reserva em solicitações simultâneas | 11 | Concorrência, Unitário |
 | RF07 | Aprovação obrigatória para recursos restritos | 13 | API caixa-preta, Integração, Unitário |
 | RF08 | Bloqueio de recursos em manutenção | 5 | Concorrência, Integração |
-| RF09 | Registro de retirada e devolução de materiais e equipamentos | 8 | API caixa-preta, BDD, Integração |
+| RF09 | Registro de retirada e devolução de materiais e equipamentos | 10 | API caixa-preta, BDD, Integração |
 | RF10 | Histórico auditável de mudanças | 2 | API caixa-preta |
 | RF11 | Notificação simulada / integração com API externa | 6 | Integração |
 | RF12 | Relatório de utilização por recurso, carga horária alocada e conflitos evitados | 5 | API caixa-preta, Integração |
-| RF13 | Interface responsiva e mensagens de erro compreensíveis | 11 | API caixa-preta, End-to-end |
+| RF13 | Interface responsiva e mensagens de erro compreensíveis | 12 | API caixa-preta, End-to-end |
 | RF14 | Documentação de API ou dos fluxos públicos | 3 | API caixa-preta |
 | RN01 | O término deve ser posterior ao início | 4 | API caixa-preta, Unitário |
-| RN02 | Reservas do mesmo recurso não podem se sobrepor — sala, material ou professor | 15 | Integração, Unitário |
+| RN02 | Reservas do mesmo recurso não podem se sobrepor — sala, material ou professor | 17 | API caixa-preta, Integração, Unitário |
 | RN03 | Duas solicitações simultâneas devem produzir uma única reserva aceita | 6 | Concorrência |
 | RN04 | Recursos em manutenção não podem ser reservados | 4 | Concorrência, Integração |
 | RN05 | Ciclo de estados SOLICITADA → APROVADA → EM_USO → CONCLUIDA; alternativos REJEITADA, CANCELADA, NAO_COMPARECEU | 8 | Integração, Unitário |
 | RN06 | Somente responsáveis aprovam recursos restritos | 5 | API caixa-preta, Integração, Unitário |
 | RN07 | Reservas iniciadas não podem ser apagadas | 5 | API caixa-preta, Integração, Unitário |
 | RN08 | Toda mudança de estado deve gerar auditoria | 3 | API caixa-preta, Integração |
-| RN09 | Quantidade de alunos não pode exceder a capacidade da sala | 1 | Integração |
+| RN09 | Quantidade de alunos não pode exceder a capacidade da sala | 4 | API caixa-preta, Integração |
 | RN10 | Reservas no futuro, no mesmo dia, entre 07:00 e 23:00, com duração entre 30 min e 6 h | 4 | Integração, Unitário |
 | RNF01 | Desempenho sob carga | 1 | JMeter |
-| RNF02 | Autorização e proteção de acesso | 21 | API caixa-preta, Unitário |
+| RNF02 | Autorização e proteção de acesso | 24 | API caixa-preta, End-to-end, Unitário |
 | RNF03 | Validação de entrada | 11 | API caixa-preta, Unitário |
 | RNF04 | Tratamento seguro de erros | 5 | API caixa-preta, Unitário |
 | RNF05 | Cobertura de testes | 1 | JaCoCo |
@@ -61,6 +61,12 @@
 | API caixa-preta | `CadastroPesquisaApiIT` | ADMIN cadastra sala, professor e material; demais perfis consultam |
 | API caixa-preta | `CadastroPesquisaApiIT` | Campos booleanos opcionais omitidos assumem false em vez de erro de formato |
 | API caixa-preta | `CadastroPesquisaApiIT` | Código de sala duplicado devolve 409 compreensível |
+| API caixa-preta | `ReservasAfetadasApiIT` | API caixa-preta: alterações de cadastro que afetam reservas futuras |
+| API caixa-preta | `ReservasAfetadasApiIT` | Reduzir a capacidade abaixo dos alunos de uma reserva futura é recusado com a lista de reservas |
+| API caixa-preta | `ReservasAfetadasApiIT` | Reduzir a capacidade sem ficar abaixo de nenhuma reserva futura é aceito |
+| API caixa-preta | `ReservasAfetadasApiIT` | Reservas já encerradas ou canceladas não impedem a redução da capacidade |
+| API caixa-preta | `ReservasAfetadasApiIT` | Desativar sala, professor ou material é aceito e a resposta lista as reservas futuras afetadas |
+| API caixa-preta | `ReservasAfetadasApiIT` | Desativar recurso sem reservas futuras devolve a lista de afetadas vazia |
 
 ### RF03 — Pesquisa por tipo, capacidade, localização, competência e disponibilidade
 
@@ -85,6 +91,7 @@
 | API caixa-preta | `ReservaApiIT` | Criar reserva devolve 201 com os dados e status APROVADA |
 | API caixa-preta | `ReservaApiIT` | Alterar e cancelar a própria reserva |
 | API caixa-preta | `ReservaApiIT` | minhas=true filtra as reservas do usuário logado |
+| API caixa-preta | `ReservasAfetadasApiIT` | Desativar sala, professor ou material é aceito e a resposta lista as reservas futuras afetadas |
 | End-to-end | `FluxoReservaE2EIT` | Professor entra, cria reserva e vê confirmação |
 | Integração | `ReservaServiceIT` | Alteração revalida conflitos ignorando a própria reserva |
 | Integração | `ReservaServiceIT` | Alteração com versão desatualizada é recusada |
@@ -149,6 +156,8 @@
 | Nível | Classe / arquivo | Caso de teste |
 |---|---|---|
 | API caixa-preta | `ReservaApiIT` | Retirada e devolução de material pelo responsável |
+| API caixa-preta | `ReservasAfetadasApiIT` | Reduzir o estoque abaixo do pico já reservado é recusado com a lista de reservas |
+| API caixa-preta | `ReservasAfetadasApiIT` | Reduzir o estoque até o pico de uso, sem ficar abaixo dele, é aceito |
 | Integração | `ReservaServiceIT` | Retirada acima do reservado e conclusão com pendência são recusadas |
 | BDD | `retirada_devolucao.feature` | Retirada dentro da quantidade reservada |
 | BDD | `retirada_devolucao.feature` | Retirada acima da quantidade reservada é recusada |
@@ -199,6 +208,7 @@
 | End-to-end | `FluxoReservaE2EIT` | Credenciais inválidas exibem mensagem de erro |
 | End-to-end | `FluxoReservaE2EIT` | Recarregar uma rota interna do Angular abre a mesma tela, sem erro 404 |
 | End-to-end | `FluxoReservaE2EIT` | Estilos do Angular carregam com a política de segurança de conteúdo ativa |
+| End-to-end | `FluxoReservaE2EIT` | Sem 'unsafe-inline' na CSP: estilos dos componentes aplicados e nenhuma violação no console |
 | End-to-end | `FluxoReservaE2EIT` | Interface responsiva: sem rolagem horizontal em tela de celular (390px) |
 
 ### RF14 — Documentação de API ou dos fluxos públicos
@@ -222,6 +232,8 @@
 
 | Nível | Classe / arquivo | Caso de teste |
 |---|---|---|
+| API caixa-preta | `ReservasAfetadasApiIT` | Reduzir o estoque abaixo do pico já reservado é recusado com a lista de reservas |
+| API caixa-preta | `ReservasAfetadasApiIT` | Reduzir o estoque até o pico de uso, sem ficar abaixo dele, é aceito |
 | Integração | `ReservaServiceIT` | Mesma sala em horário sobreposto é recusada com CONFLITO_SALA |
 | Integração | `ReservaServiceIT` | Mesmo professor em salas diferentes no mesmo horário é recusado |
 | Integração | `ReservaServiceIT` | Reservas adjacentes (fim = início) são permitidas |
@@ -303,6 +315,9 @@
 
 | Nível | Classe / arquivo | Caso de teste |
 |---|---|---|
+| API caixa-preta | `ReservasAfetadasApiIT` | Reduzir a capacidade abaixo dos alunos de uma reserva futura é recusado com a lista de reservas |
+| API caixa-preta | `ReservasAfetadasApiIT` | Reduzir a capacidade sem ficar abaixo de nenhuma reserva futura é aceito |
+| API caixa-preta | `ReservasAfetadasApiIT` | Reservas já encerradas ou canceladas não impedem a redução da capacidade |
 | Integração | `ReservaServiceIT` | Quantidade de alunos acima da capacidade é recusada |
 
 ### RN10 — Reservas no futuro, no mesmo dia, entre 07:00 e 23:00, com duração entre 30 min e 6 h
@@ -332,11 +347,13 @@
 | API caixa-preta | `SegurancaApiIT` | Usuário desativado perde o acesso imediatamente, mesmo com token ainda válido |
 | API caixa-preta | `SegurancaApiIT` | Mudança de perfil vale imediatamente: o perfil antigo do token não é aceito |
 | API caixa-preta | `SegurancaApiIT` | Token forjado com outra chave e perfil ADMIN é rejeitado |
+| API caixa-preta | `SegurancaApiIT` | Token assinado com a chave certa, mas emitido por outro sistema ou sem emissor, é recusado |
 | API caixa-preta | `SegurancaApiIT` | {0} não pode {1} {2} → 403 |
 | API caixa-preta | `SegurancaApiIT` | Autorização por perfil |
 | API caixa-preta | `SegurancaApiIT` | Professor não pode reservar na agenda de outro professor |
 | API caixa-preta | `SegurancaApiIT` | Usuário não pode cancelar reserva de outro usuário |
 | API caixa-preta | `SegurancaApiIT` | Cabeçalhos de segurança presentes nas respostas |
+| API caixa-preta | `SegurancaApiIT` | A página do front leva um nonce de CSP novo a cada requisição, igual ao do cabeçalho |
 | API caixa-preta | `SegurancaApiIT` | Liberar as rotas do front não abre a API: sem token continua 401 |
 | API caixa-preta | `SegurancaApiIT` | Lista de usuários (ADMIN) nunca devolve o hash da senha |
 | Unitário | `LimitadorTentativasLoginTest` | Proteção contra força bruta no login |
@@ -345,6 +362,7 @@
 | Unitário | `LimitadorTentativasLoginTest` | Libera após a janela expirar |
 | Unitário | `LimitadorTentativasLoginTest` | Login bem-sucedido zera o contador |
 | Unitário | `LimitadorTentativasLoginTest` | Contadores são independentes por e-mail |
+| End-to-end | `FluxoReservaE2EIT` | Sem 'unsafe-inline' na CSP: estilos dos componentes aplicados e nenhuma violação no console |
 
 ### RNF03 — Validação de entrada
 

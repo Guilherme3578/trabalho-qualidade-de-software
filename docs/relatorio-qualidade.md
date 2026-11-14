@@ -13,10 +13,10 @@
 **O sistema atende aos requisitos funcionais e não funcionais especificados, com evidência objetiva e
 reproduzível. A versão está apta para avaliação acadêmica e homologação, não para produção.**
 
-- **Produto:** 267 testes automatizados passam, a cobertura do back-end está acima das metas, nenhuma
+- **Produto:** 277 testes automatizados passam, a cobertura do back-end está acima das metas, nenhuma
   dupla reserva foi aceita nos testes de concorrência e de carga, e todos os 31 requisitos rastreados
-  têm pelo menos um teste. Os 9 defeitos encontrados estão fechados, e os 6 de severidade alta tiveram
-  teste e correção registrados no Git.
+  têm pelo menos um teste. Dos 14 defeitos registrados, 9 estão fechados e 5 corrigidos aguardando o merge do PR #12; todos
+  tiveram a correção registrada no Git, e os de código seguiram a ordem teste → correção.
 - **Processo:** o CI roda em todo PR e a `main` está protegida. O trabalho foi feito por **uma única
   pessoa**, então não existe revisão por pares: esse risco foi aceito e compensado em parte pelo CI
   obrigatório, pelo Quality Gate do SonarCloud e pela auto-revisão registrada em
@@ -42,19 +42,19 @@ Detalhes em [03 — plano de testes](03-plano-de-testes.md) e [07 — TDD e BDD]
 
 | Suíte | Execução | Resultado | Fonte |
 |---|---|---|---|
-| Back-end (unitário, integração, API, concorrência, BDD, E2E) | Local, 12/11/2026, após as mudanças do PR #4 | **267 testes, 0 falhas** | `target/*-reports`, [rtm](rtm.md) |
+| Back-end (unitário, integração, API, concorrência, BDD, E2E) | Local, 13/11/2026, branch do PR #12 | **277 testes, 0 falhas** | `target/*-reports`, [rtm](rtm.md) |
 | Back-end num clone limpo | Avaliador externo, 13/11/2026 (antes do PR #4) | 262 testes, 0 falhas | [checklist](entrega/checklist.md) §1, passo 6 |
 | CI da `main` | GitHub Actions, run 43366617175 (`bbb946e`) | ✅ verde | `gh run list --branch main` |
 | API pela collection Postman | Newman 6.2.1, 09/11/2026 | 59 requisições, 124 asserções, 0 falhas | [09](09-relatorio-testes-api.md) |
-| Front-end | Vitest | 40 testes em 7 arquivos, 0 falhas | [12](12-relatorio-tecnico.md) §12.1 |
+| Front-end | Vitest, 13/11/2026, branch do PR #12 | 42 testes em 7 arquivos, 0 falhas | `ng test --watch=false` |
 | Carga | JMeter, 09/11/2026 | 2.004 requisições, 0% de erro, p95 52 ms | [performance/resultado-01](performance/resultado-01.md) |
 
 ### Cobertura (JaCoCo, back-end)
 
-| Métrica | Medido (12/11) | Meta | Situação |
+| Métrica | Medido (13/11, PR #12) | Meta | Situação |
 |---|---|---|---|
-| Linhas | 86,7% | ≥ 80% | ✅ |
-| Desvios (branches) | 73,4% | ≥ 70% | ✅ |
+| Linhas | 89,6% | ≥ 80% | ✅ |
+| Desvios (branches) | 74,9% | ≥ 70% | ✅ |
 
 O build falha abaixo das metas (`jacoco:check`). O front Angular **não tem cobertura medida**.
 
@@ -77,8 +77,9 @@ A medição é de uma máquina de desenvolvimento com 20 usuários; não indica 
 15 ameaças mapeadas com controle e teste ([05 — segurança](05-seguranca.md)), com base no OWASP Top 10 e
 no OWASP API Security Top 10: autenticação JWT, autorização por perfil em dois níveis, BOLA, força bruta
 (429), enumeração de usuários, injeção de SQL, atribuição em massa, vazamento em erros e cabeçalhos de
-segurança. Dois defeitos de segurança foram encontrados e corrigidos ([DEF-002](defeitos/DEF-002.md) e
-[DEF-005](defeitos/DEF-005.md)). Não houve teste dinâmico (DAST) nem teste de invasão.
+segurança. Quatro defeitos de segurança foram encontrados e corrigidos ([DEF-002](defeitos/DEF-002.md),
+[DEF-005](defeitos/DEF-005.md), [DEF-013](defeitos/DEF-013.md) e [DEF-014](defeitos/DEF-014.md)). A CSP
+não tem mais `'unsafe-inline'`: os estilos do Angular usam um nonce novo a cada requisição. Não houve teste dinâmico (DAST) nem teste de invasão.
 
 ## 4. Rastreabilidade
 
@@ -88,13 +89,13 @@ A [matriz](rtm.md) é gerada a partir dos próprios testes, que citam os requisi
 
 ## 5. Defeitos
 
-| Severidade | Encontrados | Fechados | Abertos |
-|---|---|---|---|
-| Crítica | 0 | 0 | 0 |
-| Alta | 6 | 6 | 0 |
-| Média | 6 | 3 | 3 |
-| Baixa | 2 | 0 | 2 |
-| **Total** | **14** | **9** | **5** |
+| Severidade | Encontrados | Fechados | Corrigidos (aguardando merge) | Abertos |
+|---|---|---|---|---|
+| Crítica | 0 | 0 | 0 | 0 |
+| Alta | 6 | 6 | 0 | 0 |
+| Média | 6 | 3 | 3 | 0 |
+| Baixa | 2 | 0 | 2 | 0 |
+| **Total** | **14** | **9** | **5** | **0** |
 
 - Os 5 defeitos de código (DEF-001 a DEF-005) seguiram a ordem `test:` → `fix:`: primeiro um commit com
   o teste que falha, depois a correção.
@@ -103,8 +104,9 @@ A [matriz](rtm.md) é gerada a partir dos próprios testes, que citam os requisi
   evidência de desempenho só vale a partir do PR #2.
 - O DEF-008 foi encontrado na apresentação em sala, fora dos testes automatizados. Depois dele entrou um
   teste E2E que impede a regressão.
-- Os 5 abertos (DEF-010 a DEF-014) dependem de decisão de regra de negócio e estão descritos em
-  [11 — revisão de código](11-revisao-de-codigo.md) §11.4.
+- DEF-010 a DEF-014 eram as pendências P1–P5 da revisão de código. Depois da decisão das regras
+  ([11](11-revisao-de-codigo.md) §11.4), cada uma ganhou um teste que falhava e a correção, também na
+  ordem `test:` → `fix:`. Ficam como "Corrigido" até entrarem na `main` com o CI verde.
 
 Registro completo: [docs/defeitos](defeitos/README.md).
 
@@ -126,8 +128,8 @@ Atualização dos critérios C1–C13 da [decisão de qualidade](decisao-qualida
 
 | # | Critério | Antes | Agora | O que mudou |
 |---|---|---|---|---|
-| C1 | Suíte automatizada | ✅ | ✅ | 267 testes |
-| C2 | Cobertura | ⚠️ | ⚠️ | Back-end 86,7% / 73,4%; front continua sem medição |
+| C1 | Suíte automatizada | ✅ | ✅ | 277 testes |
+| C2 | Cobertura | ⚠️ | ⚠️ | Back-end 89,6% / 74,9%; front continua sem medição |
 | C3 | Contrato da API | ✅ | ✅ | — |
 | C4 | Concorrência | ✅ | ✅ | — |
 | C5 | Desempenho | ⚠️ | ⚠️ | Continua só em ambiente local |
@@ -149,7 +151,6 @@ Atualização dos critérios C1–C13 da [decisão de qualidade](decisao-qualida
 | Sem revisão por pares (C8) | Médio: defeitos de lógica e de design podem passar sem uma segunda opinião | **Aceito**, porque o projeto tem um único autor. Controles compensatórios: CI obrigatório na `main`, Quality Gate do SonarCloud, ordem `test:` → `fix:` e auto-revisão em [11-revisao-de-codigo.md](11-revisao-de-codigo.md). Não equivalem a uma revisão independente |
 | SonarCloud só no código novo (C7) | Médio: o código anterior ainda não passou pela análise | Fazer merge do PR #8 e conferir o Quality Gate da `main` |
 | Cobertura do front não medida (C2) | Baixo: as regras de negócio estão no back-end | Adicionar `@vitest/coverage-v8` |
-| Regras P1–P5 (DEF-010 a DEF-014) | Médio para P1–P3 (reservas podem ficar inválidas) | Decisão do autor sobre a regra de negócio |
 | Carga só em máquina local (C5) | Desconhecido em produção | Repetir em ambiente parecido com produção e com mais usuários |
 
 ## 9. Recomendação

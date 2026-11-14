@@ -5,7 +5,7 @@
 | Ameaça | Controle implementado | Evidência (teste) |
 |---|---|---|
 | Acesso sem autenticação (API2) | Toda rota `/api/**` exige JWT, exceto login e documentação | `SegurancaApiIT.semToken` |
-| Token adulterado ou forjado | Assinatura HS256 validada com segredo de ≥ 32 caracteres, vindo de variável de ambiente | `tokenAdulterado`, `tokenForjado` |
+| Token adulterado ou forjado | Assinatura HS256 validada com segredo de ≥ 32 caracteres, vindo de variável de ambiente; emissor (`iss = alocacao-salas`) obrigatório | `tokenAdulterado`, `tokenForjado`, `emissorDoToken` |
 | Escalada de privilégio (API5) | Autorização em **2 níveis**: por rota (`SecurityConfig`, antes de qualquer validação) e por método (`@PreAuthorize`) | `autorizacaoPorPerfil` (11 casos) |
 | Acesso a objeto de outro usuário (API1/BOLA) | Só o dono altera, cancela ou apaga a própria reserva; professor só reserva na própria agenda | `cancelarReservaAlheia`, `professorSoReservaParaSi` |
 | Força bruta no login (API4) | 5 falhas em 15 min bloqueiam o e-mail (HTTP 429) | `LimitadorTentativasLoginTest`, `AutenticacaoApiIT.forcaBruta` |
@@ -15,7 +15,7 @@
 | Atribuição em massa (API3) | DTOs (`record`) com apenas os campos permitidos; status e id nunca vêm do cliente | `atribuicaoEmMassa` |
 | Entrada inválida | Bean Validation com mensagens em português; tamanhos máximos em todos os textos e listas | `validacaoCampos`, `jsonMalformado`, `parametroInvalido` |
 | Vazamento de informação em erros (A05) | `ApiExceptionHandler` + `server.error.include-stacktrace=never`; Problem Details com `codigo` e `correlationId` | `erroSeguro`, `rotaInexistente` |
-| XSS / clickjacking | CSP `default-src 'self'`, `X-Frame-Options: DENY`, `nosniff`; front-end escapa todo dado antes de inserir no HTML | `cabecalhos` |
+| XSS / clickjacking | CSP estrita, sem `'unsafe-inline'`: `default-src 'self'`, `script-src 'self'`, `style-src 'self' 'nonce-…'` (nonce novo a cada requisição, repassado ao Angular por `ngCspNonce`), `object-src 'none'`, `base-uri 'self'`, `frame-ancestors 'none'`; `X-Frame-Options: DENY`, `nosniff`; o Angular escapa os dados por padrão | `cabecalhos`, `nonceDaPolitica`, `FluxoReservaE2EIT.politicaDeConteudoSemViolacoes` |
 | Injeção em logs | `X-Correlation-Id` do cliente só é aceito se tiver formato seguro | — |
 | Repúdio | Auditoria com autor, data, estado anterior/novo e correlationId de cada mudança | `ReservaServiceIT.auditoria*` |
 | Container com privilégios | Imagem Docker roda com usuário sem privilégios (`USER app`) | `Dockerfile` |

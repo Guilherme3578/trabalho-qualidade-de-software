@@ -39,17 +39,18 @@ aprovadas**. Os detalhes estão em [09-relatorio-testes-api.md](09-relatorio-tes
 | JWT | Assinatura HS256 com segredo de no mínimo 32 caracteres (a aplicação não sobe sem ele); token adulterado ou forjado → 401 |
 | Front-end atual | Todos os dados vindos da API passam por `esc()` antes de ir para `innerHTML`; CSP com `script-src 'self'` |
 
-## 11.4 Pendências que precisam de decisão (não alteradas)
+## 11.4 Pendências de regra de negócio (decididas e corrigidas)
 
-Estes pontos são decisões de regra de negócio, por isso não foram mudados sem combinar:
+Estes pontos dependiam de decisão de regra de negócio e ficaram sem alteração até o autor decidir, em
+13/11/2026. Cada um virou um defeito com teste (`test:`) e correção (`fix:`):
 
-| # | Situação | Risco | Sugestão |
+| # | Situação | Decisão | Defeito |
 |---|---|---|---|
-| P1 | Reduzir a **capacidade de uma sala** abaixo do número de alunos de reservas futuras é aceito. | Reserva fica inválida pela RN09 | Recusar com a lista de reservas afetadas, ou só avisar (como o bloqueio faz) |
-| P2 | Reduzir a **quantidade total de um material** abaixo do que já está reservado é aceito. | Mais itens reservados do que existem | Mesmo tratamento da P1 |
-| P3 | **Desativar** sala, professor ou material não afeta as reservas futuras já feitas. | Reserva de recurso inativo | Listar as reservas afetadas na resposta, ou cancelá-las com notificação |
-| P4 | O `issuer` do token não é verificado na leitura (só a assinatura e a validade). | Baixo, porque a chave é exclusiva da aplicação | Validar `iss = alocacao-salas` no `JwtDecoder` |
-| P5 | A CSP permite `style-src 'unsafe-inline'`. | Baixo | Rever na reconstrução do front-end |
+| P1 | Reduzir a **capacidade de uma sala** abaixo do número de alunos de reservas futuras era aceito | Recusar com 409 `RESERVAS_AFETADAS`, listando as reservas | [DEF-010](defeitos/DEF-010.md) |
+| P2 | Reduzir a **quantidade total de um material** abaixo do que já está reservado era aceito | Recusar com 409 `RESERVAS_AFETADAS`, listando as reservas | [DEF-011](defeitos/DEF-011.md) |
+| P3 | **Desativar** sala, professor ou material não informava as reservas futuras | Aceitar e listar as reservas afetadas na resposta (`reservasAfetadas`) | [DEF-012](defeitos/DEF-012.md) |
+| P4 | O `issuer` do token não era verificado na leitura | Validar `iss = alocacao-salas` no `JwtDecoder` | [DEF-013](defeitos/DEF-013.md) |
+| P5 | A CSP permitia `style-src 'unsafe-inline'` | Nonce por requisição, repassado ao Angular por `ngCspNonce` | [DEF-014](defeitos/DEF-014.md) |
 
 ## 11.5 Pendências de ambiente (resolvidas)
 
@@ -60,4 +61,4 @@ Estes pontos são decisões de regra de negócio, por isso não foram mudados se
 - Repositório no GitHub: publicado, com CI em todo pull request.
 
 Os defeitos desta revisão estão no [registro de defeitos](defeitos/README.md) como DEF-001 a DEF-005, e
-as pendências P1–P5 como DEF-010 a DEF-014.
+as pendências P1–P5 como DEF-010 a DEF-014 (corrigidas, ver §11.4).

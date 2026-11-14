@@ -1,6 +1,6 @@
 <app-cabecalho-pagina titulo="Relatórios" subtitulo="Ocupação de salas e materiais, carga horária dos professores e conflitos evitados." icone="chart-column" />
 
-<section class="cartao periodo animar" style="--i: 1">
+<section class="cartao periodo animar" [style.--i]="1">
   <label class="campo">
     <span>De</span>
     <input type="date" [(ngModel)]="inicio" />
@@ -15,22 +15,22 @@
 </section>
 
 <section class="resumo">
-  <article class="cartao cartao-interativo indicador animar" style="--i: 2">
+  <article class="cartao cartao-interativo indicador animar" [style.--i]="2">
     <span class="icone violeta"><lucide-icon name="calendar-days" /></span>
     <strong>{{ totalReservas() }}</strong>
     <span class="texto-suave">reservas efetivas</span>
   </article>
-  <article class="cartao cartao-interativo indicador animar" style="--i: 3">
+  <article class="cartao cartao-interativo indicador animar" [style.--i]="3">
     <span class="icone ciano"><lucide-icon name="clock" /></span>
     <strong>{{ totalHoras() | number: '1.0-1' }} h</strong>
     <span class="texto-suave">horas de sala reservadas</span>
   </article>
-  <article class="cartao cartao-interativo indicador animar" style="--i: 4">
+  <article class="cartao cartao-interativo indicador animar" [style.--i]="4">
     <span class="icone verde"><lucide-icon name="door-open" /></span>
     <strong>{{ ocupacaoMedia() | number: '1.0-1' }}%</strong>
     <span class="texto-suave">ocupação média das salas</span>
   </article>
-  <article class="cartao cartao-interativo indicador animar destaque-conflitos" style="--i: 5">
+  <article class="cartao cartao-interativo indicador animar destaque-conflitos" [style.--i]="5">
     <span class="icone ambar"><lucide-icon name="shield-check" /></span>
     <strong>{{ conflitos()?.total ?? 0 }}</strong>
     <span class="texto-suave">conflitos evitados</span>
@@ -38,7 +38,7 @@
 </section>
 
 <div class="grade">
-  <section class="cartao animar" style="--i: 6">
+  <section class="cartao animar" [style.--i]="6">
     <h2>Ocupação das salas</h2>
     <p class="texto-fraco">Horas reservadas sobre {{ utilizacao()?.horasDisponiveisPorRecurso ?? 0 }} h disponíveis por sala no período.</p>
     <ul class="barras">
@@ -56,7 +56,7 @@
     </ul>
   </section>
 
-  <section class="cartao animar" style="--i: 7">
+  <section class="cartao animar" [style.--i]="7">
     <h2>Carga horária dos professores</h2>
     <p class="texto-fraco">Horas alocadas em reservas efetivas.</p>
     <ul class="barras">
@@ -74,7 +74,7 @@
     </ul>
   </section>
 
-  <section class="cartao animar" style="--i: 8">
+  <section class="cartao animar" [style.--i]="8">
     <h2>Uso de materiais</h2>
     <p class="texto-fraco">Ocupação média do estoque de cada material.</p>
     <ul class="barras">
@@ -90,7 +90,7 @@
     </ul>
   </section>
 
-  <section class="cartao animar" style="--i: 9">
+  <section class="cartao animar" [style.--i]="9">
     <h2>Conflitos evitados</h2>
     <p class="texto-fraco">Tentativas de reserva recusadas pelo sistema para impedir choque de horário.</p>
     @if ((conflitos()?.total ?? 0) === 0) {

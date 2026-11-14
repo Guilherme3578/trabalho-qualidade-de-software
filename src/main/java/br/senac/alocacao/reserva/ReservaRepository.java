@@ -41,6 +41,29 @@ public interface ReservaRepository extends JpaRepository<Reserva, String> {
 
     @Query("""
             select r from Reserva r
+            where r.sala.id = :salaId and r.status in :status and r.fim > :agora
+            order by r.inicio""")
+    List<Reserva> futurasPorSala(@Param("salaId") String salaId, @Param("status") Collection<StatusReserva> status,
+                                 @Param("agora") LocalDateTime agora);
+
+    @Query("""
+            select r from Reserva r
+            where r.professor.id = :professorId and r.status in :status and r.fim > :agora
+            order by r.inicio""")
+    List<Reserva> futurasPorProfessor(@Param("professorId") String professorId,
+                                      @Param("status") Collection<StatusReserva> status,
+                                      @Param("agora") LocalDateTime agora);
+
+    @Query("""
+            select distinct r from Reserva r join r.itens i
+            where i.material.id = :materialId and r.status in :status and r.fim > :agora
+            order by r.inicio""")
+    List<Reserva> futurasPorMaterial(@Param("materialId") String materialId,
+                                     @Param("status") Collection<StatusReserva> status,
+                                     @Param("agora") LocalDateTime agora);
+
+    @Query("""
+            select r from Reserva r
             where (:inicio is null or r.fim > :inicio)
               and (:fim is null or r.inicio < :fim)
               and (:salaId is null or r.sala.id = :salaId)

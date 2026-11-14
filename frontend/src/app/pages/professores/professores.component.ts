@@ -92,7 +92,11 @@ export class ProfessoresComponent implements OnInit {
     this.servico.definirAtivo(professor.id, !professor.ativo).subscribe({
       next: atualizado => {
         this.professores.update(lista => lista.map(p => (p.id === atualizado.id ? atualizado : p)));
-        this.mensagens.sucesso(atualizado.ativo ? 'Professor reativado.' : 'Professor desativado.');
+        if (atualizado.ativo) {
+          this.mensagens.sucesso('Professor reativado.');
+        } else {
+          this.mensagens.desativacao('Professor desativado.', atualizado.reservasAfetadas);
+        }
       },
       error: falha => this.mensagens.erro(falha)
     });

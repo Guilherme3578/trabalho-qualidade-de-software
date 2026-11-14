@@ -8,7 +8,7 @@
 
   <div class="grade">
     <div class="pilha">
-      <section class="cartao destaque animar" style="--i: 1">
+      <section class="cartao destaque animar" [style.--i]="1">
         <div class="entre">
           <app-status-badge [status]="r.status" />
           <span class="texto-fraco">Versão {{ r.versao }}</span>
@@ -44,7 +44,7 @@
         }
       </section>
 
-      <section class="cartao animar" style="--i: 2">
+      <section class="cartao animar" [style.--i]="2">
         <h2>Materiais</h2>
         @if (situacaoMateriais().length === 0) {
           <p class="texto-suave">Nenhum material reservado.</p>
@@ -83,7 +83,7 @@
     </div>
 
     <div class="pilha">
-      <section class="cartao animar acoes-cartao" style="--i: 3">
+      <section class="cartao animar acoes-cartao" [style.--i]="3">
         <h2>Ações</h2>
         <div class="lista-acoes">
           @if (pode().aprovar) {
@@ -111,7 +111,7 @@
         }
       </section>
 
-      <section class="cartao animar" style="--i: 4">
+      <section class="cartao animar" [style.--i]="4">
         <h2>Histórico</h2>
         <ol class="historico">
           @for (e of historico(); track e.id) {
@@ -167,7 +167,7 @@
   }
 } @else {
   <div class="pilha">
-    <div class="skeleton" style="height: 80px"></div>
-    <div class="skeleton" style="height: 260px"></div>
+    <div class="skeleton" [style.height.px]="80"></div>
+    <div class="skeleton" [style.height.px]="260"></div>
   </div>
 }

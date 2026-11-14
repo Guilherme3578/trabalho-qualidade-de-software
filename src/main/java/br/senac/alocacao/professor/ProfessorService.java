@@ -2,6 +2,7 @@ package br.senac.alocacao.professor;
 
 import br.senac.alocacao.auditoria.AcaoAuditoria;
 import br.senac.alocacao.auditoria.AuditoriaService;
+import br.senac.alocacao.bloqueio.TipoRecurso;
 import br.senac.alocacao.comum.Filtros;
 import br.senac.alocacao.comum.NegocioException;
 import br.senac.alocacao.reserva.DisponibilidadeService;
@@ -10,6 +11,7 @@ import br.senac.alocacao.usuario.Usuario;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -21,12 +23,14 @@ public class ProfessorService {
     private final ProfessorRepository professores;
     private final DisponibilidadeService disponibilidade;
     private final AuditoriaService auditoria;
+    private final Clock clock;
 
     public ProfessorService(ProfessorRepository professores,
-                            DisponibilidadeService disponibilidade, AuditoriaService auditoria) {
+                            DisponibilidadeService disponibilidade, AuditoriaService auditoria, Clock clock) {
         this.professores = professores;
         this.disponibilidade = disponibilidade;
         this.auditoria = auditoria;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -64,12 +68,13 @@ public class ProfessorService {
 
     @Transactional
     public ProfessorResponse definirAtivo(String id, boolean ativo, Usuario ator) {
-        Professor p = buscar(id);
+        Professor p = professores.travar(id).orElseThrow(() -> NegocioException.naoEncontrado("Professor", id));
         p.setAtivo(ativo);
         professores.save(p);
         auditoria.registrar(ENTIDADE, id, ativo ? AcaoAuditoria.ATIVACAO : AcaoAuditoria.DESATIVACAO, ator,
                 null, null, null);
-        return ProfessorResponse.de(p);
+        return ProfessorResponse.de(p, ativo ? null
+                : disponibilidade.idsReservasFuturas(TipoRecurso.PROFESSOR, id, LocalDateTime.now(clock)));
     }
 
     private Professor buscar(String id) {

@@ -9,6 +9,7 @@ export interface Sala {
   localizacao: string;
   restrita: boolean;
   ativa: boolean;
+  reservasAfetadas?: string[];
 }
 
 export interface SalaRequest {

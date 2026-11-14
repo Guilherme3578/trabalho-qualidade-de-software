@@ -27,6 +27,16 @@ export class MensagemService {
     this.adicionar('aviso', 'Atenção', texto, []);
   }
 
+  desativacao(texto: string, reservasAfetadas: string[] | undefined): void {
+    const total = reservasAfetadas?.length ?? 0;
+    if (total === 0) {
+      this.sucesso(texto);
+      return;
+    }
+    const reservas = total === 1 ? '1 reserva futura continua marcada' : `${total} reservas futuras continuam marcadas`;
+    this.aviso(`${texto} ${reservas} para este recurso. Revise-as em Reservas.`);
+  }
+
   erro(falha: unknown): void {
     const erro = this.converter(falha);
     this.adicionar('erro', 'Não foi possível concluir', erro.mensagem, erro.campos.map(c => c.mensagem));

@@ -12,6 +12,7 @@ import br.senac.alocacao.reserva.regras.Intervalo;
 import br.senac.alocacao.sala.Sala;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,18 @@ public class DisponibilidadeService {
         };
     }
 
+    public List<Reserva> reservasFuturas(TipoRecurso tipo, String recursoId, LocalDateTime agora) {
+        return switch (tipo) {
+            case SALA -> reservas.futurasPorSala(recursoId, StatusReserva.OCUPAM_AGENDA, agora);
+            case PROFESSOR -> reservas.futurasPorProfessor(recursoId, StatusReserva.OCUPAM_AGENDA, agora);
+            case MATERIAL -> reservas.futurasPorMaterial(recursoId, StatusReserva.OCUPAM_AGENDA, agora);
+        };
+    }
+
+    public List<String> idsReservasFuturas(TipoRecurso tipo, String recursoId, LocalDateTime agora) {
+        return reservasFuturas(tipo, recursoId, agora).stream().map(Reserva::getId).toList();
+    }
+
     public List<Bloqueio> bloqueiosSobrepostos(TipoRecurso tipo, String recursoId, Intervalo intervalo) {
         return bloqueios.sobrepostos(tipo, recursoId, intervalo.inicio(), intervalo.fim());
     }
@@ -58,12 +71,16 @@ public class DisponibilidadeService {
         if (!material.isAtivo() || !bloqueiosSobrepostos(TipoRecurso.MATERIAL, material.getId(), intervalo).isEmpty()) {
             return 0;
         }
-        List<CalculadoraOcupacao.Uso> usos = reservasSobrepostas(TipoRecurso.MATERIAL, material.getId(), intervalo,
+        return Math.max(0, material.getQuantidadeTotal() - picoDeUso(material.getId(), intervalo, ignorarReservaId));
+    }
+
+    public int picoDeUso(String materialId, Intervalo intervalo, String ignorarReservaId) {
+        List<CalculadoraOcupacao.Uso> usos = reservasSobrepostas(TipoRecurso.MATERIAL, materialId, intervalo,
                 ignorarReservaId).stream()
                 .map(r -> new CalculadoraOcupacao.Uso(r.getInicio(), r.getFim(),
-                        r.item(material.getId()).map(ItemReserva::quantidade).orElse(0)))
+                        r.item(materialId).map(ItemReserva::quantidade).orElse(0)))
                 .toList();
-        return Math.max(0, material.getQuantidadeTotal() - CalculadoraOcupacao.picoDeUso(usos, intervalo));
+        return CalculadoraOcupacao.picoDeUso(usos, intervalo);
     }
 
     public void garantirSala(Sala sala, Intervalo intervalo, String ignorarId) {

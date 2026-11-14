@@ -67,7 +67,7 @@ public class SalaController {
 
     @PatchMapping("/{id}/ativa")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Ativa/desativa a sala (registros não são apagados para preservar o histórico)")
+    @Operation(summary = "Ativa/desativa a sala (registros não são apagados para preservar o histórico); ao desativar, lista as reservas futuras afetadas")
     public SalaResponse definirAtiva(@PathVariable String id, @RequestParam boolean valor) {
         return servico.definirAtiva(id, valor, usuarioAtual.obter());
     }

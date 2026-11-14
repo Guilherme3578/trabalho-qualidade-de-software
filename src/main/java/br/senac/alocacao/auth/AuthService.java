@@ -5,6 +5,7 @@ import br.senac.alocacao.auditoria.AuditoriaService;
 import br.senac.alocacao.comum.CodigoErro;
 import br.senac.alocacao.comum.NegocioException;
 import br.senac.alocacao.config.AppProperties;
+import br.senac.alocacao.config.SecurityConfig;
 import br.senac.alocacao.usuario.Usuario;
 import br.senac.alocacao.usuario.UsuarioRepository;
 import br.senac.alocacao.usuario.UsuarioResponse;
@@ -66,7 +67,7 @@ public class AuthService {
         Instant agora = Instant.now();
         Instant expira = agora.plus(props.jwt().expiracao());
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("alocacao-salas")
+                .issuer(SecurityConfig.EMISSOR_JWT)
                 .subject(u.getEmail())
                 .issuedAt(agora)
                 .expiresAt(expira)

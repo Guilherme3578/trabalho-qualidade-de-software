@@ -90,7 +90,11 @@ export class SalasComponent implements OnInit {
     this.servico.definirAtiva(sala.id, !sala.ativa).subscribe({
       next: atualizada => {
         this.salas.update(lista => lista.map(s => (s.id === atualizada.id ? atualizada : s)));
-        this.mensagens.sucesso(atualizada.ativa ? 'Sala reativada.' : 'Sala desativada.');
+        if (atualizada.ativa) {
+          this.mensagens.sucesso('Sala reativada.');
+        } else {
+          this.mensagens.desativacao('Sala desativada.', atualizada.reservasAfetadas);
+        }
       },
       error: falha => this.mensagens.erro(falha)
     });

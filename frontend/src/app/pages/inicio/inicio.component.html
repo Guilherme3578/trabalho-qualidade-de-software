@@ -23,7 +23,7 @@
 </section>
 
 <div class="colunas">
-  <section class="cartao agenda animar" style="--i: 5">
+  <section class="cartao agenda animar" [style.--i]="5">
     <header class="entre">
       <h2>Agenda de hoje</h2>
       <a routerLink="/reservas" class="btn btn-fantasma btn-sm">Ver todas <lucide-icon name="chevron-right" /></a>
@@ -61,7 +61,7 @@
   </section>
 
   <section class="pilha">
-    <div class="cartao animar" style="--i: 6">
+    <div class="cartao animar" [style.--i]="6">
       <h2>Ações rápidas</h2>
       <div class="atalhos">
         @for (a of atalhos(); track a.rota) {
@@ -77,7 +77,7 @@
       </div>
     </div>
 
-    <div class="cartao animar" style="--i: 7">
+    <div class="cartao animar" [style.--i]="7">
       <h2>Próximas reservas</h2>
       @if (!carregando() && proximas().length === 0) {
         <p class="texto-suave vazio-curto">Nada agendado para os próximos 7 dias.</p>

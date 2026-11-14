@@ -4,7 +4,7 @@
   }
 </app-cabecalho-pagina>
 
-<section class="cartao animar" style="--i: 1">
+<section class="cartao animar" [style.--i]="1">
   <header class="entre topo-mapa">
     <div>
       <h2>Mapa de ocupação</h2>
@@ -63,7 +63,7 @@
   </div>
 </section>
 
-<section class="cartao animar busca" style="--i: 2">
+<section class="cartao animar busca" [style.--i]="2">
   <h2>Encontrar recursos livres</h2>
   <div class="filtros">
     <label class="campo">

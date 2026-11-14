@@ -1,6 +1,6 @@
 <app-cabecalho-pagina titulo="Auditoria" subtitulo="Registro de quem fez o quê e quando: criações, mudanças de status, exclusões e acessos." icone="history" />
 
-<section class="cartao filtros animar" style="--i: 1">
+<section class="cartao filtros animar" [style.--i]="1">
   <label class="campo">
     <span>Entidade</span>
     <select [(ngModel)]="entidade" (change)="carregar()">
@@ -27,7 +27,7 @@
 } @else if (eventos().length === 0) {
   <app-estado-vazio titulo="Nenhum evento encontrado" icone="history" />
 } @else {
-  <div class="tabela-container animar" style="--i: 2">
+  <div class="tabela-container animar" [style.--i]="2">
     <table>
       <thead>
         <tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Entidade</th><th>Mudança</th><th>Detalhes</th></tr>
