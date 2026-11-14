@@ -37,8 +37,8 @@
         <cobertura.minima.linhas>0.80</cobertura.minima.linhas>
         <cobertura.minima.branches>0.70</cobertura.minima.branches>
 
-        <sonar.organization>SUA_ORGANIZACAO</sonar.organization>
-        <sonar.projectKey>SUA_ORGANIZACAO_alocacao-salas</sonar.projectKey>
+        <sonar.organization>guilherme3578</sonar.organization>
+        <sonar.projectKey>Guilherme3578_trabalho-qualidade-de-software</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.coverage.exclusions>**/config/**,**/AlocacaoApplication.java,**/DadosIniciais.java</sonar.coverage.exclusions>
