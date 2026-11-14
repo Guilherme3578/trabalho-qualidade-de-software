@@ -17,9 +17,11 @@ reproduzível. A versão está apta para avaliação acadêmica e homologação,
   dupla reserva foi aceita nos testes de concorrência e de carga, e todos os 31 requisitos rastreados
   têm pelo menos um teste. Os 9 defeitos encontrados estão fechados, e os 6 de severidade alta tiveram
   teste e correção registrados no Git.
-- **Processo:** o CI roda em todo PR e a `main` está protegida. Ainda faltam a **revisão por pares**
-  (nenhum PR teve aprovação de outro integrante) e a **análise completa do SonarCloud na `main`**, que só
-  acontece depois do merge do PR #8.
+- **Processo:** o CI roda em todo PR e a `main` está protegida. O trabalho foi feito por **uma única
+  pessoa**, então não existe revisão por pares: esse risco foi aceito e compensado em parte pelo CI
+  obrigatório, pelo Quality Gate do SonarCloud e pela auto-revisão registrada em
+  [11-revisao-de-codigo.md](11-revisao-de-codigo.md). Falta ainda a **análise completa do SonarCloud na
+  `main`**, que só acontece depois do merge do PR #8.
 
 ## 2. Estratégia de testes
 
@@ -111,8 +113,8 @@ Registro completo: [docs/defeitos](defeitos/README.md).
 | Prática | Situação | Evidência |
 |---|---|---|
 | CI em todo PR | ✅ | Workflows `CI` e `Desempenho (JMeter)` em todo PR; o CI também roda a cada push na `main` |
-| Proteção da `main` | ✅ | Exige 1 aprovação e o check `Build, testes e cobertura` |
-| Revisão por pares | ❌ | PRs #1–#6 mergeados pelo autor, sem aprovação de outro integrante; houve commits direto na `main` antes da proteção |
+| Proteção da `main` | ✅ | Exige PR e o check `Build, testes e cobertura` verde. A exigência de aprovação foi retirada porque o projeto tem um único autor, e o GitHub não deixa o autor aprovar o próprio PR |
+| Revisão por pares | ❌ (risco aceito) | Projeto individual: todos os PRs foram abertos e mergeados pelo único autor, e houve commits direto na `main` antes da proteção. Não há revisão independente para registrar |
 | TDD / BDD | ✅ | Pares `test:` → `fix:` no histórico; cenários Cucumber em `src/test/resources/features/` |
 | Commits rastreáveis | ✅ | Conventional Commits em português, com o porquê no corpo |
 | Release versionado | ⏳ | `CHANGELOG.md` e tag `v1.0.0-rc1` preparados no PR #7 |
@@ -131,7 +133,7 @@ Atualização dos critérios C1–C13 da [decisão de qualidade](decisao-qualida
 | C5 | Desempenho | ⚠️ | ⚠️ | Continua só em ambiente local |
 | C6 | CI em todo PR | ⚠️ | ✅ | JMeter verde desde o PR #4 |
 | C7 | SonarCloud | ❌ | ⚠️ | Quality Gate aprovado no PR #8; falta a análise completa da `main` |
-| C8 | Revisão por pares | ❌ | ❌ | Proteção ativa, mas nenhum PR aprovado por outro integrante ainda |
+| C8 | Revisão por pares | ❌ | ❌ | Projeto individual: não há outro revisor. Risco aceito (seção 8) |
 | C9 | Rastreabilidade | ⚠️ | ✅ | Matriz em `docs/rtm.md` |
 | C10 | README reproduzível | ⚠️ | ✅ | Pré-requisitos detalhados |
 | C11 | Front-end atual | ❌ | ✅ | `main` serve o Angular (PR #4) |
@@ -144,14 +146,15 @@ Atualização dos critérios C1–C13 da [decisão de qualidade](decisao-qualida
 
 | Pendência | Impacto | Próximo passo |
 |---|---|---|
-| Sem revisão por pares (C8) | Médio: toda a evidência depende de uma pessoa | Outro integrante revisar e aprovar os PRs abertos (#7, #8 e este) |
+| Sem revisão por pares (C8) | Médio: defeitos de lógica e de design podem passar sem uma segunda opinião | **Aceito**, porque o projeto tem um único autor. Controles compensatórios: CI obrigatório na `main`, Quality Gate do SonarCloud, ordem `test:` → `fix:` e auto-revisão em [11-revisao-de-codigo.md](11-revisao-de-codigo.md). Não equivalem a uma revisão independente |
 | SonarCloud só no código novo (C7) | Médio: o código anterior ainda não passou pela análise | Fazer merge do PR #8 e conferir o Quality Gate da `main` |
 | Cobertura do front não medida (C2) | Baixo: as regras de negócio estão no back-end | Adicionar `@vitest/coverage-v8` |
-| Regras P1–P5 (DEF-010 a DEF-014) | Médio para P1–P3 (reservas podem ficar inválidas) | Decisão do grupo sobre a regra de negócio |
+| Regras P1–P5 (DEF-010 a DEF-014) | Médio para P1–P3 (reservas podem ficar inválidas) | Decisão do autor sobre a regra de negócio |
 | Carga só em máquina local (C5) | Desconhecido em produção | Repetir em ambiente parecido com produção e com mais usuários |
 
 ## 9. Recomendação
 
 Liberar a versão `v1.0.0-rc1` **para avaliação e homologação**, como já registrado na
-[decisão de qualidade](decisao-qualidade.md). Para produção, falta pelo menos: revisão por pares nos
-PRs, Quality Gate aprovado na análise completa da `main` e teste de carga em ambiente representativo.
+[decisão de qualidade](decisao-qualidade.md). Para produção, falta pelo menos: Quality Gate aprovado na
+análise completa da `main`, teste de carga em ambiente representativo e uma revisão independente do código,
+que num projeto individual só pode vir de fora (por exemplo, do professor).
