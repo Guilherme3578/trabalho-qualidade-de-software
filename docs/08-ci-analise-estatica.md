@@ -1,7 +1,5 @@
 # 8. Integração contínua e análise estática
 
-> 📝 **Rascunho para revisão.**
-
 ## 8.1 GitHub Actions
 
 | Workflow | Quando roda | O que faz |
@@ -11,10 +9,12 @@
 
 Os runners `ubuntu-latest` já têm Docker, então Testcontainers funciona sem configuração extra.
 
-**Proteção da branch `main`** (configurar em *Settings → Branches*):
+**Proteção da branch `main`** (*Settings → Branches*), ativa desde 13/11/2026:
 
-- exigir pull request antes do merge;
-- exigir os checks `Build, testes e cobertura` e `SonarCloud Code Analysis` aprovados.
+- exige pull request com **1 aprovação** antes do merge;
+- exige o check `Build, testes e cobertura` aprovado e a branch atualizada com a `main`.
+
+O check `SonarCloud Code Analysis` aparece nos PRs, mas ainda não é obrigatório.
 
 ## 8.2 Cobertura (JaCoCo)
 
@@ -23,7 +23,12 @@ Os runners `ubuntu-latest` já têm Docker, então Testcontainers funciona sem c
 - Ficam fora da medição: configuração (`config/**`), classe `main` e dados de demonstração.
 - Relatório: `target/site/jacoco/index.html` (o XML é enviado ao SonarCloud).
 
-## 8.3 SonarCloud — passo a passo de configuração
+## 8.3 SonarCloud — configuração
+
+Configurado em 13/11/2026 (PR #8): organização `guilherme3578`, projeto
+`Guilherme3578_trabalho-qualidade-de-software` e secret `SONAR_TOKEN` no repositório. Na primeira
+análise, a do PR #8, o **Quality Gate foi aprovado** (0 bugs, 0 vulnerabilidades, 0 code smells, 0%
+de duplicação no código novo). Passos usados, para refazer em outro repositório:
 
 1. Publicar o repositório no GitHub.
 2. Entrar em <https://sonarcloud.io> com a conta do GitHub → **Analyze new project** → selecionar o repositório.
@@ -34,9 +39,12 @@ Os runners `ubuntu-latest` já têm Docker, então Testcontainers funciona sem c
 6. No GitHub, em *Settings → Secrets and variables → Actions*, criar o secret `SONAR_TOKEN` com o token.
 7. Abrir um pull request: o SonarCloud comenta o resultado do **Quality Gate** no PR.
 
-## 8.4 Evidências a anexar
+## 8.4 Evidências
 
-- [ ] Print de um PR com os checks verdes (CI + SonarCloud)
-- [ ] Print do painel do SonarCloud (bugs, vulnerabilidades, code smells, cobertura, duplicação)
-- [ ] Print do relatório JaCoCo
-- [ ] Artefato `relatorio-jmeter` da execução do workflow de desempenho
+| Evidência | Onde | Situação |
+|---|---|---|
+| PR com os checks verdes (CI, front-end, JMeter, SonarCloud) | [PR #8](https://github.com/Guilherme3578/trabalho-qualidade-de-software/pull/8) | ✅ |
+| Painel do SonarCloud | [sonarcloud.io](https://sonarcloud.io/dashboard?id=Guilherme3578_trabalho-qualidade-de-software) | ⚠️ Análise do projeto inteiro só depois do merge do PR #8 |
+| Relatório JaCoCo | Artefato `relatorios-de-teste` de cada run do CI; resumo em [10](10-relatorio-testes-backend.md) §10.5 | ✅ |
+| Relatório do JMeter | Artefato `relatorio-jmeter` do workflow de desempenho; resultado em [performance/resultado-01](performance/resultado-01.md) | ✅ |
+| Prints para a apresentação | — | A fazer pelo grupo |

@@ -17,23 +17,29 @@ desenvolvido para a disciplina de **Qualidade de Software**. O foco é apresenta
 
 ## Como executar
 
-**Pré-requisitos:** Java 21 e MySQL 8 (instalado na máquina ou via Docker). O Maven não é obrigatório,
-porque o projeto inclui o wrapper `./mvnw`.
+### Pré-requisitos
 
-| Para | Precisa de |
-|---|---|
-| Rodar a aplicação (`spring-boot:run`) | Java 21 + MySQL (Opção A ou B abaixo) |
-| Opção B e `docker compose --profile app` | Docker com o plugin **Compose v2** (comando `docker compose`, com espaço) |
-| `./mvnw verify` sem variáveis | **Docker em execução**, acessível pelo usuário (os testes de integração sobem o MySQL com Testcontainers). Sem Docker, use `MYSQL_URL_TESTE` (seção Testes) |
-| Testes E2E (Selenium), incluídos no `verify` | Google Chrome instalado. Sem Chrome, use `./mvnw verify -Psem-e2e` |
-| Primeira execução | Internet (dependências do Maven, Node e pacotes npm) |
-| Portas livres | 8080 (aplicação), 3306 (MySQL) e 8089 (simulador de notificações) |
+| Ferramenta | Obrigatória? | Para quê |
+|---|---|---|
+| **Java 21** (JDK) | Sim | Compilar e rodar. O Maven não precisa ser instalado: o projeto inclui o wrapper `./mvnw` |
+| **Docker** em execução, acessível pelo seu usuário (no Linux, no grupo `docker`) | **Sim para `./mvnw verify`** | Os testes de integração sobem o MySQL com Testcontainers. Sem Docker, o `verify` falha com `Could not find a valid Docker environment`; a alternativa é apontar para um MySQL local com `MYSQL_URL_TESTE` (seção [Testes](#testes)) |
+| **Docker Compose v2** (comando `docker compose`, com espaço) | Para a Opção B e para `docker compose --profile app` | Os comandos do README usam o plugin v2. Confira com `docker compose version` |
+| **MySQL 8** | Sim para rodar a aplicação | Instalado na máquina (Opção A) ou via Docker Compose (Opção B) |
+| **Google Chrome** | Sim para os testes E2E (incluídos no `verify`) | O Selenium abre o Chrome em modo headless. Sem Chrome, use `./mvnw verify -Psem-e2e` |
+| **Node.js 22.12+** e npm | Só para desenvolver o front com recarga automática (`npm start`) | O build **não** usa o Node da máquina: o Maven baixa o Node 22.22.1 e o npm 11.6.2 em `target/node`. Versões anteriores à 22.12 (como a 22.11) não rodam o Angular 21 pelo `npm start` |
+| Python 3 | Só para regenerar a matriz e os relatórios (`scripts/`) | |
+| Internet | Na primeira execução | Dependências do Maven, Node e pacotes npm, imagens Docker |
 
-**Node.js e Angular CLI não são necessários.** Durante o build, o Maven baixa uma cópia própria do
-Node 22.22.1 e do npm 11.6.2 em `target/node`, compila o Angular e coloca o resultado dentro do `.jar`.
-A versão de Node instalada no computador é ignorada (o Angular 21 exige Node 20.19+ ou 22.12+, e uma
-versão mais antiga, como a 22.11, impede o `npm start`). Só a primeira execução precisa de internet
-para esse download.
+Portas usadas: 8080 (aplicação), 3306 (MySQL) e 8089 (simulador de notificações).
+
+Para conferir tudo de uma vez:
+
+```bash
+java -version            # 21
+docker info              # sem erro de permissão
+docker compose version   # v2.x
+google-chrome --version  # ou chromium
+```
 
 ### Banco de dados (MySQL)
 
@@ -112,17 +118,20 @@ Postman: importe `postman/alocacao-salas.postman_collection.json` e `postman/loc
 | Documento | Conteúdo |
 |---|---|
 | [01 — Requisitos](docs/01-requisitos.md) | Perfis, RF, RN, RNF com IDs e ciclo de vida da reserva |
-| [02 — Arquitetura](docs/02-arquitetura.md) | Componentes, modelo de dados, fluxo de reserva, proteção contra dupla reserva |
+| [02 — Arquitetura](docs/02-arquitetura.md) | Contexto, componentes, modelo de dados, sequências críticas (reserva, login/JWT, aprovação, dupla reserva, notificação) |
 | [03 — Plano de testes](docs/03-plano-de-testes.md) | Estratégia, níveis, técnicas, ambiente, critérios |
-| [04 — Matriz de rastreabilidade](docs/04-matriz-rastreabilidade.md) | Requisito → testes (gerada automaticamente) |
+| [RTM — Matriz de rastreabilidade](docs/rtm.md) | Requisito → testes (gerada automaticamente) |
+| [Registro de defeitos](docs/defeitos/README.md) | Defeitos com ID, severidade, status e commits de teste e correção |
 | [05 — Segurança](docs/05-seguranca.md) | Ameaças × controles × evidências |
 | [06 — Desempenho](docs/06-desempenho.md) | Cenário JMeter, metas e resultados |
+| [Resultado de carga 01](docs/performance/resultado-01.md) | Execução oficial do JMeter sobre o MySQL |
 | [07 — TDD e BDD](docs/07-tdd-bdd.md) | Funcionalidades desenvolvidas com cada técnica |
 | [08 — CI e análise estática](docs/08-ci-analise-estatica.md) | GitHub Actions, JaCoCo, SonarCloud |
 | [09 — Relatório de testes de API](docs/09-relatorio-testes-api.md) | Resultado da collection Postman (gerado automaticamente) |
 | [10 — Relatório de testes de back-end](docs/10-relatorio-testes-backend.md) | JUnit, níveis da pirâmide e cobertura JaCoCo (gerado automaticamente) |
 | [11 — Revisão de código](docs/11-revisao-de-codigo.md) | Achados da revisão e pendências de regra de negócio |
 | [12 — Relatório técnico e de testes](docs/12-relatorio-tecnico.md) | Verificação consolidada de back-end, API, front-end, integração e desempenho |
+| [Relatório de qualidade](docs/relatorio-qualidade.md) | Relatório final consolidado: evidências, defeitos, riscos e conclusão |
 
 ## Estrutura
 

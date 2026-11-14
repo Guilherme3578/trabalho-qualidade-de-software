@@ -7,7 +7,7 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 REQUISITOS = RAIZ / "docs" / "01-requisitos.md"
-SAIDA = RAIZ / "docs" / "04-matriz-rastreabilidade.md"
+SAIDA = RAIZ / "docs" / "rtm.md"
 TESTES = RAIZ / "src" / "test"
 ID = re.compile(r"\b(RNF\d{2}|RF\d{2}|RN\d{2})\b")
 
