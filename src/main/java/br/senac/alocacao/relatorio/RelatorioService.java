@@ -139,6 +139,7 @@ public class RelatorioService {
         }
     }
 
+    @SuppressWarnings("java:S8700")
     private static double horas(Reserva r) {
         return Duration.between(r.getInicio(), r.getFim()).toMinutes() / 60.0;
     }
